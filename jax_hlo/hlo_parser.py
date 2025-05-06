@@ -96,13 +96,12 @@ def parse_hlo_text(text: str) -> HloModuleIR:
 
     return HloModuleIR(module_name=module_name, entry_layout=entry_layout, computations=comps)
 
-def main(file_path: str):
+def parse_hlo_from_filepath(file_path: str) -> str:
     # Read the HLO text from the given file
     with open(file_path, 'r') as f:
         hlo_text = f.read()
 
-    hlo_module = parse_hlo_text(hlo_text)
-    print(hlo_module)            # e.g. module name, entry computation, etc.
+    return parse_hlo_text(hlo_text)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
@@ -113,4 +112,4 @@ if __name__ == "__main__":
         help="Path to the .txt file containing HLO IR"
     )
     args = parser.parse_args()
-    main(args.file_path)
+    print(parse_hlo_from_filepath(args.file_path))
