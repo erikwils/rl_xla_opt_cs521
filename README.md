@@ -1,4 +1,35 @@
-# My Project
+# XLA Compiler Optimizations with RL
+
+This repo is the final project of Erik Wilson, Rayaan Farqui, and Ahyush Kaul for CS 521 ML Compilers at UIUC MCS program. Our project is to implement RL for finding optimal XLA compiler pass ordering.
+
+## HLO IR Feature Extraction
+
+See the `/jax_hlo` directory for these files and details. This repository provides Python scripts to parse HLO (Hierarchical Linear Optimizer) Intermediate Representation (IR) text files and extract a variety of numerical and categorical features. The primary output format is JSON Lines (JSONL), where each line in the output file is a JSON object representing the features of a single HLO input file.
+
+### File Structure
+
+- `hlo_feature_extraction.py`: The main script to run for feature extraction.
+- `hlo_parser.py`: Contains the HLO text parsing logic.
+- `hlo_representations.py`: Defines data classes for HLO Module, Computation, and Instruction.
+- `hlo_feature_extraction_helpers.py`: Contains helper functions used during feature calculation (e.g., shape size calculation, tuple parsing).
+- `hlo_data/` (convention): A directory where you can place your input `.txt` HLO files. The script can scan this directory.
+
+### Usage
+
+`python hlo_feature_extraction.py [OPTIONS] [FILE_PATH]`
+
+`FILE_PATH` (Positional, Optional):
+
+- Path to a specific .txt file containing HLO IR.
+- If omitted, the script will automatically scan and process all .txt files in the ./hlo_data/ directory (this directory must exist if FILE_PATH is not provided).
+
+`--output_jsonl <OUTPUT_FILE_PATH>` (Optional Flag):
+
+- Specifies the path to an output JSON Lines file.
+- If provided, features for each processed HLO file will be appended as a new JSON line to this file.
+- If omitted, features are printed to the standard output in a prettified JSON format.
+
+### Output
 
 Let's assume this is an example feature vector for now:
 '''

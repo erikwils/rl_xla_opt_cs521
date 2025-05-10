@@ -161,7 +161,7 @@ def extract_all_features(hlo_rep: HloModuleIR) -> Dict[str, Any]:
 
     Parameters
     ----------
-    hlo_text : str
+    hlo_text : HloModuleIR
         Raw HLO dump.
 
     Returns
@@ -198,6 +198,12 @@ if __name__ == "__main__":
         default=None, # Default value if not provided
         help="Path to the .txt file containing HLO IR. If not provided, scans ./hlo_data/ directory."
     )
+    parser.add_argument(
+        "--output_jsonl",
+        type=str,
+        default=None,
+        help="Path to the output JSON Lines file. If provided, features for each HLO file will be appended as a new JSON line. Otherwise, features are printed to stdout."
+    )
 
     args = parser.parse_args()
     
@@ -219,16 +225,45 @@ if __name__ == "__main__":
             exit(0)
         print(f"Found {len(files_to_process)} files in '{hlo_data_dir}'. Processing...")
 
-
-    for hlo_file_path in files_to_process:
-        print(f"\n--- Processing file: {hlo_file_path} ---")
+    output_file_handle = None
+    if args.output_jsonl:
         try:
-            hlo_module = parse_hlo_from_filepath(hlo_file_path)
-            feats = extract_all_features(hlo_module)
-            print(json.dumps(feats, indent=2))
-        except ValueError as ve:
-            print(f"Could not parse or process HLO file {hlo_file_path}: {ve}")
-        except Exception as e: # pragma: no cover
-            print(f"An unexpected error occurred while processing {hlo_file_path}: {e}")
+            # Open in append mode so multiple runs can add to the same file if desired
+            output_file_handle = open(args.output_jsonl, 'a')
+            print(f"Outputting features to JSONL file: {args.output_jsonl}")
+        except IOError as e:
+            print(f"Error: Could not open output file {args.output_jsonl}: {e}")
+            exit(1)
+
+    try:
+        for hlo_file_path in files_to_process:
+            if not args.output_jsonl: # Print file processing message only if not writing to file or for general verbosity
+                 print(f"\n--- Processing file: {hlo_file_path} ---")
+            elif files_to_process.index(hlo_file_path) % 10 == 0 and files_to_process.index(hlo_file_path) > 0 : # Progress update for many files
+                print(f"Processed {files_to_process.index(hlo_file_path)}/{len(files_to_process)} files...")
 
 
+            try:
+                hlo_module = parse_hlo_from_filepath(hlo_file_path)
+                extracted_features = extract_all_features(hlo_module)
+                
+                # Combine source file information with extracted features
+                # Using os.path.normpath to ensure consistent path separators
+                # Using os.path.basename if you only want the filename, not the full path
+                # record = {"source_file": os.path.basename(hlo_file_path), **extracted_features}
+                record = {"source_file": os.path.normpath(hlo_file_path), **extracted_features}
+
+                if output_file_handle:
+                    json_line = json.dumps(record)
+                    output_file_handle.write(json_line + "\n")
+                else:
+                    print(json.dumps(record, indent=2))
+
+            except ValueError as ve:
+                print(f"Could not parse or process HLO file {hlo_file_path}: {ve}")
+            except Exception as e: # pragma: no cover
+                print(f"An unexpected error occurred while processing {hlo_file_path}: {e}")
+    finally:
+        if output_file_handle:
+            output_file_handle.close()
+            print(f"Finished writing features to {args.output_jsonl}")
