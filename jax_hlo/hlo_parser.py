@@ -3,6 +3,7 @@ import re
 from hlo_representations import HloInstruction, HloComputation, HloModuleIR
 from typing import Dict, List, Optional
 
+# Regex for parsing HLO generated with help of Gemini
 _HEADER_RE = re.compile(
     r"^HloModule\s+([^\s,]+),\s*"
     r"entry_computation_layout=\{(.+)\}$"

@@ -1,4 +1,3 @@
-import re
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional
 
@@ -11,7 +10,7 @@ class HloInstruction:
     raw_attrs: Optional[str] = None
     is_root: bool = False
 
-    def __str__(self) -> str:  # pragma: no cover
+    def __str__(self) -> str:  
         flag = "ROOT " if self.is_root else ""
         return f"{flag}{self.name} ({self.opcode}) | shape={self.shape} | ops={self.operands} | attrs={self.raw_attrs}"
 
@@ -37,7 +36,7 @@ class HloComputation:
                 return inst
         raise ValueError(f"Computation {self.name} has no ROOT")
 
-    def __str__(self) -> str:  # pragma: no cover
+    def __str__(self) -> str: 
         tag = " (ENTRY)" if self.is_entry else ""
         body = "\n".join(f"  {i}" for i in self.instructions)
         return f"Computation {self.name}{tag}:\n{body}"
@@ -49,7 +48,6 @@ class HloModuleIR:
     entry_layout: Optional[str]
     computations: Dict[str, HloComputation]
 
-    # convenience ---------------------------------------------------------
     def entry(self) -> HloComputation:
         for c in self.computations.values():
             if c.is_entry:
@@ -59,6 +57,6 @@ class HloModuleIR:
     def all_instructions(self) -> List[HloInstruction]:
         return [i for c in self.computations.values() for i in c.instructions]
 
-    def __str__(self) -> str:  # pragma: no cover
+    def __str__(self) -> str: 
         comps = "\n\n".join(str(c) for c in self.computations.values())
         return f"HloModule {self.module_name}\nentry_layout={{ {self.entry_layout} }}\n\n{comps}"

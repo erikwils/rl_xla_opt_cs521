@@ -2,8 +2,7 @@ import argparse
 import glob
 import json
 import os
-from typing import Dict, Any, List, Optional
-from collections import Counter
+from typing import Dict, Any, List
 from hlo_feature_extraction_helpers import calculate_shape_size, extract_details_recursive
 from hlo_parser import parse_hlo_from_filepath
 from hlo_representations import HloModuleIR
@@ -38,7 +37,8 @@ def feat_op_counts(ir: HloModuleIR) -> Dict[str, int]:
     Features Returned
     -----------------
     Dict[str, int]
-        Keys are op mnemonics; values are counts. **Variable‑length** vector.
+        Keys are op mnemonics; values are counts. Vector length equal to that of all
+        the available op codes.
     """
     op_counts: Dict[str, int] = {key: 0 for key in MASTER_OP_LIST}
     
@@ -51,9 +51,10 @@ def feat_op_counts(ir: HloModuleIR) -> Dict[str, int]:
 
 
 def feat_op_categories(ir: HloModuleIR) -> Dict[str, int]:
-    """Coarse categories (arithmetic, reduction, data‑move, control).
+    """Coarse categories (arithmetic, reduction, data‑move, control, other).
+    Other serves as a catch all.
 
-    Returns a dict of **4 fixed features**.
+    Returns a dict of 5 fixed features.
     """
     categories = {
         "arithmetic": 0,
@@ -82,7 +83,7 @@ def feat_op_categories(ir: HloModuleIR) -> Dict[str, int]:
 def feat_static_footprint(ir: HloModuleIR) -> Dict[str, int]:
     """Worst‑case static memory consumption.
 
-    Returns **1 feature**: total_bytes (int).
+    Returns 1 feature: total_bytes (int).
     """
     total_bytes = 0
     for instruction in ir.all_instructions():
@@ -93,7 +94,7 @@ def feat_static_footprint(ir: HloModuleIR) -> Dict[str, int]:
 def feat_io_footprint(ir: HloModuleIR) -> Dict[str, int]:
     """Input/Output tensor footprint.
 
-    Returns **2 features**:
+    Returns 2 features:
     * input_bytes
     * output_bytes
     """
@@ -125,7 +126,7 @@ def feat_io_footprint(ir: HloModuleIR) -> Dict[str, int]:
 def feat_parallel_ratios(ir: HloModuleIR) -> Dict[str, float]:
     """Fraction of element‑wise ops.
 
-    Returns **1 feature**: elemwise_ratio (float 0‑1).
+    Returns 1 feature: elemwise_ratio (float 0‑1).
     """
     instructions = ir.all_instructions()
     if not instructions:
@@ -144,7 +145,7 @@ def feat_parallel_ratios(ir: HloModuleIR) -> Dict[str, float]:
 def feat_mixed_precision_flag(ir: HloModuleIR) -> Dict[str, int]:
     """Indicates multiple dtypes present.
 
-    Returns **1 binary feature**: mixed_precision (0/1).
+    Returns 1 binary feature: mixed_precision (0/1).
     """
     all_dtypes: List[str] = []
     for instruction in ir.all_instructions():
@@ -157,7 +158,7 @@ def feat_mixed_precision_flag(ir: HloModuleIR) -> Dict[str, int]:
 # Orchestration:
 # The main helper that a training script can import.
 def extract_all_features(hlo_rep: HloModuleIR) -> Dict[str, Any]:
-    """Run **all** feature extractors and merge into one flat dictionary.
+    """Run all feature extractors and merge into one flat dictionary.
 
     Parameters
     ----------
@@ -248,8 +249,6 @@ if __name__ == "__main__":
                 extracted_features = extract_all_features(hlo_module)
                 
                 # Combine source file information with extracted features
-                # Using os.path.normpath to ensure consistent path separators
-                # Using os.path.basename if you only want the filename, not the full path
                 # record = {"source_file": os.path.basename(hlo_file_path), **extracted_features}
                 record = {"source_file": os.path.normpath(hlo_file_path), **extracted_features}
 
@@ -261,7 +260,7 @@ if __name__ == "__main__":
 
             except ValueError as ve:
                 print(f"Could not parse or process HLO file {hlo_file_path}: {ve}")
-            except Exception as e: # pragma: no cover
+            except Exception as e: 
                 print(f"An unexpected error occurred while processing {hlo_file_path}: {e}")
     finally:
         if output_file_handle:

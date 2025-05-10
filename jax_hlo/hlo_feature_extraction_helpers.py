@@ -1,11 +1,8 @@
 import re
-import math # For math.prod
-from typing import Dict, Any, List, Optional, Tuple # Added Optional, Tuple
-from collections import Counter
-from hlo_parser import parse_hlo_from_filepath # Assuming this returns HloModuleIR
-from hlo_representations import HloModuleIR, HloInstruction # Added HloInstruction
+import math 
+from typing import Dict, List, Optional
 
-_DTYPE_SIZE_MAP: Dict[str, int] = {  # Bytes
+_DTYPE_SIZE_MAP: Dict[str, int] = {  # Created map with the help of Gemini
     "pred": 1,
     "s8": 1, "u8": 1,
     "s16": 2, "u16": 2, "bf16": 2, "f16": 2,
@@ -24,10 +21,7 @@ _ELEMENTAL_SHAPE_RE = re.compile(r"([a-zA-Z0-9_]+)(?:\[([\d,]*)\])?(?:\{[^}]*?\}
 _ELEMENTAL_SHAPE_DETAILS_RE = re.compile(r"([a-zA-Z0-9_]+)(?:\[([\d,]*)\])?(?:\{([^}]*)\})?")
 
 
-# This function should replace the existing _parse_tuple_elements
-# in your hlo_feature_extraction.py (or equivalent helper file)
-
-def parse_tuple_elements(content: str) -> List[str]: # Renaming to match my previous code's internal name
+def parse_tuple_elements(content: str) -> List[str]:
     """
     Parses the content of a tuple shape string into a list of element shape strings.
     Example: "f32[1,2]{0,1}, (s32[], u8[3])" -> ["f32[1,2]{0,1}", "(s32[], u8[3])"]
@@ -143,7 +137,6 @@ def calculate_shape_size(shape_str: Optional[str]) -> int:
     return dtype_size_bytes * num_elements
 
 
-
 def extract_details_recursive(shape_str: Optional[str], dtypes: List[str], layouts: List[str]) -> None:
     """
     Recursively parses a shape string to extract elemental data types and layout strings.
@@ -184,6 +177,4 @@ def extract_details_recursive(shape_str: Optional[str], dtypes: List[str], layou
             layout_content = match.group(3)  # Content of layout, e.g., "0,1,2"
             if layout_content is not None:
                 layouts.append(layout_content)
-        # else: The shape string didn't match the expected elemental pattern.
-        # This could be a bare "opaque" or "token" without "[]", or a malformed string.
-        # For feature extraction, we typically only care about well-formed data shapes.
+        
