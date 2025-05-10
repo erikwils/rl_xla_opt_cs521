@@ -32,7 +32,7 @@ See the `/jax_hlo` directory for these files and details. This repository provid
 ### Output
 
 Let's assume this is an example feature vector for now:
-'''
+```
 {
 "power": 0,
 "select-and-scatter": 0,
@@ -124,4 +124,4 @@ Let's assume this is an example feature vector for now:
 "elemwise_ratio": 0.34285714285714286,
 "mixed_precision": 1
 }
-'''
+```
