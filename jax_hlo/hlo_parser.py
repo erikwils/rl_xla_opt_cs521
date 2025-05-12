@@ -39,27 +39,42 @@ def _parse_instruction(line: str) -> HloInstruction:
     name = m.group("name")
     opcode = m.group("opcode")
     shape = (m.group("shape") or "").strip() or None
-
+    operands_str = m.group("operands") # Get the raw operands string
     rest = m.group("rest")
+
     operands: List[str] = []
-    if rest:
-        paren = _OPERAND_PAREN_RE.search(rest)
-        if paren:
-            operands = [s.strip() for s in paren.group(1).split(",") if s.strip()]
+    if operands_str:
+        # Split operands by comma, then clean each one to get just the name
+        raw_operands = operands_str.split(',')
+        for op_str in raw_operands:
+            op_str = op_str.strip()
+            if not op_str:
+                continue
+            # Assume name is the part before the first colon ':', or the whole string if no colon
+            operand_name = op_str.split(':', 1)[0].strip()
+            operands.append(operand_name)
 
     raw_attrs: Optional[str] = None
     if rest:
-        idx = rest.find(")")
-        if idx != -1 and idx + 1 < len(rest):
-            raw_attrs = rest[idx + 1 :].strip()
-        elif idx == -1:
-            raw_attrs = rest.strip()
+        paren_match = re.search(r"^\s*\((.*)\)", rest) # Check if 'rest' starts with (...)
+        if paren_match:
+             attr_start_index = rest.find(')') + 1
+             if attr_start_index > 0 and attr_start_index < len(rest) :
+                 raw_attrs = rest[attr_start_index:].strip().lstrip(',') # Remove leading comma if any
+             else: # No attributes after parenthesis
+                 raw_attrs = None
+        else:
+             raw_attrs = rest.strip().lstrip(',') # Remove leading comma if any
+
+        # Ensure raw_attrs is None if empty string after stripping
+        if raw_attrs == "":
+            raw_attrs = None
 
     return HloInstruction(
         name=name,
         opcode=opcode,
         shape=shape,
-        operands=operands,
+        operands=operands, # Use the cleaned list of operand names
         raw_attrs=raw_attrs,
         is_root=is_root,
     )

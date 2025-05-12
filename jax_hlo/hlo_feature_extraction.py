@@ -5,7 +5,7 @@ import os
 from typing import Dict, Any, List
 from hlo_feature_extraction_helpers import calculate_shape_size, extract_details_recursive
 from hlo_parser import parse_hlo_from_filepath
-from hlo_representations import HloModuleIR
+from hlo_representations import HloModuleIR, HloComputation
 
 # Define opcode categories - Created with help of Gemini 2.5
 ARITHMETIC_OPS = {
@@ -27,7 +27,10 @@ CONTROL_FLOW_OPS = {
     "collective-permute", "partition-id", "replica-id", "send", "recv", "fusion"
 }
 
-MASTER_OP_LIST = [op for op in ARITHMETIC_OPS | REDUCTION_OPS | DATA_MOVE_OPS | CONTROL_FLOW_OPS]
+MASTER_OP_LIST = sorted(list(ARITHMETIC_OPS | REDUCTION_OPS | DATA_MOVE_OPS | CONTROL_FLOW_OPS))
+OPCODE_TO_INDEX = {op: i for i, op in enumerate(MASTER_OP_LIST)}
+NUM_OPCODES = len(MASTER_OP_LIST)
+
 ELEMENT_WISE_OPCODES = ARITHMETIC_OPS | {"select"}
 
 
@@ -155,6 +158,58 @@ def feat_mixed_precision_flag(ir: HloModuleIR) -> Dict[str, int]:
     return {"mixed_precision": 1 if len(unique_dtypes) > 1 else 0}
 
 
+def feat_graph_structure(ir: HloModuleIR) -> Dict[str, Any]:
+    """Extracts graph structure of the entry computation.
+
+    Returns a dict containing:
+    * graph_nodes: List[List[float]], features for each node (instruction).
+                   Features: [one_hot_opcode, output_size, is_param, is_const, is_root]
+    * graph_edge_links: List[List[int]], pairs of [source_node_idx, target_node_idx].
+    """
+    node_features: List[List[float]] = []
+    edge_links: List[List[int]] = []
+    default_result = {"graph_nodes": [], "graph_edge_links": []}
+
+    try:
+        entry_comp: HloComputation = ir.entry()
+    except ValueError:
+        return default_result # No entry computation
+
+    instructions = entry_comp.instructions
+    if not instructions:
+        return default_result # Entry computation is empty
+
+    node_name_to_index: Dict[str, int] = {
+        inst.name: i for i, inst in enumerate(instructions)
+    }
+
+    # Extract Node Features
+    for i, instruction in enumerate(instructions):
+        # Use -1 or another indicator if opcode is unknown, though MASTER_OP_LIST aims to be exhaustive
+        opcode_idx = float(OPCODE_TO_INDEX.get(instruction.opcode, -1.0))
+        output_size = float(calculate_shape_size(instruction.shape))
+
+        is_param = 1.0 if instruction.opcode == "parameter" else 0.0
+        is_const = 1.0 if instruction.opcode == "constant" else 0.0
+        is_root_flag = 1.0 if instruction.is_root else 0.0
+
+        features = [opcode_idx, output_size, is_param, is_const, is_root_flag]
+        node_features.append(features)
+
+    # Extract Edge Links
+    for j, instruction in enumerate(instructions): 
+        for operand_name in instruction.operands:
+            # Check if the operand is an instruction within this entry computation
+            if operand_name in node_name_to_index:
+                source_index_i = node_name_to_index[operand_name]
+                edge_links.append([source_index_i, j])
+
+    return {
+        "graph_nodes": node_features,
+        "graph_edge_links": edge_links
+    }
+
+
 # Orchestration:
 # The main helper that a training script can import.
 def extract_all_features(hlo_rep: HloModuleIR) -> Dict[str, Any]:
@@ -178,6 +233,7 @@ def extract_all_features(hlo_rep: HloModuleIR) -> Dict[str, Any]:
         feat_io_footprint,
         feat_parallel_ratios,
         feat_mixed_precision_flag,
+        feat_graph_structure,
     ]
 
     all_feats: Dict[str, Any] = {}
