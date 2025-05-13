@@ -2,15 +2,19 @@ import os
 import subprocess
 import tempfile
 import numpy as np
-from typing import List, Dict, Optional, Tuple
+from typing import List, Dict, Optional, Tuple, Any
 import time
+from utils import convert_hlo_to_txt
+from jax_hlo.hlo_feature_extraction import extract_all_features
+from jax_hlo.hlo_parser import parse_hlo_from_filepath
+import tempfile
 
 class XLAInterface:
     def __init__(self, xla_dir: str, verbose: bool = False):
         """
         Initialize XLA-Python interface for applying compiler passes.
-        
-        Args: 
+
+        Args:
             xla_dir: Path to XLA directory
             verbose: Whether to print verbose information
         """
@@ -27,7 +31,7 @@ class XLAInterface:
         script_dir = os.path.dirname(os.path.abspath(__file__))
         self.optimized_dir = os.path.join(script_dir, "optimized_hlo")
         os.makedirs(self.optimized_dir, exist_ok=True)
-        
+
         if self.verbose:
             print(f"Optimized HLO files will be saved to: {self.optimized_dir}")
 
@@ -53,11 +57,11 @@ class XLAInterface:
                 text=True,
                 check=True
             )
-        
+
             # Parse the output to extract pass names
             # First, clean up the output and split by lines
             lines = [line.strip() for line in result.stdout.split('\n') if line.strip()]
-            
+
             # The output is comma-separated on a single line
             self._available_passes = []
             for line in lines:
@@ -66,9 +70,9 @@ class XLAInterface:
 
             if self.verbose:
                 print(f"\nFound {len(self._available_passes)} available passes")
-            
+
             return self._available_passes
-        
+
         except subprocess.CalledProcessError as e:
             print(f"Error listing passes: {e.stderr}")
             return []
@@ -77,7 +81,7 @@ class XLAInterface:
         """
         Apply an XLA optimization pass to an HLO file.
 
-        Args: 
+        Args:
             hlo_file: Path to HLO file to optimize
             pass_name: Name of the pass to apply
 
@@ -88,12 +92,12 @@ class XLAInterface:
         # Create a descriptive filename based on the input file and pass name
         input_filename = os.path.basename(hlo_file)
         base_name = os.path.splitext(input_filename)[0]
-        
+
         # Add timestamp to prevent filename collisions
         timestamp = int(time.time() * 1000)
         output_filename = f"{base_name}_{pass_name}_{timestamp}.hlo"
         output_file = os.path.join(self.optimized_dir, output_filename)
-        
+
         # Build the command to run the pass:
         # Based on the error message, hlo-opt doesn't like the -o flag
         # Instead we'll use shell redirection (>) to save the output
@@ -101,7 +105,7 @@ class XLAInterface:
 
         if self.verbose:
             print(f"Running command: {cmd}")
-        
+
         try:
             # Use shell=True to enable output redirection
             result = subprocess.run(
@@ -116,14 +120,14 @@ class XLAInterface:
             if self.verbose:
                 print(f"Pass {pass_name} successfully applied")
                 print(f"Output saved to: {output_file}")
-            
+
             # Make sure the output file was actually created and has content
             if os.path.exists(output_file) and os.path.getsize(output_file) > 0:
                 return True, output_file
             else:
                 print("Output file was not created or is empty")
                 return False, None
-        
+
         except subprocess.CalledProcessError as e:
             print(f"Error applying pass {pass_name}: {e.stderr}")
             # clean up output file if failure
@@ -131,21 +135,50 @@ class XLAInterface:
                 os.unlink(output_file)
             return False, None
 
-    def extract_features(self, hlo_file: str) -> np.ndarray:
-        ...
-    
+    def extract_features(self, hlo_file: str) -> Dict[str, Any]:
+        """
+        Uses jax_hlo module to extract features from an hlo file.
+ 
+        Args:
+            hlo_file: Path to the HLO file
+
+        Returns:
+            numpy array of features for the HLO module
+        """
+
+        # get file extension
+        _, file_ext = os.path.splitext(hlo_file)
+
+        if file_ext.lower() == '.hlo':
+            hlo_txt_file = convert_hlo_to_txt(hlo_file_path=hlo_file)
+
+        # pass the hlo txt file into the jax_hlo pipeline to extract the features
+
+        hlo_module = parse_hlo_from_filepath(hlo_txt_file)
+        features_dict = extract_all_features(hlo_module) # type: ignore
+
+        # clean up the text file:
+        os.remove(hlo_txt_file)
+
+        return features_dict
+
+
+
 
 if __name__ == "__main__":
-    
+
     print()
     xla_dir = "/Users/rayaanfaruqi/Documents/CS521/Final_Project/xla"
     xla_interface = XLAInterface(xla_dir=xla_dir, verbose=True)
 
-    # list available passes
-    available_passes = xla_interface.get_available_passes()
-    print("\nAvailable XLA passes:")
-    for i, pass_name in enumerate(available_passes):
-        print(f"{i+1}. {pass_name}")
+    # # list available passes
+    # available_passes = xla_interface.get_available_passes()
+    # print("\nAvailable XLA passes:")
+    # for i, pass_name in enumerate(available_passes):
+    #     print(f"{i+1}. {pass_name}")
+
+    file_str = "/Users/rayaanfaruqi/Documents/CS521/Final_Project/rl_xla_opt_cs521/reinforcement_learning/optimized_hlo/conv_relu_hlo_algsimp_opt.hlo"
+    xla_interface.extract_features(file_str)
 
     # # test on a sample HLO file if available
     # import glob

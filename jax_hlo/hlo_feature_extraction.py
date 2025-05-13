@@ -3,6 +3,12 @@ import glob
 import json
 import os
 from typing import Dict, Any, List
+import sys
+
+# Add the jax_hlo directory to the path
+script_dir = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(script_dir)
+
 from hlo_feature_extraction_helpers import calculate_shape_size, extract_details_recursive
 from hlo_parser import parse_hlo_from_filepath
 from hlo_representations import HloModuleIR, HloComputation
@@ -276,7 +282,7 @@ if __name__ == "__main__":
             print(f"Error: Directory '{hlo_data_dir}' not found. Please create it or provide a specific file path.")
             exit(1)
         
-        files_to_process = glob.glob(os.path.join(hlo_data_dir, "*.txt"))
+        files_to_process = glob.glob(os.path.join(hlo_data_dir, "*.hlo")) # TODO: change to .hlo (is this the only thing we need?)
         if not files_to_process:
             print(f"No .txt files found in '{hlo_data_dir}'.")
             exit(0)

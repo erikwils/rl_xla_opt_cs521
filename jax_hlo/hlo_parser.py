@@ -1,5 +1,11 @@
 import argparse
 import re
+import sys
+import os
+
+# Add the jax_hlo directory to the path
+script_dir = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(script_dir)
 from hlo_representations import HloInstruction, HloComputation, HloModuleIR
 from typing import Dict, List, Optional
 
