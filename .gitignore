@@ -1,0 +1,26 @@
+# Project specific
+reinforcement_learning/optimized_hlo/
+
+# Python
+__pycache__/
+*.py[cod]
+*.class
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# IDE files
+.vscode/
+.idea/
+.cursor/
+*.swp
+*.swo

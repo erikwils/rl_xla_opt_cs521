@@ -1,0 +1,40 @@
+HloModule test_algebraic_simplifier
+
+ENTRY main {
+  // Constants that can be folded
+  constant_zero = f32[] constant(0)
+  constant_one = f32[] constant(1)
+  constant_two = f32[] constant(2)
+  
+  // Arrays with shapes for broadcasting
+  zero_array = f32[4,4] broadcast(constant_zero), dimensions={}
+  one_array = f32[4,4] broadcast(constant_one), dimensions={}
+  two_array = f32[4,4] broadcast(constant_two), dimensions={}
+  
+  // Algebraic simplification opportunity 1: x + 0 = x
+  add_zero = f32[4,4] add(one_array, zero_array)
+  
+  // Algebraic simplification opportunity 2: x * 1 = x
+  mul_one = f32[4,4] multiply(two_array, one_array)
+  
+  // Algebraic simplification opportunity 3: x - 0 = x
+  sub_zero = f32[4,4] subtract(two_array, zero_array)
+  
+  // Algebraic simplification opportunity 4: x * 0 = 0
+  mul_zero = f32[4,4] multiply(two_array, zero_array)
+  
+  // Algebraic simplification opportunity 5: x^1 = x
+  power_one = f32[4,4] power(two_array, one_array)
+  
+  // Algebraic simplification opportunity 6: x - x = 0
+  sub_self = f32[4,4] subtract(two_array, two_array)
+  
+  // More complex simplifications
+  complex_1 = f32[4,4] add(mul_one, sub_zero)  // Should both simplify to two_array
+  complex_2 = f32[4,4] multiply(complex_1, power_one)  // More simplifications
+  
+  // A tuple of all the results to observe
+  ROOT result = (f32[4,4], f32[4,4], f32[4,4], f32[4,4], f32[4,4], f32[4,4], f32[4,4], f32[4,4]) tuple(
+    add_zero, mul_one, sub_zero, mul_zero, power_one, sub_self, complex_1, complex_2
+  )
+} 
