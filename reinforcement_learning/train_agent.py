@@ -101,15 +101,15 @@ def train_on_multiple_files(
     # create new agent:
     agent = SimpleQLearningAgent(
         action_space_size=len(available_passes),
-        learning_rate=0.1,
-        discount_factor=0.99,
+        learning_rate=0.2,
+        discount_factor=0.95,
         exploration_rate=1.0,
         exploration_decay=0.995, # quite a large exploration decay?
         min_exploration_rate=0.01
     )
 
     # train on each file
-    for i, hlo_file in enumerate(hlo_files):
+    for i, hlo_file in enumerate(hlo_files[0:1]):
         if verbose:
             print(f"\n\n{'='*50}")
             print(f"Training on {hlo_file} [{i+1}/{len(hlo_files)}]")
@@ -247,9 +247,9 @@ def main():
     trained_agent, results, available_passes = train_on_multiple_files(
         hlo_files=valid_hlo_files,
         xla_dir=xla_dir,
-        episodes_per_file=7,
-        max_steps_per_episode=30,
-        print_interval=10,
+        episodes_per_file=10,
+        max_steps_per_episode=50,
+        print_interval=50,
         verbose=True
     )
     
