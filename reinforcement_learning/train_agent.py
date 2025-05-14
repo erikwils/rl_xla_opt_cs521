@@ -249,7 +249,7 @@ def main():
         xla_dir=xla_dir,
         episodes_per_file=10,
         max_steps_per_episode=30,
-        print_interval=10,
+        print_interval=20,
         verbose=True
     )
     
