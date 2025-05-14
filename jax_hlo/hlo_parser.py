@@ -12,8 +12,16 @@ from typing import Dict, List, Optional
 
 # Regex for parsing HLO generated with help of Gemini
 _HEADER_RE = re.compile(
-    r"^HloModule\s+([^\s,]+),\s*"
-    r"entry_computation_layout=\{(.+)\}$"
+    r"^HloModule\s+"
+    r"(?P<module_name>[^,\s]+)"      # Capture group 'module_name': e.g., "jit_conv_block_mp"
+                                     # This matches up to the first comma or space after "HloModule <name>"
+    r"(?P<optional_attributes>.*?)"  # Capture group 'optional_attributes': non-greedily matches
+                                     # any characters. This will absorb things like
+                                     # ", is_scheduled=true" or other similar attributes.
+    r",\s*entry_computation_layout="  # This is a required anchor: a comma, optional spaces,
+                                     # then "entry_computation_layout="
+    r"\{(?P<layout_content>.+)\}"     # Capture group 'layout_content': everything within the braces {}
+    r"\s*$"                           # Optional trailing whitespace and end of line
 )
 _COMP_START_RE = re.compile(
     r"^\s*(?:ENTRY\s+)?(?P<comp_name>%?[\w\.-]+)\s*"  # Capture name 
@@ -97,10 +105,10 @@ def parse_hlo_text(text: str) -> HloModuleIR:
 
     header_m = _HEADER_RE.match(lines[0])
     if not header_m:
-        raise ValueError("First line is not a valid HloModule header")
+        raise ValueError(f"First line is not a valid HloModule header or has an unexpected format: '{lines[0]}'")
 
-    module_name = header_m.group(1)
-    entry_layout = header_m.group(2)
+    module_name = header_m.group("module_name")
+    entry_layout = header_m.group("layout_content")
 
     comps: Dict[str, HloComputation] = {}
     current: Optional[HloComputation] = None
