@@ -142,7 +142,7 @@ def train_on_multiple_files(
         # clear out the optimized directory between transitions to other files
         clear_optimized_directory(env.xla_interface.optimized_dir)
 
-    return agent, results, available_passes
+    return trained_agent, results, available_passes
 
 def clear_optimized_directory(dir_path):
     """Clear all files in the optimized_hlo directory"""
@@ -244,11 +244,11 @@ def main():
     print(f"\nProceeding with {len(valid_hlo_files)} valid HLO files")
     
     # Train on valid HLO files using a single environment
-    agent, results, available_passes = train_on_multiple_files(
+    trained_agent, results, available_passes = train_on_multiple_files(
         hlo_files=valid_hlo_files,
         xla_dir=xla_dir,
         episodes_per_file=10,
-        max_steps_per_episode=10,
+        max_steps_per_episode=30,
         print_interval=10,
         verbose=True
     )

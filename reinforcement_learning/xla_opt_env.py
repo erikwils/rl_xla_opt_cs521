@@ -266,8 +266,8 @@ class XLAOptimizationEnv(gym.Env):
          # TODO: Possibly re-evaluate cost metric?
         """
         # Combine various metrics for cost: 1. Total number of ops, 2. Memory footprint, 3. Graph complexity
-        excluded_keys = [['source_file', 'graph_nodes', 'graph_edge_links', 'total_bytes',
-                    'input_bytes', 'output_bytes', 'elemwise_ratio', 'mixed_precision']]
+        excluded_keys = ['source_file', 'graph_nodes', 'graph_edge_links', 'total_bytes',
+                    'input_bytes', 'output_bytes', 'elemwise_ratio', 'mixed_precision']
 
         # print(f"\n [FEATURES]: {features}\n\n")
 
@@ -282,8 +282,17 @@ class XLAOptimizationEnv(gym.Env):
         graph_nodes = features.get('graph_nodes', [])
         graph_complexity = len(graph_nodes) * 10 # weight by importance
 
-        # combine metrics:
-        cost = total_ops + memory_cost + graph_complexity
+        # Simple weighted sum without normalization
+        # Use scaling factors to bring components to similar magnitude
+        weighted_total_ops = total_ops * 10.0
+        weighted_memory_cost = memory_cost * 1.0
+        weighted_graph_complexity = graph_complexity * 0.1
+        cost = weighted_total_ops + weighted_graph_complexity + weighted_memory_cost
+    
+        if self.verbose:
+            print(f"\nCost components: ops={total_ops}, memory={memory_cost}, complexity={graph_complexity}")
+            print(f"Weighted components: ops={weighted_total_ops}, memory={weighted_memory_cost}, complexity={weighted_graph_complexity}")
+            print(f"Total cost: {cost}\n")
 
         return cost
 
