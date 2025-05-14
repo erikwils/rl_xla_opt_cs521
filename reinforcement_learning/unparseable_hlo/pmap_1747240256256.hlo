@@ -1,15 +1,15 @@
-HloModule pmap_train_step, entry_computation_layout={(f32[1,10]{1,0}, f32[1,16,10]{2,1,0}, f32[1,8,16]{2,1,0}, s32[1,8]{1,0})->(f32[1,10]{1,0}, f32[1,16,10]{2,1,0}, f32[1]{0})}
-
-%region_1.43 (Arg_0.44: pred[], Arg_1.45: pred[]) -> pred[] {
-  %Arg_0.44 = pred[] parameter(0)
-  %Arg_1.45 = pred[] parameter(1)
-  ROOT %and.46 = pred[] and(%Arg_0.44, %Arg_1.45)
-}
+HloModule pmap_train_step, is_scheduled=true, entry_computation_layout={(f32[1,10]{1,0}, f32[1,16,10]{2,1,0}, f32[1,8,16]{2,1,0}, s32[1,8]{1,0})->(f32[1,10]{1,0}, f32[1,16,10]{2,1,0}, f32[1]{0})}
 
 %region_0.31 (Arg_0.32: f32[], Arg_1.33: f32[]) -> f32[] {
   %Arg_0.32 = f32[] parameter(0)
   %Arg_1.33 = f32[] parameter(1)
   ROOT %maximum.34 = f32[] maximum(%Arg_0.32, %Arg_1.33)
+}
+
+%region_1.43 (Arg_0.44: pred[], Arg_1.45: pred[]) -> pred[] {
+  %Arg_0.44 = pred[] parameter(0)
+  %Arg_1.45 = pred[] parameter(1)
+  ROOT %and.46 = pred[] and(%Arg_0.44, %Arg_1.45)
 }
 
 %take_along_axis.47 (Arg_0.48: f32[8,10], Arg_1.49: s32[8,1]) -> (f32[8,1], s32[8,1,1]) {
@@ -29,12 +29,13 @@ HloModule pmap_train_step, entry_computation_layout={(f32[1,10]{1,0}, f32[1,16,1
   %broadcast.53 = s32[8,1,1]{2,1,0} broadcast(%constant.52), dimensions={}
   %compare.66 = pred[8,1,1]{2,1,0} compare(%reshape.64, %broadcast.53), direction=LE
   %and.67 = pred[8,1,1]{2,1,0} and(%compare.65, %compare.66)
-  %reshape = pred[8,1]{1,0} reshape(%and.67)
+  %constant.58 = pred[] constant(true)
+  %reduce.68 = pred[8,1]{1,0} reduce(%and.67, %constant.58), dimensions={2}, to_apply=%region_1.43
   %Arg_0.48 = f32[8,10]{1,0} parameter(0)
   %gather.69 = f32[8,1]{1,0} gather(%Arg_0.48, %reshape.64), offset_dims={}, collapsed_slice_dims={1}, start_index_map={1}, operand_batching_dims={0}, start_indices_batching_dims={0}, index_vector_dim=2, slice_sizes={1,1}
   %constant.50 = f32[] constant(nan)
   %broadcast.51 = f32[8,1]{1,0} broadcast(%constant.50), dimensions={}
-  %select.70 = f32[8,1]{1,0} select(%reshape, %gather.69, %broadcast.51)
+  %select.70 = f32[8,1]{1,0} select(%reduce.68, %gather.69, %broadcast.51)
   ROOT %tuple.71 = (f32[8,1]{1,0}, s32[8,1,1]{2,1,0}) tuple(%select.70, %reshape.64)
 }
 
@@ -57,8 +58,9 @@ HloModule pmap_train_step, entry_computation_layout={(f32[1,10]{1,0}, f32[1,16,1
   %compare.97 = pred[1]{0} compare(%reshape.96, %constant.90), direction=GE
   %compare.98 = pred[1]{0} compare(%reshape.96, %constant.90), direction=LE
   %and.99 = pred[1]{0} and(%compare.97, %compare.98)
-  %reshape.1 = pred[] reshape(%and.99)
-  %broadcast.102 = pred[8]{0} broadcast(%reshape.1), dimensions={}
+  %constant.89 = pred[] constant(true)
+  %reduce.100 = pred[] reduce(%and.99, %constant.89), dimensions={0}, to_apply=%region_1.43
+  %broadcast.102 = pred[8]{0} broadcast(%reduce.100), dimensions={}
   %Arg_0.85 = f32[8,1]{1,0} parameter(0)
   %gather.101 = f32[8]{0} gather(%Arg_0.85, %reshape.96), offset_dims={0}, collapsed_slice_dims={1}, start_index_map={1}, index_vector_dim=0, slice_sizes={8,1}
   %constant.87 = f32[] constant(nan)
@@ -109,13 +111,18 @@ ENTRY %main.181 (Arg_0.1: f32[1,10], Arg_1.2: f32[1,16,10], Arg_2.3: f32[1,8,16]
   %Arg_1.2 = f32[1,16,10]{2,1,0} parameter(1)
   %reshape.24 = f32[16,10]{1,0} reshape(%Arg_1.2)
   %dot.26 = f32[8,10]{1,0} dot(%reshape.25, %reshape.24), lhs_contracting_dims={1}, rhs_contracting_dims={0}
-  %reshape.28 = f32[10]{0} reshape(%Arg_0.1)
+  %broadcast.27 = f32[1,10]{1,0} broadcast(%Arg_0.1), dimensions={0,1}
+  %reshape.28 = f32[10]{0} reshape(%broadcast.27)
   %broadcast.29 = f32[8,10]{1,0} broadcast(%reshape.28), dimensions={1}
   %add.30 = f32[8,10]{1,0} add(%dot.26, %broadcast.29)
   %constant.22 = f32[] constant(-inf)
   %reduce.35 = f32[8]{0} reduce(%add.30, %constant.22), dimensions={1}, to_apply=%region_0.31
-  %reshape.37 = f32[8,1]{1,0} reshape(%reduce.35)
-  %reshape.39 = f32[8]{0} reshape(%reshape.37)
+  %constant.17 = f32[] constant(-inf)
+  %broadcast.18 = f32[8]{0} broadcast(%constant.17), dimensions={}
+  %maximum.36 = f32[8]{0} maximum(%reduce.35, %broadcast.18)
+  %reshape.37 = f32[8,1]{1,0} reshape(%maximum.36)
+  %broadcast.38 = f32[8,1]{1,0} broadcast(%reshape.37), dimensions={0,1}
+  %reshape.39 = f32[8]{0} reshape(%broadcast.38)
   %broadcast.40 = f32[8,10]{1,0} broadcast(%reshape.39), dimensions={0}
   %subtract.41 = f32[8,10]{1,0} subtract(%add.30, %broadcast.40)
   %Arg_3.4 = s32[1,8]{1,0} parameter(3)
@@ -141,27 +148,34 @@ ENTRY %main.181 (Arg_0.1: f32[1,10], Arg_1.2: f32[1,16,10], Arg_2.3: f32[1,8,16]
   %add.147 = f32[8,10]{1,0} add(%call.143, %multiply.146)
   %reduce.152 = f32[10]{0} reduce(%add.147, %constant.21), dimensions={0}, to_apply=%region_5.122
   %reshape.153 = f32[1,10]{1,0} reshape(%reduce.152)
-  %reshape.6 = f32[10]{0} reshape(%reshape.153)
-  %all-reduce.165 = f32[10]{0} all-reduce(%reshape.6), replica_groups={{0}}, to_apply=%region_9.161
+  %reduce.158 = f32[10]{0} reduce(%reshape.153, %constant.21), dimensions={0}, to_apply=%region_5.122
+  %all-reduce.165 = f32[10]{0} all-reduce(%reduce.158), replica_groups={{0}}, to_apply=%region_9.161
+  %constant.11 = f32[] constant(1)
+  %broadcast.12 = f32[10]{0} broadcast(%constant.11), dimensions={}
+  %divide.171 = f32[10]{0} divide(%all-reduce.165, %broadcast.12)
   %constant.7 = f32[] constant(-0.01)
   %broadcast.8 = f32[10]{0} broadcast(%constant.7), dimensions={}
-  %multiply.173 = f32[10]{0} multiply(%all-reduce.165, %broadcast.8)
+  %multiply.173 = f32[10]{0} multiply(%divide.171, %broadcast.8)
   %add.175 = f32[10]{0} add(%reshape.23, %multiply.173)
   %reshape.177 = f32[1,10]{1,0} reshape(%add.175)
-  %dot = f32[16,10]{0,1} dot(%reshape.25, %add.147), lhs_contracting_dims={0}, rhs_contracting_dims={0}
-  %all-reduce.170 = f32[16,10]{0,1} all-reduce(%dot), replica_groups={{0}}, to_apply=%region_10.166
+  %dot.159 = f32[10,16]{1,0} dot(%add.147, %reshape.25), lhs_contracting_dims={0}, rhs_contracting_dims={0}
+  %transpose.160 = f32[16,10]{0,1} transpose(%dot.159), dimensions={1,0}
+  %all-reduce.170 = f32[16,10]{0,1} all-reduce(%transpose.160), replica_groups={{0}}, to_apply=%region_10.166
+  %constant.9 = f32[] constant(1)
+  %broadcast.10 = f32[16,10]{1,0} broadcast(%constant.9), dimensions={}
+  %divide.172 = f32[16,10]{0,1} divide(%all-reduce.170, %broadcast.10)
   %constant.5 = f32[] constant(-0.01)
   %broadcast.6 = f32[16,10]{1,0} broadcast(%constant.5), dimensions={}
-  %multiply.174 = f32[16,10]{0,1} multiply(%all-reduce.170, %broadcast.6)
+  %multiply.174 = f32[16,10]{0,1} multiply(%divide.172, %broadcast.6)
   %add.176 = f32[16,10]{1,0} add(%reshape.24, %multiply.174)
   %reshape.178 = f32[1,16,10]{2,1,0} reshape(%add.176)
   %log.114 = f32[8]{0} log(%reduce.113)
   %get-tuple-element.106 = f32[8]{0} get-tuple-element(%call.105), index=0
   %subtract.115 = f32[8]{0} subtract(%log.114, %get-tuple-element.106)
   %reduce.120 = f32[] reduce(%subtract.115, %constant.21), dimensions={0}, to_apply=%region_5.122
-  %constant = f32[] constant(0.125)
-  %multiply = f32[] multiply(%reduce.120, %constant)
-  %reshape.179 = f32[1]{0} reshape(%multiply)
+  %constant.19 = f32[] constant(8)
+  %divide.121 = f32[] divide(%reduce.120, %constant.19)
+  %reshape.179 = f32[1]{0} reshape(%divide.121)
   ROOT %tuple.180 = (f32[1,10]{1,0}, f32[1,16,10]{2,1,0}, f32[1]{0}) tuple(%reshape.177, %reshape.178, %reshape.179)
 }
 

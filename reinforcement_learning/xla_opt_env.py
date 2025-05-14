@@ -237,6 +237,12 @@ class XLAOptimizationEnv(gym.Env):
                 print("Failed to apply pass! Keeping current features.")
             return
         
+        problematics = ["hlo-memory-scheduler", "hlo-trivial-scheduler"]
+        if pass_name in problematics:
+            if self.verbose:
+                print(f"Avoiding {pass_name}. Switching back to {self.current_hlo_file} as optimization target.")
+            return
+        
         # update current HLO file to point to optimized file, extract features
         self.current_hlo_file = optimized_file_path
         self.current_features = self.xla_interface.extract_features(hlo_file=optimized_file_path) # type: ignore

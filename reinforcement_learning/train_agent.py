@@ -247,7 +247,7 @@ def main():
     agent, results, available_passes = train_on_multiple_files(
         hlo_files=valid_hlo_files,
         xla_dir=xla_dir,
-        episodes_per_file=2,
+        episodes_per_file=10,
         max_steps_per_episode=10,
         print_interval=10,
         verbose=True
