@@ -8,7 +8,11 @@ _HEADER_RE = re.compile(
     r"^HloModule\s+([^\s,]+),\s*"
     r"entry_computation_layout=\{(.+)\}$"
 )
-_COMP_START_RE = re.compile(r"^\s*(?:ENTRY\s+)?(\w[\w\.]*)\s*\{")
+_COMP_START_RE = re.compile(
+    r"^\s*(?:ENTRY\s+)?(?P<comp_name>%?[\w\.-]+)\s*"  # Capture name 
+    r"(?:\([^)]*\)\s*->\s*.*?)?"                      # Optional signature like (params) -> return_type
+    r"\{"                                             # Opening brace
+)
 _COMP_END_RE = re.compile(r"^}\s*$")
 _INST_RE = re.compile(r'''
     ^\s*
@@ -27,7 +31,6 @@ _INST_RE = re.compile(r'''
     (?:,\s*(?P<rest>.*))?          # optional “, key=…,” attributes
     \s*$
 ''', re.VERBOSE)
-_OPERAND_PAREN_RE = re.compile(r"\(([^)]*)\)")
 
 
 def _parse_instruction(line: str) -> HloInstruction:
