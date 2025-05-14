@@ -100,7 +100,7 @@ class XLAInterface:
             base_name = base_name.split('_')[0]
         
         # use end of timestamp for differentiation:
-        timestamp = int(time.time() * 1000) % 1000
+        timestamp = int(time.time() * 1000)
         output_filename = f"{base_name}_{timestamp}.hlo"
         output_file = os.path.join(self.optimized_dir, output_filename)
 

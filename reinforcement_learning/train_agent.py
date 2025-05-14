@@ -195,6 +195,7 @@ def verify_hlo_files(hlo_files, xla_interface):
     Returns a list of valid HLO files.
     """
     valid_files = []
+    print()
     
     for hlo_file in hlo_files:
         try:
@@ -240,14 +241,14 @@ def main():
         print("No valid HLO files found. Cannot proceed with training.")
         return
     
-    print(f"Proceeding with {len(valid_hlo_files)} valid HLO files")
+    print(f"\nProceeding with {len(valid_hlo_files)} valid HLO files")
     
     # Train on valid HLO files using a single environment
     agent, results, available_passes = train_on_multiple_files(
         hlo_files=valid_hlo_files,
         xla_dir=xla_dir,
-        episodes_per_file=50,
-        max_steps_per_episode=5,
+        episodes_per_file=1,
+        max_steps_per_episode=2,
         print_interval=10,
         verbose=True
     )

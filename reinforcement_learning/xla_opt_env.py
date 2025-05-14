@@ -194,6 +194,15 @@ class XLAOptimizationEnv(gym.Env):
         reward = prev_cost - current_cost
 
         done = (self.current_step >= self.max_sequence_length)
+        
+        # if len(self.cost_history) > self.no_improvement_threshold:
+        #     # check if there's been no improvement for several steps
+        #     recent_costs = self.cost_history[-self.no_improvement_threshold:]
+        #     no_improvement = all(abs(cost - recent_costs[0]) < 1e-6 for cost in recent_costs)
+        #     if no_improvement:
+        #         done = True
+        #         if self.verbose:
+        #             print(f"Terminating early: No improvement for {self.no_improvement_threshold} steps")
 
         # convert features to graph observation
         graph_observation = self._features_to_graph(self.current_features)
