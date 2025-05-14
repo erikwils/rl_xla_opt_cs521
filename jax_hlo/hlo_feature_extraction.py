@@ -245,15 +245,15 @@ def extract_all_features(hlo_rep: HloModuleIR) -> Dict[str, Any]:
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description=(
-            "Load and parse HLO text file(s) into HloModuleIR and extract features. "
-            "If no file_path is provided, processes all .txt files in ./hlo_data/"
+            "Load and parse HLO file(s) into HloModuleIR and extract features. "
+            "If no file_path is provided, processes all .hlo files in ./hlo_data/"
         )
     )
     parser.add_argument(
         "file_path",
         nargs="?",  # Makes the argument optional
         default=None, # Default value if not provided
-        help="Path to the .txt file containing HLO IR. If not provided, scans ./hlo_data/ directory."
+        help="Path to the .hlo file containing HLO IR. If not provided, scans ./hlo_data/ directory."
     )
     parser.add_argument(
         "--output_jsonl",
@@ -276,9 +276,9 @@ if __name__ == "__main__":
             print(f"Error: Directory '{hlo_data_dir}' not found. Please create it or provide a specific file path.")
             exit(1)
         
-        files_to_process = glob.glob(os.path.join(hlo_data_dir, "*.txt"))
+        files_to_process = glob.glob(os.path.join(hlo_data_dir, "*.hlo"))
         if not files_to_process:
-            print(f"No .txt files found in '{hlo_data_dir}'.")
+            print(f"No .hlo files found in '{hlo_data_dir}'.")
             exit(0)
         print(f"Found {len(files_to_process)} files in '{hlo_data_dir}'. Processing...")
 
