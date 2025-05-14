@@ -1,40 +1,22 @@
-HloModule test_algebraic_simplifier
+HloModule test_algebraic_simplifier, entry_computation_layout={()->(f32[4,4]{1,0}, f32[4,4]{1,0}, f32[4,4]{1,0}, f32[4,4]{1,0}, f32[4,4]{1,0}, /*index=5*/f32[4,4]{1,0}, f32[4,4]{1,0}, f32[4,4]{1,0})}
 
-ENTRY main {
-  // Constants that can be folded
-  constant_zero = f32[] constant(0)
-  constant_one = f32[] constant(1)
-  constant_two = f32[] constant(2)
-  
-  // Arrays with shapes for broadcasting
-  zero_array = f32[4,4] broadcast(constant_zero), dimensions={}
-  one_array = f32[4,4] broadcast(constant_one), dimensions={}
-  two_array = f32[4,4] broadcast(constant_two), dimensions={}
-  
-  // Algebraic simplification opportunity 1: x + 0 = x
-  add_zero = f32[4,4] add(one_array, zero_array)
-  
-  // Algebraic simplification opportunity 2: x * 1 = x
-  mul_one = f32[4,4] multiply(two_array, one_array)
-  
-  // Algebraic simplification opportunity 3: x - 0 = x
-  sub_zero = f32[4,4] subtract(two_array, zero_array)
-  
-  // Algebraic simplification opportunity 4: x * 0 = 0
-  mul_zero = f32[4,4] multiply(two_array, zero_array)
-  
-  // Algebraic simplification opportunity 5: x^1 = x
-  power_one = f32[4,4] power(two_array, one_array)
-  
-  // Algebraic simplification opportunity 6: x - x = 0
-  sub_self = f32[4,4] subtract(two_array, two_array)
-  
-  // More complex simplifications
-  complex_1 = f32[4,4] add(mul_one, sub_zero)  // Should both simplify to two_array
-  complex_2 = f32[4,4] multiply(complex_1, power_one)  // More simplifications
-  
-  // A tuple of all the results to observe
-  ROOT result = (f32[4,4], f32[4,4], f32[4,4], f32[4,4], f32[4,4], f32[4,4], f32[4,4], f32[4,4]) tuple(
-    add_zero, mul_one, sub_zero, mul_zero, power_one, sub_self, complex_1, complex_2
-  )
-} 
+ENTRY %main () -> (f32[4,4], f32[4,4], f32[4,4], f32[4,4], f32[4,4], /*index=5*/f32[4,4], f32[4,4], f32[4,4]) {
+  %constant_one = f32[] constant(1), origin={{"constant_one"}}
+  %one_array = f32[4,4]{1,0} broadcast(%constant_one), dimensions={}, origin={{"one_array"}}
+  %constant_zero = f32[] constant(0), origin={{"constant_zero"}}
+  %zero_array = f32[4,4]{1,0} broadcast(%constant_zero), dimensions={}, origin={{"zero_array"}}
+  %add_zero = f32[4,4]{1,0} add(%one_array, %zero_array), origin={{"add_zero"}}
+  %constant_two = f32[] constant(2), origin={{"constant_two"}}
+  %two_array = f32[4,4]{1,0} broadcast(%constant_two), dimensions={}, origin={{"two_array"}}
+  %mul_one = f32[4,4]{1,0} multiply(%two_array, %one_array), origin={{"mul_one"}}
+  %sub_zero = f32[4,4]{1,0} subtract(%two_array, %zero_array), origin={{"sub_zero"}}
+  %mul_zero = f32[4,4]{1,0} multiply(%two_array, %zero_array), origin={{"mul_zero"}}
+  %power_one = f32[4,4]{1,0} power(%two_array, %one_array), origin={{"power_one"}}
+  %sub_self = f32[4,4]{1,0} subtract(%two_array, %two_array), origin={{"sub_self"}}
+  %complex_1 = f32[4,4]{1,0} add(%mul_one, %sub_zero), origin={{"complex_1"}}
+  %complex_2 = f32[4,4]{1,0} multiply(%complex_1, %power_one), origin={{"complex_2"}}
+  ROOT %result = (f32[4,4]{1,0}, f32[4,4]{1,0}, f32[4,4]{1,0}, f32[4,4]{1,0}, f32[4,4]{1,0}, /*index=5*/f32[4,4]{1,0}, f32[4,4]{1,0}, f32[4,4]{1,0}) tuple(%add_zero, %mul_one, %sub_zero, %mul_zero, %power_one, /*index=5*/%sub_self, %complex_1, %complex_2), origin={({"add_zero"}, {"mul_one"}, {"sub_zero"}, {"mul_zero"}, {"power_one"}, {"sub_self"}, {"complex_1"}, {"complex_2"})}
+}
+
+
+

@@ -8,6 +8,7 @@ from utils import convert_hlo_to_txt
 from jax_hlo.hlo_feature_extraction import extract_all_features
 from jax_hlo.hlo_parser import parse_hlo_from_filepath
 import tempfile
+import re
 
 class XLAInterface:
     def __init__(self, xla_dir: str, verbose: bool = False):
@@ -93,9 +94,14 @@ class XLAInterface:
         input_filename = os.path.basename(hlo_file)
         base_name = os.path.splitext(input_filename)[0]
 
-        # Add timestamp to prevent filename collisions
-        timestamp = int(time.time() * 1000)
-        output_filename = f"{base_name}_{pass_name}_{timestamp}.hlo"
+        # get first part of base name (before any underscore)
+        # this will prevent the name from growing with each pass
+        if '_' in base_name:
+            base_name = base_name.split('_')[0]
+        
+        # use end of timestamp for differentiation:
+        timestamp = int(time.time() * 1000) % 1000
+        output_filename = f"{base_name}_{timestamp}.hlo"
         output_file = os.path.join(self.optimized_dir, output_filename)
 
         # Build the command to run the pass:
@@ -138,29 +144,75 @@ class XLAInterface:
     def extract_features(self, hlo_file: str) -> Dict[str, Any]:
         """
         Uses jax_hlo module to extract features from an hlo file.
- 
+
         Args:
             hlo_file: Path to the HLO file
 
         Returns:
             numpy array of features for the HLO module
         """
-
-        # get file extension
-        _, file_ext = os.path.splitext(hlo_file)
-
-        if file_ext.lower() == '.hlo':
-            hlo_txt_file = convert_hlo_to_txt(hlo_file_path=hlo_file)
-
         # pass the hlo txt file into the jax_hlo pipeline to extract the features
 
-        hlo_module = parse_hlo_from_filepath(hlo_txt_file)
-        features_dict = extract_all_features(hlo_module) # type: ignore
+        try:
+            hlo_module = parse_hlo_from_filepath(hlo_file)
+            features_dict = extract_all_features(hlo_module) # type: ignore
+            return features_dict
+        except ValueError as e:
+            error_msg = str(e)
 
-        # clean up the text file:
-        os.remove(hlo_txt_file)
+            # check for common parsing errors:
+            if "First line is not a valid HloModule header" in error_msg or "unexpected token" in error_msg.lower():
+                # try preprocessing the file
+                if self.verbose:
+                    print(f"Preprocessing HLO file to remove annotations: {os.path.basename(hlo_file)}")
+                
+                preprocessed_file = self.preprocess_hlo_file(hlo_file)
+                try:
+                    hlo_module = parse_hlo_from_filepath(preprocessed_file)
+                    features_dict = extract_all_features(hlo_module) # type: ignore
 
-        return features_dict
+                    # cleanup
+                    os.remove(preprocessed_file)
+
+                    return features_dict
+                
+                except Exception as inner_e:
+                    # cleanup even on failure:
+                    if os.path.exists(preprocessed_file):
+                        os.remove(preprocessed_file)
+                    
+                    if self.verbose:
+                        print(f"Preprocessing didn't help: {str(inner_e)}")
+                    
+                    raise inner_e
+            else:
+                raise e
+    
+    def preprocess_hlo_file(self, input_file_path):
+        """
+        Preprocess an HLO file to make it compatible with the parser.
+        Creates a temporary preprocessed version.
+
+        # TODO: NOTE -- This is an extremely temporary solution!
+        """
+
+        # create a temporary file
+        with tempfile.NamedTemporaryFile(suffix='.hlo', delete=False) as temp_file:
+            temp_path = temp_file.name
+        
+        with open(input_file_path, 'r') as input_file, open(temp_path, 'w') as output_file:
+            # process the HLO file line by line
+            for line in input_file:
+                # Remove index annotations like /*index=5*/
+                line = re.sub(r'/\*index=[0-9]+\*/', '', line)
+
+                # remove origin annotations like origin = {{"constant_one"}}
+                line = re.sub(r'origin=\{\{.*?\}\}', '', line)
+
+                # write the processed line
+                output_file.write(line)
+        
+        return temp_path
 
 
 
@@ -178,7 +230,8 @@ if __name__ == "__main__":
     #     print(f"{i+1}. {pass_name}")
 
     file_str = "/Users/rayaanfaruqi/Documents/CS521/Final_Project/rl_xla_opt_cs521/reinforcement_learning/optimized_hlo/conv_relu_hlo_algsimp_opt.hlo"
-    xla_interface.extract_features(file_str)
+    features = xla_interface.extract_features(file_str)
+    print(features)
 
     # # test on a sample HLO file if available
     # import glob

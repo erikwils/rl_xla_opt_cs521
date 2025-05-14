@@ -2,30 +2,47 @@ import gymnasium as gym
 import numpy as np
 from gymnasium import spaces
 from typing import Dict, List, Tuple, Optional, Any
+from XLA_interface import XLAInterface
 
 class XLAOptimizationEnv(gym.Env):
 
     def __init__(
             self,
-            hlo_features: np.ndarray,
-            available_passes: List[str],
-            max_sequence_length: int = 10,
+            xla_dir: str,
+            initial_hlo_file_path: str,
+            max_sequence_length: int = 30,
+            no_improvement_threshold: int = 5,
             verbose: bool = False
     ):
 
         super().__init__() # what does this do?
 
-        # store initial HLO features and available passes:
-        self.initial_features = hlo_features
-        self.available_passes = available_passes
+        # Initialize XLA interface
+        print("Initializing XLA Interface...")
+        self.xla_interface = XLAInterface(xla_dir=xla_dir, verbose=verbose)
+
+        # store params
         self.max_sequence_length = max_sequence_length
+        self.no_improvement_threshold = no_improvement_threshold
         self.verbose = verbose
-        
+
+        self.available_passes = self.xla_interface.get_available_passes()
+        self.cost_history = []
+        self.long_term_cost_history = []
+        self.long_term_pass_history = []
+        self.applied_passes = []
+
+        # set up base HLO file (note this must come AFTER the other initializations as we call reset() inside here)
+        self.set_base_hlo_file(initial_hlo_file_path)
+
+        if verbose:
+            print(f"\nAvailable Passes: \n{self.available_passes}\n")
+
         # Define action and observation spaces
         # actions/passes implicitly mapped to int here (in spaces.Discrete())
         # hence, action 0 will correspond to first action available_passes[0]
-        self.action_space = spaces.Discrete(len(available_passes))
-        
+        self.action_space = spaces.Discrete(len(self.available_passes))
+
         # original box space implementation
         '''
         self.observation_space = spaces.Box( # defines space in which we hold or observe features
@@ -38,9 +55,7 @@ class XLAOptimizationEnv(gym.Env):
 
         # if we change this to a graph representation...
         # https://gymnasium.farama.org/api/spaces/composite/#gymnasium.spaces.Graph
-        
-        num_nodes = len(hlo_features["graph_nodes"]) if "graph_nodes" in hlo_features else 0
-        edge_links = hlo_features["graph_edge_links"] if "graph_edge_links" in hlo_features else []
+
 
         node_feature_dim = 5
         edge_feature_dim = 1
@@ -67,10 +82,30 @@ class XLAOptimizationEnv(gym.Env):
         # initialize state variables
         self.reset()
 
-    def reset(self, seed=None, options=None) -> Tuple[np.ndarray, Dict]:
+    def set_base_hlo_file(self, hlo_file_path : str) -> None:
+        """
+        Set a new base HLO file to optimize.
+
+        Args:
+            hlo_file_path: Features of the new HLO file to optimize
+        """
+        # Extract features from the HLO file:
+        self.base_hlo_file_path = hlo_file_path
+        self.base_features = self.xla_interface.extract_features(hlo_file=hlo_file_path)
+        
+        # initialize current_hlo_file and features
+        self.current_hlo_file = hlo_file_path
+        self.current_features = self.base_features.copy()
+
+        # set initial cost
+        self.cost_history = [self._calculate_cost(self.base_features)]
+
+        self.reset()
+    
+    def reset(self, seed=None, options=None) -> Tuple[Dict[str, Any], Dict]:
         '''
         Reset env to initial state.
-        
+
         Returns:
             observation: Initial observation (HLO Features as graph)
             info: additional info in dictionary
@@ -78,17 +113,24 @@ class XLAOptimizationEnv(gym.Env):
 
         super().reset(seed=seed)
 
+        # append episode cost to our long term cost history:
+        episode_cost_history = self.cost_history
+        self.long_term_cost_history.append(episode_cost_history)
+
+        # track our pass history as well:
+        episode_pass_history = self.applied_passes
+        self.long_term_pass_history.append(episode_pass_history)
+
         # reset state vars
-        self.current_features = self.initial_features.copy()
+        self.current_features = self.base_features.copy()
         self.current_step = 0
         self.applied_passes = []
-        self.cost_history = [self._calculate_cost(self.current_features)]
+        self.cost_history = [self._calculate_cost(self.base_features)]
 
+        graph_observation = self._features_to_graph(self.current_features)
+        return graph_observation, {}
 
-        return self.current_features, {}
-    
-    
-    def _features_to_graph(self, features):
+    def _features_to_graph(self, features) -> Dict[str, Any]:
         """
         Convert features to graph observation format
 
@@ -116,11 +158,11 @@ class XLAOptimizationEnv(gym.Env):
         }
 
         return return_dict
-    
-    def step(self, action: int) -> Tuple[np.ndarray, float, bool, bool, Dict]:
+
+    def step(self, action: int) -> Tuple[Dict[str, Any], float, bool, bool, Dict]:
         """
         Apply selected optimization pass, return new state
-        
+
         Args:
             action: index of the optimization pass to apply
         Returns:
@@ -161,19 +203,72 @@ class XLAOptimizationEnv(gym.Env):
             "cost_history" : self.cost_history,
             "cumulative_improvement" : self.cost_history[0] - current_cost
         }
-    
+
     def _apply_pass(self, pass_name : str) -> None:
         """
-        Apply specificed optimization pass to current HLO graph
+        Apply specificed optimization pass to current HLO graph.
+        Uses XLA Interface to apply a compilier pass to the current HLO file,
+        and then updates the current features with the optimized version.
 
-        # TODO: currently a no-op placeholder. Need to integrate with XLA
-        """
-        # print("[FAKE] Applied Pass")
-    
-    def _calculate_cost(self, features: np.ndarray) -> float: 
-        """
-        Calculate some cost metric from the HLO features
-        # TODO: get some kind of cost metric.
-        """
+        Args:
+            pass_name: name of the optimization pass to apply
 
-        return np.sum(features)
+        """
+        if self.verbose:
+            print(f"Applying pass {pass_name} to file {self.current_hlo_file}")
+        
+        # Apply using XLA interface:
+        success, optimized_file_path = self.xla_interface.apply_pass(
+            hlo_file=self.current_hlo_file,
+            pass_name=pass_name
+        )
+
+        if not success:
+            if self.verbose:
+                print("Failed to apply pass! Keeping current features.")
+            return
+        
+        # update current HLO file to point to optimized file, extract features
+        self.current_hlo_file = optimized_file_path
+        self.current_features = self.xla_interface.extract_features(hlo_file=optimized_file_path) # type: ignore
+
+        if self.verbose:
+            print(f"Successfully applied pass {pass_name}. Updated features.")
+
+    def _calculate_cost(self, features: Dict[str, Any]) -> float:
+        """
+        Calculate some cost metric from the HLO features dictionary.
+
+        This function extracts metrics from the features dictionary to determine the "cost" of the current HLO module.
+        Lower cost is better.
+
+        Args:
+            features: Dictionary of HLO features from extract_features()
+
+        Returns:
+            A cost value (lower is better)
+
+         # TODO: Possibly re-evaluate cost metric?
+        """
+        # Combine various metrics for cost: 1. Total number of ops, 2. Memory footprint, 3. Graph complexity
+        excluded_keys = [['source_file', 'graph_nodes', 'graph_edge_links', 'total_bytes',
+                    'input_bytes', 'output_bytes', 'elemwise_ratio', 'mixed_precision']]
+
+        # print(f"\n [FEATURES]: {features}\n\n")
+
+        total_ops = 0
+        for op_name, value in features.items():
+            if op_name not in excluded_keys:
+                # make sure we're only summing numeric values
+                if isinstance(value, (int, float)):
+                    total_ops += value
+
+        memory_cost = features.get('total_bytes', 0) / 1000.0
+        graph_nodes = features.get('graph_nodes', [])
+        graph_complexity = len(graph_nodes) * 10 # weight by importance
+
+        # combine metrics:
+        cost = total_ops + memory_cost + graph_complexity
+
+        return cost
+

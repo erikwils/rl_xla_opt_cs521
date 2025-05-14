@@ -12,7 +12,7 @@ class SimpleQLearningAgent:
 
     def __init__(
             self,
-            action_space_size: int, 
+            action_space_size: int,
             learning_rate: float = 0.1,
             discount_factor: float = 0.99,
             exploration_rate: float = 1.0,
@@ -46,32 +46,44 @@ class SimpleQLearningAgent:
         self.episode_rewards = []
         self.best_sequence = []
         self.best_reward = float('-inf')
-    
-    def discretize_state(self, state: np.ndarray) -> Tuple:
+
+    def discretize_state(self, state: Dict[str, Any]) -> Tuple:
         """
-        Discretize a continuous state for the Q-table
+        Discretize a graph state for the Q-table
 
         # TODO: Change function to fn approximation instead??
 
-        Args: 
-            state: continuous state vector
-        
-        Returns: 
+        Args:
+            state: graph observation with nodes, edges, and edge_links
+
+        Returns:
             a tuple representing the discretized state
         """
 
-        # discretizes to nearest 0.5. May need something more sophisticated like fn approx.
-        discretized = tuple(np.round(state * 2) / 2)
+        # extract features from the graph observation
+        # for simplicity, use summary of the node features
+
+        nodes = state["nodes"]
+
+        # compute summary statistics of node features
+        # TODO: more sophisticated approach?
+        node_mean = np.mean(nodes, axis=0)
+        node_count = len(nodes)
+
+        # create a simple feature vector and discretize it:
+        features = np.append(node_count, node_mean)
+        discretized = tuple(np.round(features * 2)/2)
+
         return discretized
-    
-    def select_action(self, state: np.ndarray, training: bool = True) -> int:
+
+    def select_action(self, state: Dict[str, Any], training: bool = True) -> int:
         """
         select action with epsilon-greedy policy
 
         Args:
             state: current state
             training: if training, use exploration. If not, don't and evaluate
-        
+
         Returns:
             Selected action index
         """
@@ -81,13 +93,13 @@ class SimpleQLearningAgent:
         # for exploration, just choose an action at random
         if training and np.random.random() < self.exploration_rate:
             return np.random.randint(self.action_space_size)
-        
+
         # exploitation: choose best action according to q-vals
         q_values = self.q_table[discretized_state]
         return int(np.argmax(q_values))
 
-    def update(self, state: np.ndarray, action: int, reward: float,
-               next_state: np.ndarray, done: bool) -> None:
+    def update(self, state: Dict[str, Any], action: int, reward: float,
+               next_state: Dict[str, Any], done: bool) -> None:
         """
         Update q-value in the q-table for state-action pair
 
@@ -113,7 +125,7 @@ class SimpleQLearningAgent:
 
         # Update Q-value
         self.q_table[discretized_state][action] += self.learning_rate * (target_q - current_q)
-    
+
     def end_episode(self, episode_reward: float, actions_taken: List[int]) -> None:
         """
         process end of an episode
@@ -130,13 +142,13 @@ class SimpleQLearningAgent:
         if episode_reward > self.best_reward:
             self.best_reward = episode_reward
             self.best_sequence = actions_taken.copy()
-        
+
         # decay exploration rate
         self.exploration_rate = max(
             self.min_exploration_rate,
             self.exploration_rate * self.exploration_decay
         )
-    
+
     def get_statistics(self) -> Dict[str, Any]:
         """
         Get training statistics.
