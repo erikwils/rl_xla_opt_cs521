@@ -109,7 +109,7 @@ def train_on_multiple_files(
     )
 
     # train on each file
-    for i, hlo_file in enumerate(hlo_files[0:1]):
+    for i, hlo_file in enumerate(hlo_files):
         if verbose:
             print(f"\n\n{'='*50}")
             print(f"Training on {hlo_file} [{i+1}/{len(hlo_files)}]")
@@ -247,8 +247,8 @@ def main():
     trained_agent, results, available_passes = train_on_multiple_files(
         hlo_files=valid_hlo_files,
         xla_dir=xla_dir,
-        episodes_per_file=10,
-        max_steps_per_episode=50,
+        episodes_per_file=20,
+        max_steps_per_episode=25,
         print_interval=50,
         verbose=True
     )

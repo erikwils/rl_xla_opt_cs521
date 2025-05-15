@@ -1,0 +1,40 @@
+HloModule jit_conv_block_mp, is_scheduled=true, entry_computation_layout={(f32[16]{0}, f32[32]{0}, f32[3,3,3,16]{3,2,1,0}, f32[3,3,16,32]{3,2,1,0}, f32[1,32,32,3]{3,2,1,0})->f32[1,16,16,32]{3,2,1,0}}
+
+%relu.16 (Arg_0.17: f32[1,32,32,16]) -> bf16[1,32,32,16] {
+  %constant.18 = f32[] constant(0), origin={{"constant.18"}}
+  %broadcast.19 = f32[1,32,32,16]{3,2,1,0} broadcast(%constant.18), dimensions={}, origin={{"broadcast.19"}}
+  %Arg_0.17 = f32[1,32,32,16]{3,2,1,0} parameter(0), origin={{"Arg_0.17"}}
+  %maximum.20 = f32[1,32,32,16]{3,2,1,0} maximum(%Arg_0.17, %broadcast.19), origin={{"maximum.20"}}
+  ROOT %convert = bf16[1,32,32,16]{3,2,1,0} convert(%maximum.20), origin={{"convert"}}
+}
+
+%relu_0.32 (Arg_0.33: f32[1,16,16,32]) -> f32[1,16,16,32] {
+  %constant.34 = f32[] constant(0), origin={{"constant.34"}}
+  %broadcast.35 = f32[1,16,16,32]{3,2,1,0} broadcast(%constant.34), dimensions={}, origin={{"broadcast.35"}}
+  %Arg_0.33 = f32[1,16,16,32]{3,2,1,0} parameter(0), origin={{"Arg_0.33"}}
+  ROOT %maximum.36 = f32[1,16,16,32]{3,2,1,0} maximum(%Arg_0.33, %broadcast.35), origin={{"maximum.36"}}
+}
+
+ENTRY %main.38 (Arg_0.1: f32[16], Arg_1.2: f32[32], Arg_2.3: f32[3,3,3,16], Arg_3.4: f32[3,3,16,32], Arg_4.5: f32[1,32,32,3]) -> f32[1,16,16,32] {
+  %Arg_0.1 = f32[16]{0} parameter(0), origin={{"Arg_0.1"}}
+  %bitcast.1 = f32[1,16]{1,0} bitcast(%Arg_0.1), origin={{"bitcast.1"}}
+  %reshape.1 = f32[16]{0} reshape(%bitcast.1), origin={{"reshape.1"}}
+  %broadcast.13 = f32[1,32,32,16]{3,2,1,0} broadcast(%reshape.1), dimensions={3}, origin={{"broadcast.13"}}
+  %Arg_2.3 = f32[3,3,3,16]{3,2,1,0} parameter(2), origin={{"Arg_2.3"}}
+  %Arg_4.5 = f32[1,32,32,3]{3,2,1,0} parameter(4), origin={{"Arg_4.5"}}
+  %convolution.9 = f32[1,32,32,16]{3,2,1,0} convolution(%Arg_4.5, %Arg_2.3), window={size=3x3 pad=1_1x1_1}, dim_labels=b01f_01io->b01f, origin={{"convolution.9"}}
+  %add.14 = f32[1,32,32,16]{3,2,1,0} add(%convolution.9, %broadcast.13), origin={{"add.14"}}
+  %call.21 = bf16[1,32,32,16]{3,2,1,0} call(%add.14), to_apply=%relu.16, origin={{"call.21"}}
+  %convert.19 = f32[1,32,32,16]{3,2,1,0} convert(%call.21), origin={{"convert.19"}}
+  %Arg_3.4 = f32[3,3,16,32]{3,2,1,0} parameter(3), origin={{"Arg_3.4"}}
+  %convolution.25 = f32[1,16,16,32]{3,2,1,0} convolution(%call.21, %Arg_3.4), window={size=3x3 stride=2x2 pad=0_1x0_1}, dim_labels=b01f_01io->b01f, origin={{"convolution.25"}}
+  %Arg_1.2 = f32[32]{0} parameter(1), origin={{"Arg_1.2"}}
+  %bitcast.3 = f32[1,32]{1,0} bitcast(%Arg_1.2), origin={{"bitcast.3"}}
+  %reshape.3 = f32[32]{0} reshape(%bitcast.3), origin={{"reshape.3"}}
+  %broadcast.29 = f32[1,16,16,32]{3,2,1,0} broadcast(%reshape.3), dimensions={3}, origin={{"broadcast.29"}}
+  %add.30 = f32[1,16,16,32]{3,2,1,0} add(%convolution.25, %broadcast.29), origin={{"add.30"}}
+  ROOT %call.37 = f32[1,16,16,32]{3,2,1,0} call(%add.30), to_apply=%relu_0.32, origin={{"call.37"}}
+}
+
+
+

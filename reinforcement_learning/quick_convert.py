@@ -7,6 +7,8 @@ xla_dir = "/Users/rayaanfaruqi/Documents/CS521/Final_Project/xla"
 file_path = "/Users/rayaanfaruqi/Documents/CS521/Final_Project/rl_xla_opt_cs521/jax_hlo/hlo_data/mha.hlo"
 interface = XLAInterface(xla_dir=xla_dir)
 passes = interface.get_available_passes()
+for p in passes:
+    print(p)
 
 
 # This checks the initial costs of an HLO module.
