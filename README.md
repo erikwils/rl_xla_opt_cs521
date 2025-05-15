@@ -97,6 +97,100 @@ This section provides instructions for building and using the XLA compiler with 
    ./bazel-bin/xla/hlo/tools/hlo-opt --list-passes
    ```
 
+## Example List of XLA Passes (Subset Only):
+
+1. AssumeGatherIndicesInBoundRewriteToCopy
+2. ReduceWindowToReduceAndBroadcast
+3. add-original-value
+4. algsimp
+5. all-gather-bcast-reorder
+6. all-gather-combiner
+7. all-gather-cse
+8. all-reduce-combiner
+9. all-reduce-contiguous
+10. all-reduce-folder
+11. ar-crs-combiner
+12. async-collective-creator
+13. batch-dot-simplification
+14. bf16-mixed-precision-removal
+15. bfloat16-fold
+16. bfloat16-propagation
+17. broadcast_canonicalizer
+18. cholesky_expander
+19. collective-quantizer
+20. collective-transformation-reorderer
+21. collectives-schedule-linearizer
+22. comparison-expander
+23. computation-deduplicator
+24. conditional-canonicalizer
+25. constant_folding
+26. control-dep-remover
+27. convert-async-collectives-to-sync
+28. convert-memory-placement-to-internal-annotations
+29. convert-mover
+30. convert_operand_folding
+31. convolution-group-converter
+32. convolution-pred-expander
+33. convolution_4d_expander
+34. cse_barrier_expander
+35. dce
+36. defuser
+37. despecializer
+38. dot-merger
+39. dot_decomposer
+40. dot_dimension_merger
+41. dynamic-dimension-simplifier
+42. dynamic-index-splitter
+43. eigh_expander
+44. element_type_converter
+45. flatten-call-graph
+46. float-normalization-bf16
+47. fusion_constant_sinking
+48. gather_simplifier
+49. hlo-constant-splitter
+50. hlo-descheduler
+51. hlo-memory-scheduler
+52. hlo-trivial-scheduler
+53. host-memory-transfer-asyncifier
+54. host-offload-legalize
+55. host-offloader
+56. host-offloading-prepare-elide-move-to-host
+57. indexed-array-analysis-printer-pass
+58. infeed-token-propagation
+59. instruction-hoister
+60. literal-canonicalizer
+61. logistic-expander
+62. memory-space-propagation
+63. operand_upcaster
+64. optimize_input_output_buffer_alias
+65. qr_expander
+66. real_imag_expander
+67. reduce-decomposer
+68. reduce-window-rewriter
+69. reorder-convert-reduce-add
+70. reorder-reduce-transpose
+71. reshape-decomposer
+72. reshape-mover
+73. result_caster
+74. rng-bit-generator-expander
+75. rng-expander
+76. root-instruction-sinker
+77. simplify-fp-conversions
+78. simplify-sorts
+79. slice-sinker
+80. stable-sort-expander
+81. stochastic_convert_decomposer
+82. sub-byte-size-setter
+83. test-only-algebraic-simplifier-with-onednn-enabled
+84. test-only-bar2hello
+85. test-only-foo2bar
+86. test-only-xla-builder
+87. tree_reduction_rewriter
+88. tuple-simplifier
+89. while-loop-trip-count-annotator
+90. zero_sized_hlo_elimination
+
+
 ### Integrating XLA with Reinforcement Learning
 
 The `xla_interface.py` script in the reinforcement learning directory provides an interface between the XLA compiler and our RL environment. It handles:

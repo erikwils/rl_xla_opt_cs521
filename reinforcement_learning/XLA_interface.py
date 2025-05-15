@@ -107,6 +107,7 @@ class XLAInterface:
         # Build the command to run the pass:
         # Based on the error message, hlo-opt doesn't like the -o flag
         # Instead we'll use shell redirection (>) to save the output
+
         cmd = f"{self.hlo_opt_path} --passes={pass_name} {hlo_file} > {output_file}"
 
         if self.verbose:
@@ -137,6 +138,21 @@ class XLAInterface:
         except subprocess.CalledProcessError as e:
             print(f"Error applying pass {pass_name}: {e.stderr}")
             # clean up output file if failure
+            if "INVALID_ARGUMENT: Syntax error when trying to parse the text as a HloModule:" in e.stderr:
+                print("Found HLO parsing error!")
+                print("Error details:")
+                print(e.stderr)
+                
+                # Or save the failing HLO file for inspection:
+                error_file = f"error_{pass_name}_{int(time.time())}.hlo"
+                with open(error_file, "w") as f:
+                    f.write(open(hlo_file, "r").read())
+                print(f"Saved problematic HLO file to {error_file}")
+
+                # You could add an interactive pause here:
+                if self.verbose:
+                    input("Press Enter to continue, or Ctrl+C to abort...")
+
             if os.path.exists(output_file):
                 os.unlink(output_file)
             return False, None

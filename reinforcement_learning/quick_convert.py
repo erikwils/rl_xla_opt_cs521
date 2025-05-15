@@ -7,8 +7,10 @@ xla_dir = "/Users/rayaanfaruqi/Documents/CS521/Final_Project/xla"
 file_path = "/Users/rayaanfaruqi/Documents/CS521/Final_Project/rl_xla_opt_cs521/jax_hlo/hlo_data/mha.hlo"
 interface = XLAInterface(xla_dir=xla_dir)
 passes = interface.get_available_passes()
+i = 0
 for p in passes:
-    print(p)
+    i += 1
+    print(f"{i}. {p}")
 
 
 # This checks the initial costs of an HLO module.
@@ -41,4 +43,4 @@ print(f"\nCost components: ops={total_ops}, memory={memory_cost}, complexity={gr
 print(f"Weighted components: ops={weighted_total_ops}, memory={weighted_memory_cost}, complexity={weighted_graph_complexity}")
 print(f"Total cost: {cost}\n")
 
-interface.apply_pass(file_path, passes[2])
+interface.apply_pass(file_path, passes[0])
