@@ -20,6 +20,14 @@ _DTYPE_SIZE_MAP: Dict[str, int] = {  # Created map with the help of Gemini
 _ELEMENTAL_SHAPE_RE = re.compile(r"([a-zA-Z0-9_]+)(?:\[([\d,]*)\])?(?:\{[^}]*?\})?")
 _ELEMENTAL_SHAPE_DETAILS_RE = re.compile(r"([a-zA-Z0-9_]+)(?:\[([\d,]*)\])?(?:\{([^}]*)\})?")
 
+def remove_c_style_comments(hlo_string):
+    """
+    Removes C-style block comments (/* ... */) from a string.
+    """
+    comment_regex = r"/\*.*?\*/"
+    cleaned_string = re.sub(comment_regex, "", hlo_string, flags=re.DOTALL)
+    return cleaned_string
+
 
 def parse_tuple_elements(content: str) -> List[str]:
     """

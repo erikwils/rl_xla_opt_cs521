@@ -7,6 +7,7 @@ import sys
 script_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(script_dir)
 
+from hlo_feature_extraction_helpers import remove_c_style_comments
 from hlo_representations import HloInstruction, HloComputation, HloModuleIR
 from typing import Dict, List, Optional
 
@@ -134,8 +135,9 @@ def parse_hlo_from_filepath(file_path: str) -> str:
     # Read the HLO text from the given file
     with open(file_path, 'r') as f:
         hlo_text = f.read()
+    cleaned_hlo_text = remove_c_style_comments(hlo_text)
 
-    return parse_hlo_text(hlo_text)
+    return parse_hlo_text(cleaned_hlo_text)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
