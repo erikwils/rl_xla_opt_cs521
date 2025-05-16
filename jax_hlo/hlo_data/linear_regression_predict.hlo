@@ -1,0 +1,9 @@
+module @jit_linear_regression_predict attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {
+  func.func public @main(%arg0: tensor<2xf32> {mhlo.layout_mode = "default"}, %arg1: tensor<f32> {mhlo.layout_mode = "default"}, %arg2: tensor<5x2xf32> {mhlo.layout_mode = "default"}) -> (tensor<5xf32> {jax.result_info = "", mhlo.layout_mode = "default"}) {
+    %0 = stablehlo.dot_general %arg2, %arg0, contracting_dims = [1] x [0], precision = [DEFAULT, DEFAULT] : (tensor<5x2xf32>, tensor<2xf32>) -> tensor<5xf32>
+    %1 = stablehlo.convert %arg1 : tensor<f32>
+    %2 = stablehlo.broadcast_in_dim %1, dims = [] : (tensor<f32>) -> tensor<5xf32>
+    %3 = stablehlo.add %0, %2 : tensor<5xf32>
+    return %3 : tensor<5xf32>
+  }
+}

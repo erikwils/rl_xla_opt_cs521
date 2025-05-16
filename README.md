@@ -57,7 +57,7 @@ This section provides instructions for building and using the XLA compiler with 
    cd xla
    ```
 
-2. Configure the build for macOS:
+2. Configure the build for macOS (different computers will need different configs):
    ```bash
    # Create a .bazelrc file with macOS configuration
    cat > .bazelrc << EOF
@@ -353,21 +353,162 @@ This interface:
 - Extracts feature vectors from optimized HLO files
 - Computes metrics to determine the rewards for the RL agent
 
-## Running the Project
+## Reinforcement Learning for XLA Optimization
 
-To run the complete RL optimization pipeline:
+This section provides detailed instructions on how to train and test the reinforcement learning agent for finding optimal sequences of XLA compiler optimization passes.
 
-1. Build XLA as described in the "XLA Compiler Setup" section
-2. Prepare HLO IR files in the `jax_hlo/hlo_data/` directory
-3. Train the RL agent:
+### Project Structure
+
+- `reinforcement_learning/`: Contains all RL-related code
+  - `simple_agent.py`: Implementation of the Q-learning agent
+  - `xla_opt_env.py`: Gymnasium environment for XLA optimization
+  - `XLA_interface.py`: Interface between Python and XLA compiler
+  - `train_agent.py`: Script for training the agent
+  - `test_agent.py`: Script for testing the trained agent
+  - `utils.py`: Utility functions
+  - `models/`: Directory for saved model files
+
+### Prerequisites
+
+Before running the training or testing scripts, ensure:
+
+1. You have built the XLA compiler as described in the XLA Compiler Setup section
+2. The required Python packages are installed:
+   ```bash
+   pip install numpy matplotlib pandas gymnasium
+   ```
+3. You have sample HLO files in the `jax_hlo/hlo_data/` directory
+
+### Training the RL Agent
+
+To train the reinforcement learning agent:
 
 ```bash
-cd reinforcement_learning
+cd rl_xla_opt_cs521/reinforcement_learning
 python train_agent.py
 ```
 
-4. Analyze the results in the generated plots and logs
+#### Training Options
 
+The training script automatically scans the `jax_hlo/hlo_data/` directory for HLO files and trains the agent on all valid files. Some key parameters in the script that you can modify:
+
+- `episodes_per_file`: Number of training episodes for each HLO file (default: 25)
+- `max_steps_per_episode`: Maximum optimization passes per episode (default: 25)
+- `xla_dir`: Path to your XLA build directory
+
+You can modify these parameters in the `main()` function of `train_agent.py` or edit the script to accept command-line arguments.
+
+The training process:
+1. Initializes the XLA environment and the Q-learning agent
+2. For each HLO file, runs multiple episodes of training
+3. In each episode, the agent learns to select optimization passes that maximize reward (cost reduction)
+4. After training, saves the agent's Q-table and parameters to `models/trained_agent.pkl`
+
+Training progress is logged to the console, and reward plots are generated for each file.
+
+### Testing the Trained Agent
+
+After training, you can test the agent on individual HLO files or directories of files:
+
+#### Testing on a Single File
+
+```bash
+python test_agent.py --model models/trained_agent.pkl --hlo ../jax_hlo/hlo_data/your_file.hlo --xla_dir ../../xla [--verbose]
+```
+
+#### Testing on Multiple Files
+
+```bash
+python test_agent.py --model models/trained_agent.pkl --hlo_dir ../jax_hlo/hlo_data/ --xla_dir ../../xla [--verbose]
+```
+
+#### Test Options
+
+- `--model`: Path to the saved model file (required)
+- `--hlo`: Path to a single HLO file to test (optional if `--hlo_dir` is provided)
+- `--hlo_dir`: Directory containing multiple HLO files to test (optional if `--hlo` is provided)
+- `--xla_dir`: Path to the XLA directory (required)
+- `--max_steps`: Maximum number of steps (default: 30)
+- `--verbose`: Print detailed progress (optional)
+- `--try_all`: Try all passes and report effectiveness (optional)
+- `--manual`: Try a manually curated sequence of passes (optional)
+- `--no_plots`: Disable plotting (optional)
+
+### Understanding Test Results
+
+The test script outputs:
+1. For single file testing:
+   - The sequence of applied optimization passes
+   - Initial and final computational cost
+   - Cost reduction and percentage improvement
+   - Visualization of cost reduction over steps
+
+2. For multiple file testing:
+   - Summary statistics for all tested files
+   - Visualizations comparing performance across files
+   - A CSV file with detailed metrics (test_results_summary.csv)
+
+Sample output metrics include:
+- Total reward (cost reduction)
+- Initial and final computational cost
+- Percentage cost reduction
+- Number of unique optimization passes applied
+- Number of unique states visited
+
+### Analyzing and Visualizing Results
+
+The test script generates several visualization files:
+- `test_cost_history.png`: Shows cost reduction during single-file testing
+- `summary_cost_reduction.png`: Compares cost reduction across multiple files
+- `summary_percent_reduction.png`: Compares percentage reduction across files
+- `unique_actions_vs_reduction.png`: Scatter plot of unique actions vs. cost reduction
+
+### Customizing the Agent
+
+The agent's behavior can be customized by modifying:
+
+1. **State representation**: Edit the `discretize_state` method in `simple_agent.py` to change how graph states are represented
+2. **Reward function**: Modify the `_calculate_cost` method in `xla_opt_env.py` to change how reward is calculated
+3. **Exploration strategy**: Adjust the exploration parameters in `train_agent.py`:
+   ```python
+   agent = SimpleQLearningAgent(
+       action_space_size=len(available_passes),
+       learning_rate=0.2,
+       discount_factor=0.95,
+       exploration_rate=1.0,
+       exploration_decay=0.995,
+       min_exploration_rate=0.01
+   )
+   ```
+
+### Troubleshooting
+
+1. **XLA build issues**: Make sure the XLA compiler builds successfully and `hlo-opt` is available
+2. **File not found errors**: Ensure paths to HLO files are correct
+3. **Pass compatibility**: Some specialized passes may require specific hardware or configurations
+4. **Memory issues**: For large HLO files, consider reducing batch size or using smaller models
+
+### Example Workflow
+
+Here's a complete example workflow:
+
+```bash
+# Build XLA (if not done already)
+cd ../xla
+bazelisk build -c opt //xla/hlo/tools:hlo-opt
+
+# Train the agent
+cd ../rl_xla_opt_cs521/reinforcement_learning
+python train_agent.py
+
+# Test on a single file with detailed output
+python test_agent.py --model models/trained_agent.pkl --hlo ../jax_hlo/hlo_data/conv_relu.hlo --xla_dir ../../xla --verbose
+
+# Test on multiple files and generate summary
+python test_agent.py --model models/trained_agent.pkl --hlo_dir ../jax_hlo/hlo_data/ --xla_dir ../../xla
+```
+
+This will train the agent, test it on sample HLO files, and provide visualizations of the results.
 
 ## Future Directions
 

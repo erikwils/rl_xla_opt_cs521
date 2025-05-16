@@ -1,0 +1,29 @@
+HloModule test_algebraic_simplifier_19
+ENTRY main {
+  constant_e = f32[] constant(2.71828)
+  constant_two = f32[] constant(2)
+  constant_neg_one = f32[] constant(-1)
+  constant_one = f32[] constant(1)
+  constant_zero = f32[] constant(0)
+  zero_array = f32[2,3,4] broadcast(constant_zero), dimensions={}
+  one_array = f32[2,3,4] broadcast(constant_one), dimensions={}
+  two_array = f32[2,3,4] broadcast(constant_two), dimensions={}
+  neg_one_array = f32[2,3,4] broadcast(constant_neg_one), dimensions={}
+  e_array = f32[2,3,4] broadcast(constant_e), dimensions={}
+  add_neg_19_0 = f32[2,3,4] add(one_array, neg_one_array)
+  square_sqrt_19_1 = f32[2,3,4] power(sqrt(neg_one_array), two_array)
+  mul_one_19_2 = f32[2,3,4] multiply(neg_one_array, one_array)
+  add_zero_19_3 = f32[2,3,4] add(one_array, zero_array)
+  complex_combo_19_combo_0 = f32[2,3,4] add(add_neg_19_0, add_zero_19_3)
+  complex_combo_19_combo_1 = f32[2,3,4] add(complex_combo_19_combo_0, add_zero_19_3)
+  complex_combo_19_combo_2 = f32[2,3,4] multiply(add_zero_19_3, complex_combo_19_combo_1)
+  ROOT result = (f32[2,3,4], f32[2,3,4], f32[2,3,4], f32[2,3,4], f32[2,3,4], f32[2,3,4], f32[2,3,4]) tuple(
+    add_neg_19_0,
+    square_sqrt_19_1,
+    mul_one_19_2,
+    add_zero_19_3,
+    complex_combo_19_combo_0,
+    complex_combo_19_combo_1,
+    complex_combo_19_combo_2
+  )
+}

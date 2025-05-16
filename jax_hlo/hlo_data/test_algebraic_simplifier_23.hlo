@@ -1,0 +1,33 @@
+HloModule test_algebraic_simplifier_23
+ENTRY main {
+  constant_e = f32[] constant(2.71828)
+  constant_half = f32[] constant(0.5)
+  constant_two = f32[] constant(2)
+  constant_neg_one = f32[] constant(-1)
+  constant_one = f32[] constant(1)
+  constant_zero = f32[] constant(0)
+  zero_array = f32[4,4] broadcast(constant_zero), dimensions={}
+  one_array = f32[4,4] broadcast(constant_one), dimensions={}
+  two_array = f32[4,4] broadcast(constant_two), dimensions={}
+  neg_one_array = f32[4,4] broadcast(constant_neg_one), dimensions={}
+  half_array = f32[4,4] broadcast(constant_half), dimensions={}
+  e_array = f32[4,4] broadcast(constant_e), dimensions={}
+  double_neg_23_0 = f32[4,4] multiply(zero_array, multiply(neg_one_array, neg_one_array))
+  add_zero_23_1 = f32[4,4] add(neg_one_array, zero_array)
+  sub_zero_23_2 = f32[4,4] subtract(half_array, zero_array)
+  complex_mul_add_23_3 = f32[4,4] multiply(add(one_array, zero_array), one_array)
+  mul_zero_23_4 = f32[4,4] multiply(one_array, zero_array)
+  square_sqrt_23_5 = f32[4,4] power(sqrt(one_array), two_array)
+  mul_one_23_6 = f32[4,4] multiply(neg_one_array, one_array)
+  complex_add_mul_23_7 = f32[4,4] add(multiply(e_array, one_array), zero_array)
+  ROOT result = (f32[4,4], f32[4,4], f32[4,4], f32[4,4], f32[4,4], f32[4,4], f32[4,4], f32[4,4]) tuple(
+    double_neg_23_0,
+    add_zero_23_1,
+    sub_zero_23_2,
+    complex_mul_add_23_3,
+    mul_zero_23_4,
+    square_sqrt_23_5,
+    mul_one_23_6,
+    complex_add_mul_23_7
+  )
+}

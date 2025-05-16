@@ -1,0 +1,8 @@
+module @jit_capm_expected_return attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {
+  func.func public @main(%arg0: tensor<f32> {mhlo.layout_mode = "default"}, %arg1: tensor<f32> {mhlo.layout_mode = "default"}, %arg2: tensor<f32> {mhlo.layout_mode = "default"}) -> (tensor<f32> {jax.result_info = "", mhlo.layout_mode = "default"}) {
+    %0 = stablehlo.subtract %arg2, %arg0 : tensor<f32>
+    %1 = stablehlo.multiply %arg1, %0 : tensor<f32>
+    %2 = stablehlo.add %arg0, %1 : tensor<f32>
+    return %2 : tensor<f32>
+  }
+}

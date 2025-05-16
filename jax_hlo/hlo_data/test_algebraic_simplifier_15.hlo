@@ -1,0 +1,37 @@
+HloModule test_algebraic_simplifier_15
+ENTRY main {
+  constant_e = f32[] constant(2.71828)
+  constant_pi = f32[] constant(3.14159)
+  constant_half = f32[] constant(0.5)
+  constant_two = f32[] constant(2)
+  constant_neg_one = f32[] constant(-1)
+  constant_one = f32[] constant(1)
+  constant_zero = f32[] constant(0)
+  zero_array = f32[3,5] broadcast(constant_zero), dimensions={}
+  one_array = f32[3,5] broadcast(constant_one), dimensions={}
+  two_array = f32[3,5] broadcast(constant_two), dimensions={}
+  neg_one_array = f32[3,5] broadcast(constant_neg_one), dimensions={}
+  half_array = f32[3,5] broadcast(constant_half), dimensions={}
+  pi_array = f32[3,5] broadcast(constant_pi), dimensions={}
+  e_array = f32[3,5] broadcast(constant_e), dimensions={}
+  add_zero_15_0 = f32[3,5] add(e_array, zero_array)
+  add_neg_15_1 = f32[3,5] add(half_array, neg_one_array)
+  div_one_15_2 = f32[3,5] divide(zero_array, one_array)
+  mul_zero_15_3 = f32[3,5] multiply(two_array, zero_array)
+  sub_self_15_4 = f32[3,5] subtract(one_array, one_array)
+  double_neg_15_5 = f32[3,5] multiply(pi_array, multiply(neg_one_array, neg_one_array))
+  complex_combo_15_combo_0 = f32[3,5] add(div_one_15_2, add_neg_15_1)
+  complex_combo_15_combo_1 = f32[3,5] subtract(complex_combo_15_combo_0, add_neg_15_1)
+  complex_combo_15_combo_2 = f32[3,5] subtract(double_neg_15_5, sub_self_15_4)
+  ROOT result = (f32[3,5], f32[3,5], f32[3,5], f32[3,5], f32[3,5], f32[3,5], f32[3,5], f32[3,5], f32[3,5]) tuple(
+    add_zero_15_0,
+    add_neg_15_1,
+    div_one_15_2,
+    mul_zero_15_3,
+    sub_self_15_4,
+    double_neg_15_5,
+    complex_combo_15_combo_0,
+    complex_combo_15_combo_1,
+    complex_combo_15_combo_2
+  )
+}

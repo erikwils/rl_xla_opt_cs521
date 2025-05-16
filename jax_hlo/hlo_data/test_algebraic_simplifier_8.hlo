@@ -1,0 +1,31 @@
+HloModule test_algebraic_simplifier_8
+ENTRY main {
+  constant_e = f32[] constant(2.71828)
+  constant_two = f32[] constant(2)
+  constant_neg_one = f32[] constant(-1)
+  constant_one = f32[] constant(1)
+  constant_zero = f32[] constant(0)
+  zero_array = f32[16] broadcast(constant_zero), dimensions={}
+  one_array = f32[16] broadcast(constant_one), dimensions={}
+  two_array = f32[16] broadcast(constant_two), dimensions={}
+  neg_one_array = f32[16] broadcast(constant_neg_one), dimensions={}
+  e_array = f32[16] broadcast(constant_e), dimensions={}
+  sub_self_8_0 = f32[16] subtract(one_array, one_array)
+  power_one_8_1 = f32[16] power(zero_array, one_array)
+  complex_sub_add_8_2 = f32[16] subtract(add(e_array, two_array), two_array)
+  add_zero_8_3 = f32[16] add(two_array, zero_array)
+  mul_one_8_4 = f32[16] multiply(neg_one_array, one_array)
+  complex_combo_8_combo_0 = f32[16] add(power_one_8_1, add_zero_8_3)
+  complex_combo_8_combo_1 = f32[16] add(power_one_8_1, power_one_8_1)
+  complex_combo_8_combo_2 = f32[16] add(complex_combo_8_combo_0, add_zero_8_3)
+  ROOT result = (f32[16], f32[16], f32[16], f32[16], f32[16], f32[16], f32[16], f32[16]) tuple(
+    sub_self_8_0,
+    power_one_8_1,
+    complex_sub_add_8_2,
+    add_zero_8_3,
+    mul_one_8_4,
+    complex_combo_8_combo_0,
+    complex_combo_8_combo_1,
+    complex_combo_8_combo_2
+  )
+}

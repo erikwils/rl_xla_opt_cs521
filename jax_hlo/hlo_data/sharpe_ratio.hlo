@@ -1,0 +1,49 @@
+module @jit_sharpe_ratio attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {
+  func.func public @main(%arg0: tensor<100xf32> {mhlo.layout_mode = "default"}, %arg1: tensor<f32> {mhlo.layout_mode = "default"}) -> (tensor<f32> {jax.result_info = "", mhlo.layout_mode = "default"}) {
+    %0 = stablehlo.convert %arg1 : tensor<f32>
+    %1 = stablehlo.broadcast_in_dim %0, dims = [] : (tensor<f32>) -> tensor<100xf32>
+    %2 = stablehlo.subtract %arg0, %1 : tensor<100xf32>
+    %cst = stablehlo.constant dense<0.000000e+00> : tensor<f32>
+    %3 = stablehlo.reduce(%2 init: %cst) applies stablehlo.add across dimensions = [0] : (tensor<100xf32>, tensor<f32>) -> tensor<f32>
+    %cst_0 = stablehlo.constant dense<1.000000e+02> : tensor<f32>
+    %4 = stablehlo.divide %3, %cst_0 : tensor<f32>
+    %c = stablehlo.constant dense<0> : tensor<i32>
+    %5 = call @_std(%2, %c) : (tensor<100xf32>, tensor<i32>) -> tensor<f32>
+    %cst_1 = stablehlo.constant dense<9.99999971E-10> : tensor<f32>
+    %6 = stablehlo.add %5, %cst_1 : tensor<f32>
+    %7 = stablehlo.divide %4, %6 : tensor<f32>
+    return %7 : tensor<f32>
+  }
+  func.func private @_std(%arg0: tensor<100xf32> {mhlo.layout_mode = "default"}, %arg1: tensor<i32> {mhlo.layout_mode = "default"}) -> (tensor<f32> {mhlo.layout_mode = "default"}) {
+    %0 = call @_var(%arg0, %arg1) : (tensor<100xf32>, tensor<i32>) -> tensor<f32>
+    %1 = stablehlo.sqrt %0 : tensor<f32>
+    return %1 : tensor<f32>
+  }
+  func.func private @_var(%arg0: tensor<100xf32> {mhlo.layout_mode = "default"}, %arg1: tensor<i32> {mhlo.layout_mode = "default"}) -> (tensor<f32> {mhlo.layout_mode = "default"}) {
+    %cst = stablehlo.constant dense<0.000000e+00> : tensor<f32>
+    %0 = stablehlo.reduce(%arg0 init: %cst) applies stablehlo.add across dimensions = [0] : (tensor<100xf32>, tensor<f32>) -> tensor<f32>
+    %1 = stablehlo.broadcast_in_dim %0, dims = [] : (tensor<f32>) -> tensor<1xf32>
+    %cst_0 = stablehlo.constant dense<1.000000e+02> : tensor<f32>
+    %2 = stablehlo.broadcast_in_dim %cst_0, dims = [] : (tensor<f32>) -> tensor<1xf32>
+    %3 = stablehlo.divide %1, %2 : tensor<1xf32>
+    %4 = stablehlo.broadcast_in_dim %3, dims = [0] : (tensor<1xf32>) -> tensor<100xf32>
+    %5 = stablehlo.subtract %arg0, %4 : tensor<100xf32>
+    %6 = stablehlo.multiply %5, %5 : tensor<100xf32>
+    %7 = stablehlo.convert %arg1 : (tensor<i32>) -> tensor<f32>
+    %cst_1 = stablehlo.constant dense<1.000000e+02> : tensor<f32>
+    %8 = stablehlo.subtract %cst_1, %7 : tensor<f32>
+    %cst_2 = stablehlo.constant dense<0.000000e+00> : tensor<f32>
+    %9 = stablehlo.reduce(%6 init: %cst_2) applies stablehlo.add across dimensions = [0] : (tensor<100xf32>, tensor<f32>) -> tensor<f32>
+    %cst_3 = stablehlo.constant dense<0.000000e+00> : tensor<f32>
+    %10 = stablehlo.compare  GT, %8, %cst_3,  FLOAT : (tensor<f32>, tensor<f32>) -> tensor<i1>
+    %11 = stablehlo.divide %9, %8 : tensor<f32>
+    %cst_4 = stablehlo.constant dense<0x7FC00000> : tensor<f32>
+    %12 = call @_where(%10, %11, %cst_4) : (tensor<i1>, tensor<f32>, tensor<f32>) -> tensor<f32>
+    return %12 : tensor<f32>
+  }
+  func.func private @_where(%arg0: tensor<i1> {mhlo.layout_mode = "default"}, %arg1: tensor<f32> {mhlo.layout_mode = "default"}, %arg2: tensor<f32> {mhlo.layout_mode = "default"}) -> (tensor<f32> {mhlo.layout_mode = "default"}) {
+    %0 = stablehlo.convert %arg2 : tensor<f32>
+    %1 = stablehlo.select %arg0, %arg1, %0 : tensor<i1>, tensor<f32>
+    return %1 : tensor<f32>
+  }
+}

@@ -1,0 +1,10 @@
+module @jit_kelly_criterion attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {
+  func.func public @main(%arg0: tensor<f32> {mhlo.layout_mode = "default"}, %arg1: tensor<f32> {mhlo.layout_mode = "default"}, %arg2: tensor<f32> {mhlo.layout_mode = "default"}) -> (tensor<f32> {jax.result_info = "", mhlo.layout_mode = "default"}) {
+    %0 = stablehlo.subtract %arg0, %arg1 : tensor<f32>
+    %1 = stablehlo.multiply %arg2, %arg2 : tensor<f32>
+    %cst = stablehlo.constant dense<9.99999971E-10> : tensor<f32>
+    %2 = stablehlo.add %1, %cst : tensor<f32>
+    %3 = stablehlo.divide %0, %2 : tensor<f32>
+    return %3 : tensor<f32>
+  }
+}

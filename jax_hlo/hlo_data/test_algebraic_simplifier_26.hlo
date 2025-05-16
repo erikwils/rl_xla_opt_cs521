@@ -1,0 +1,31 @@
+HloModule test_algebraic_simplifier_26
+ENTRY main {
+  constant_e = f32[] constant(2.71828)
+  constant_two = f32[] constant(2)
+  constant_neg_one = f32[] constant(-1)
+  constant_one = f32[] constant(1)
+  constant_zero = f32[] constant(0)
+  zero_array = f32[2,3,4] broadcast(constant_zero), dimensions={}
+  one_array = f32[2,3,4] broadcast(constant_one), dimensions={}
+  two_array = f32[2,3,4] broadcast(constant_two), dimensions={}
+  neg_one_array = f32[2,3,4] broadcast(constant_neg_one), dimensions={}
+  e_array = f32[2,3,4] broadcast(constant_e), dimensions={}
+  mul_one_26_0 = f32[2,3,4] multiply(zero_array, one_array)
+  div_one_26_1 = f32[2,3,4] divide(one_array, one_array)
+  power_one_26_2 = f32[2,3,4] power(two_array, one_array)
+  double_neg_26_3 = f32[2,3,4] multiply(zero_array, multiply(neg_one_array, neg_one_array))
+  complex_pow_mul_26_4 = f32[2,3,4] power(multiply(one_array, one_array), one_array)
+  add_neg_26_5 = f32[2,3,4] add(zero_array, neg_one_array)
+  complex_combo_26_combo_0 = f32[2,3,4] add(div_one_26_1, add_neg_26_5)
+  complex_combo_26_combo_1 = f32[2,3,4] multiply(power_one_26_2, double_neg_26_3)
+  ROOT result = (f32[2,3,4], f32[2,3,4], f32[2,3,4], f32[2,3,4], f32[2,3,4], f32[2,3,4], f32[2,3,4], f32[2,3,4]) tuple(
+    mul_one_26_0,
+    div_one_26_1,
+    power_one_26_2,
+    double_neg_26_3,
+    complex_pow_mul_26_4,
+    add_neg_26_5,
+    complex_combo_26_combo_0,
+    complex_combo_26_combo_1
+  )
+}
