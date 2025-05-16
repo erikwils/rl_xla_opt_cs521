@@ -1,9 +1,11 @@
-module @jit_linear_regression_predict attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {
-  func.func public @main(%arg0: tensor<2xf32> {mhlo.layout_mode = "default"}, %arg1: tensor<f32> {mhlo.layout_mode = "default"}, %arg2: tensor<5x2xf32> {mhlo.layout_mode = "default"}) -> (tensor<5xf32> {jax.result_info = "", mhlo.layout_mode = "default"}) {
-    %0 = stablehlo.dot_general %arg2, %arg0, contracting_dims = [1] x [0], precision = [DEFAULT, DEFAULT] : (tensor<5x2xf32>, tensor<2xf32>) -> tensor<5xf32>
-    %1 = stablehlo.convert %arg1 : tensor<f32>
-    %2 = stablehlo.broadcast_in_dim %1, dims = [] : (tensor<f32>) -> tensor<5xf32>
-    %3 = stablehlo.add %0, %2 : tensor<5xf32>
-    return %3 : tensor<5xf32>
-  }
+HloModule jit_linear_regression_predict, entry_computation_layout={(f32[2]{0}, f32[], f32[5,2]{1,0})->f32[5]{0}}
+
+ENTRY main.7 {
+  Arg_2.3 = f32[5,2]{1,0} parameter(2)
+  Arg_0.1 = f32[2]{0} parameter(0)
+  dot.4 = f32[5]{0} dot(Arg_2.3, Arg_0.1), lhs_contracting_dims={1}, rhs_contracting_dims={0}
+  Arg_1.2 = f32[] parameter(1)
+  broadcast.5 = f32[5]{0} broadcast(Arg_1.2), dimensions={}
+  ROOT add.6 = f32[5]{0} add(dot.4, broadcast.5)
 }
+

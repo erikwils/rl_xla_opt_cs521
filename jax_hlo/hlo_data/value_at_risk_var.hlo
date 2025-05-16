@@ -1,70 +1,71 @@
-module @jit_value_at_risk attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {
-  func.func public @main(%arg0: tensor<100xf32> {mhlo.layout_mode = "default"}, %arg1: tensor<f32> {mhlo.layout_mode = "default"}) -> (tensor<f32> {jax.result_info = "", mhlo.layout_mode = "default"}) {
-    %0 = call @quantile(%arg0, %arg1) : (tensor<100xf32>, tensor<f32>) -> tensor<f32>
-    return %0 : tensor<f32>
-  }
-  func.func private @quantile(%arg0: tensor<100xf32> {mhlo.layout_mode = "default"}, %arg1: tensor<f32> {mhlo.layout_mode = "default"}) -> (tensor<f32> {mhlo.layout_mode = "default"}) {
-    %0 = stablehlo.compare  NE, %arg0, %arg0,  FLOAT : (tensor<100xf32>, tensor<100xf32>) -> tensor<100xi1>
-    %c = stablehlo.constant dense<false> : tensor<i1>
-    %1 = stablehlo.reduce(%0 init: %c) applies stablehlo.or across dimensions = [0] : (tensor<100xi1>, tensor<i1>) -> tensor<i1>
-    %2 = stablehlo.broadcast_in_dim %1, dims = [] : (tensor<i1>) -> tensor<1xi1>
-    %cst = stablehlo.constant dense<0x7FC00000> : tensor<f32>
-    %3 = call @_where(%2, %cst, %arg0) : (tensor<1xi1>, tensor<f32>, tensor<100xf32>) -> tensor<100xf32>
-    %4 = "stablehlo.sort"(%3) <{dimension = 0 : i64, is_stable = true}> ({
-    ^bb0(%arg2: tensor<f32>, %arg3: tensor<f32>):
-      %cst_9 = stablehlo.constant dense<0.000000e+00> : tensor<f32>
-      %24 = stablehlo.compare  EQ, %arg2, %cst_9,  FLOAT : (tensor<f32>, tensor<f32>) -> tensor<i1>
-      %cst_10 = stablehlo.constant dense<0.000000e+00> : tensor<f32>
-      %25 = stablehlo.select %24, %cst_10, %arg2 : tensor<i1>, tensor<f32>
-      %26 = stablehlo.compare  NE, %arg2, %arg2,  FLOAT : (tensor<f32>, tensor<f32>) -> tensor<i1>
-      %cst_11 = stablehlo.constant dense<0x7FC00000> : tensor<f32>
-      %27 = stablehlo.select %26, %cst_11, %25 : tensor<i1>, tensor<f32>
-      %cst_12 = stablehlo.constant dense<0.000000e+00> : tensor<f32>
-      %28 = stablehlo.compare  EQ, %arg3, %cst_12,  FLOAT : (tensor<f32>, tensor<f32>) -> tensor<i1>
-      %cst_13 = stablehlo.constant dense<0.000000e+00> : tensor<f32>
-      %29 = stablehlo.select %28, %cst_13, %arg3 : tensor<i1>, tensor<f32>
-      %30 = stablehlo.compare  NE, %arg3, %arg3,  FLOAT : (tensor<f32>, tensor<f32>) -> tensor<i1>
-      %cst_14 = stablehlo.constant dense<0x7FC00000> : tensor<f32>
-      %31 = stablehlo.select %30, %cst_14, %29 : tensor<i1>, tensor<f32>
-      %32 = stablehlo.compare  LT, %27, %31,  TOTALORDER : (tensor<f32>, tensor<f32>) -> tensor<i1>
-      stablehlo.return %32 : tensor<i1>
-    }) : (tensor<100xf32>) -> tensor<100xf32>
-    %cst_0 = stablehlo.constant dense<1.000000e+02> : tensor<f32>
-    %cst_1 = stablehlo.constant dense<1.000000e+00> : tensor<f32>
-    %5 = stablehlo.subtract %cst_0, %cst_1 : tensor<f32>
-    %6 = stablehlo.multiply %arg1, %5 : tensor<f32>
-    %7 = stablehlo.floor %6 : tensor<f32>
-    %8 = stablehlo.ceil %6 : tensor<f32>
-    %9 = stablehlo.subtract %6, %7 : tensor<f32>
-    %cst_2 = stablehlo.constant dense<1.000000e+00> : tensor<f32>
-    %10 = stablehlo.subtract %cst_2, %9 : tensor<f32>
-    %cst_3 = stablehlo.constant dense<1.000000e+02> : tensor<f32>
-    %cst_4 = stablehlo.constant dense<1.000000e+00> : tensor<f32>
-    %11 = stablehlo.subtract %cst_3, %cst_4 : tensor<f32>
-    %cst_5 = stablehlo.constant dense<0.000000e+00> : tensor<f32>
-    %12 = stablehlo.clamp %cst_5, %7, %11 : tensor<f32>
-    %cst_6 = stablehlo.constant dense<1.000000e+02> : tensor<f32>
-    %cst_7 = stablehlo.constant dense<1.000000e+00> : tensor<f32>
-    %13 = stablehlo.subtract %cst_6, %cst_7 : tensor<f32>
-    %cst_8 = stablehlo.constant dense<0.000000e+00> : tensor<f32>
-    %14 = stablehlo.clamp %cst_8, %8, %13 : tensor<f32>
-    %15 = stablehlo.convert %12 : (tensor<f32>) -> tensor<i32>
-    %16 = stablehlo.convert %14 : (tensor<f32>) -> tensor<i32>
-    %17 = stablehlo.broadcast_in_dim %15, dims = [] : (tensor<i32>) -> tensor<1xi32>
-    %18 = "stablehlo.gather"(%4, %17) <{dimension_numbers = #stablehlo.gather<collapsed_slice_dims = [0], start_index_map = [0]>, indices_are_sorted = false, slice_sizes = array<i64: 1>}> : (tensor<100xf32>, tensor<1xi32>) -> tensor<f32>
-    %19 = stablehlo.broadcast_in_dim %16, dims = [] : (tensor<i32>) -> tensor<1xi32>
-    %20 = "stablehlo.gather"(%4, %19) <{dimension_numbers = #stablehlo.gather<collapsed_slice_dims = [0], start_index_map = [0]>, indices_are_sorted = false, slice_sizes = array<i64: 1>}> : (tensor<100xf32>, tensor<1xi32>) -> tensor<f32>
-    %21 = stablehlo.multiply %18, %10 : tensor<f32>
-    %22 = stablehlo.multiply %20, %9 : tensor<f32>
-    %23 = stablehlo.add %21, %22 : tensor<f32>
-    return %23 : tensor<f32>
-  }
-  func.func private @_where(%arg0: tensor<1xi1> {mhlo.layout_mode = "default"}, %arg1: tensor<f32> {mhlo.layout_mode = "default"}, %arg2: tensor<100xf32> {mhlo.layout_mode = "default"}) -> (tensor<100xf32> {mhlo.layout_mode = "default"}) {
-    %0 = stablehlo.convert %arg1 : tensor<f32>
-    %1 = stablehlo.reshape %arg0 : (tensor<1xi1>) -> tensor<i1>
-    %2 = stablehlo.broadcast_in_dim %1, dims = [] : (tensor<i1>) -> tensor<100xi1>
-    %3 = stablehlo.broadcast_in_dim %0, dims = [] : (tensor<f32>) -> tensor<100xf32>
-    %4 = stablehlo.select %2, %3, %arg2 : tensor<100xi1>, tensor<100xf32>
-    return %4 : tensor<100xf32>
-  }
+HloModule jit_value_at_risk, entry_computation_layout={(f32[100]{0}, f32[])->f32[]}
+
+region_0.3 {
+  Arg_0.4 = pred[] parameter(0)
+  Arg_1.5 = pred[] parameter(1)
+  ROOT or.6 = pred[] or(Arg_0.4, Arg_1.5)
 }
+
+_where.7 {
+  Arg_0.8 = pred[1]{0} parameter(0)
+  reshape.11 = pred[] reshape(Arg_0.8)
+  broadcast.12 = pred[100]{0} broadcast(reshape.11), dimensions={}
+  Arg_1.9 = f32[] parameter(1)
+  broadcast.13 = f32[100]{0} broadcast(Arg_1.9), dimensions={}
+  Arg_2.10 = f32[100]{0} parameter(2)
+  ROOT select.14 = f32[100]{0} select(broadcast.12, broadcast.13, Arg_2.10)
+}
+
+region_1.15 {
+  Arg_0.16 = f32[] parameter(0)
+  compare.22 = pred[] compare(Arg_0.16, Arg_0.16), direction=NE
+  constant.18 = f32[] constant(nan)
+  constant.19 = f32[] constant(0)
+  compare.20 = pred[] compare(Arg_0.16, constant.19), direction=EQ
+  select.21 = f32[] select(compare.20, constant.19, Arg_0.16)
+  select.23 = f32[] select(compare.22, constant.18, select.21)
+  Arg_1.17 = f32[] parameter(1)
+  compare.26 = pred[] compare(Arg_1.17, Arg_1.17), direction=NE
+  compare.24 = pred[] compare(Arg_1.17, constant.19), direction=EQ
+  select.25 = f32[] select(compare.24, constant.19, Arg_1.17)
+  select.27 = f32[] select(compare.26, constant.18, select.25)
+  ROOT compare.28 = pred[] compare(select.23, select.27), direction=LT, type=TOTALORDER
+}
+
+quantile.29 {
+  Arg_0.30 = f32[100]{0} parameter(0)
+  compare.37 = pred[100]{0} compare(Arg_0.30, Arg_0.30), direction=NE
+  constant.36 = pred[] constant(false)
+  reduce.38 = pred[] reduce(compare.37, constant.36), dimensions={0}, to_apply=region_0.3
+  reshape.39 = pred[1]{0} reshape(reduce.38)
+  constant.35 = f32[] constant(nan)
+  call.40 = f32[100]{0} call(reshape.39, constant.35, Arg_0.30), to_apply=_where.7
+  sort.41 = f32[100]{0} sort(call.40), dimensions={0}, is_stable=true, to_apply=region_1.15
+  constant.34 = f32[] constant(0)
+  Arg_1.31 = f32[] parameter(1)
+  constant.32 = f32[] constant(99)
+  multiply.42 = f32[] multiply(Arg_1.31, constant.32)
+  floor.43 = f32[] floor(multiply.42)
+  clamp.47 = f32[] clamp(constant.34, floor.43, constant.32)
+  convert.49 = s32[] convert(clamp.47)
+  reshape.51 = s32[1]{0} reshape(convert.49)
+  gather.52 = f32[] gather(sort.41, reshape.51), offset_dims={}, collapsed_slice_dims={0}, start_index_map={0}, index_vector_dim=0, slice_sizes={1}
+  constant.33 = f32[] constant(1)
+  subtract.45 = f32[] subtract(multiply.42, floor.43)
+  subtract.46 = f32[] subtract(constant.33, subtract.45)
+  multiply.55 = f32[] multiply(gather.52, subtract.46)
+  ceil.44 = f32[] ceil(multiply.42)
+  clamp.48 = f32[] clamp(constant.34, ceil.44, constant.32)
+  convert.50 = s32[] convert(clamp.48)
+  reshape.53 = s32[1]{0} reshape(convert.50)
+  gather.54 = f32[] gather(sort.41, reshape.53), offset_dims={}, collapsed_slice_dims={0}, start_index_map={0}, index_vector_dim=0, slice_sizes={1}
+  multiply.56 = f32[] multiply(gather.54, subtract.45)
+  ROOT add.57 = f32[] add(multiply.55, multiply.56)
+}
+
+ENTRY main.59 {
+  Arg_0.1 = f32[100]{0} parameter(0)
+  Arg_1.2 = f32[] parameter(1)
+  ROOT call.58 = f32[] call(Arg_0.1, Arg_1.2), to_apply=quantile.29
+}
+

@@ -1,10 +1,13 @@
-module @jit_kelly_criterion attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {
-  func.func public @main(%arg0: tensor<f32> {mhlo.layout_mode = "default"}, %arg1: tensor<f32> {mhlo.layout_mode = "default"}, %arg2: tensor<f32> {mhlo.layout_mode = "default"}) -> (tensor<f32> {jax.result_info = "", mhlo.layout_mode = "default"}) {
-    %0 = stablehlo.subtract %arg0, %arg1 : tensor<f32>
-    %1 = stablehlo.multiply %arg2, %arg2 : tensor<f32>
-    %cst = stablehlo.constant dense<9.99999971E-10> : tensor<f32>
-    %2 = stablehlo.add %1, %cst : tensor<f32>
-    %3 = stablehlo.divide %0, %2 : tensor<f32>
-    return %3 : tensor<f32>
-  }
+HloModule jit_kelly_criterion, entry_computation_layout={(f32[], f32[], f32[])->f32[]}
+
+ENTRY main.9 {
+  Arg_0.1 = f32[] parameter(0)
+  Arg_1.2 = f32[] parameter(1)
+  subtract.5 = f32[] subtract(Arg_0.1, Arg_1.2)
+  Arg_2.3 = f32[] parameter(2)
+  multiply.6 = f32[] multiply(Arg_2.3, Arg_2.3)
+  constant.4 = f32[] constant(1e-09)
+  add.7 = f32[] add(multiply.6, constant.4)
+  ROOT divide.8 = f32[] divide(subtract.5, add.7)
 }
+

@@ -1,50 +1,71 @@
-module @jit_exponential_moving_average attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {
-  func.func public @main(%arg0: tensor<6xf32> {mhlo.layout_mode = "default"}, %arg1: tensor<f32> {mhlo.layout_mode = "default"}) -> (tensor<6xf32> {jax.result_info = "", mhlo.layout_mode = "default"}) {
-    %0 = stablehlo.slice %arg0 [0:1] : (tensor<6xf32>) -> tensor<1xf32>
-    %1 = stablehlo.reshape %0 : (tensor<1xf32>) -> tensor<f32>
-    %2 = stablehlo.slice %arg0 [1:6] : (tensor<6xf32>) -> tensor<5xf32>
-    %cst = stablehlo.constant dense<0.000000e+00> : tensor<f32>
-    %3 = stablehlo.broadcast_in_dim %cst, dims = [] : (tensor<f32>) -> tensor<5xf32>
-    %c = stablehlo.constant dense<0> : tensor<i32>
-    %4:5 = stablehlo.while(%iterArg = %2, %iterArg_0 = %arg1, %iterArg_1 = %c, %iterArg_2 = %1, %iterArg_3 = %3) : tensor<5xf32>, tensor<f32>, tensor<i32>, tensor<f32>, tensor<5xf32>
-     cond {
-      %c_4 = stablehlo.constant dense<5> : tensor<i32>
-      %7 = stablehlo.compare  LT, %iterArg_1, %c_4,  SIGNED : (tensor<i32>, tensor<i32>) -> tensor<i1>
-      stablehlo.return %7 : tensor<i1>
-    } do {
-      %c_4 = stablehlo.constant dense<0> : tensor<i32>
-      %7 = stablehlo.compare  LT, %iterArg_1, %c_4,  SIGNED : (tensor<i32>, tensor<i32>) -> tensor<i1>
-      %8 = stablehlo.convert %iterArg_1 : tensor<i32>
-      %c_5 = stablehlo.constant dense<5> : tensor<i32>
-      %9 = stablehlo.add %8, %c_5 : tensor<i32>
-      %10 = stablehlo.select %7, %9, %iterArg_1 : tensor<i1>, tensor<i32>
-      %11 = stablehlo.dynamic_slice %iterArg, %10, sizes = [1] : (tensor<5xf32>, tensor<i32>) -> tensor<1xf32>
-      %12 = stablehlo.reshape %11 : (tensor<1xf32>) -> tensor<f32>
-      %13:2 = func.call @None(%iterArg_0, %iterArg_2, %12) : (tensor<f32>, tensor<f32>, tensor<f32>) -> (tensor<f32>, tensor<f32>)
-      %14 = stablehlo.broadcast_in_dim %13#1, dims = [] : (tensor<f32>) -> tensor<1xf32>
-      %c_6 = stablehlo.constant dense<0> : tensor<i32>
-      %15 = stablehlo.compare  LT, %iterArg_1, %c_6,  SIGNED : (tensor<i32>, tensor<i32>) -> tensor<i1>
-      %16 = stablehlo.convert %iterArg_1 : tensor<i32>
-      %c_7 = stablehlo.constant dense<5> : tensor<i32>
-      %17 = stablehlo.add %16, %c_7 : tensor<i32>
-      %18 = stablehlo.select %15, %17, %iterArg_1 : tensor<i1>, tensor<i32>
-      %19 = stablehlo.dynamic_update_slice %iterArg_3, %14, %18 : (tensor<5xf32>, tensor<1xf32>, tensor<i32>) -> tensor<5xf32>
-      %c_8 = stablehlo.constant dense<1> : tensor<i32>
-      %20 = stablehlo.add %iterArg_1, %c_8 : tensor<i32>
-      stablehlo.return %iterArg, %iterArg_0, %20, %13#0, %19 : tensor<5xf32>, tensor<f32>, tensor<i32>, tensor<f32>, tensor<5xf32>
-    }
-    %5 = stablehlo.broadcast_in_dim %1, dims = [] : (tensor<f32>) -> tensor<1xf32>
-    %6 = stablehlo.concatenate %5, %4#4, dim = 0 : (tensor<1xf32>, tensor<5xf32>) -> tensor<6xf32>
-    return %6 : tensor<6xf32>
-  }
-  func.func private @None(%arg0: tensor<f32>, %arg1: tensor<f32>, %arg2: tensor<f32>) -> (tensor<f32>, tensor<f32>) {
-    %0 = stablehlo.convert %arg0 : tensor<f32>
-    %1 = stablehlo.multiply %0, %arg2 : tensor<f32>
-    %cst = stablehlo.constant dense<1.000000e+00> : tensor<f32>
-    %2 = stablehlo.subtract %cst, %arg0 : tensor<f32>
-    %3 = stablehlo.convert %2 : tensor<f32>
-    %4 = stablehlo.multiply %3, %arg1 : tensor<f32>
-    %5 = stablehlo.add %1, %4 : tensor<f32>
-    return %5, %5 : tensor<f32>, tensor<f32>
-  }
+HloModule jit_exponential_moving_average, entry_computation_layout={(f32[6]{0}, f32[])->f32[6]{0}}
+
+None.10 {
+  Arg_0.11 = f32[] parameter(0)
+  Arg_2.13 = f32[] parameter(2)
+  multiply.15 = f32[] multiply(Arg_0.11, Arg_2.13)
+  constant.14 = f32[] constant(1)
+  subtract.16 = f32[] subtract(constant.14, Arg_0.11)
+  Arg_1.12 = f32[] parameter(1)
+  multiply.17 = f32[] multiply(subtract.16, Arg_1.12)
+  add.18 = f32[] add(multiply.15, multiply.17)
+  ROOT tuple.19 = (f32[], f32[]) tuple(add.18, add.18)
 }
+
+region_0.20 {
+  arg_tuple.21 = (s32[], f32[], f32[5]{0}, f32[5]{0}, f32[]) parameter(0)
+  get-tuple-element.22 = s32[] get-tuple-element(arg_tuple.21), index=0
+  constant.27 = s32[] constant(1)
+  add.43 = s32[] add(get-tuple-element.22, constant.27)
+  get-tuple-element.26 = f32[] get-tuple-element(arg_tuple.21), index=4
+  get-tuple-element.23 = f32[] get-tuple-element(arg_tuple.21), index=1
+  get-tuple-element.25 = f32[5]{0} get-tuple-element(arg_tuple.21), index=3
+  constant.29 = s32[] constant(0)
+  compare.30 = pred[] compare(get-tuple-element.22, constant.29), direction=LT
+  constant.28 = s32[] constant(5)
+  add.31 = s32[] add(get-tuple-element.22, constant.28)
+  select.32 = s32[] select(compare.30, add.31, get-tuple-element.22)
+  dynamic-slice.33 = f32[1]{0} dynamic-slice(get-tuple-element.25, select.32), dynamic_slice_sizes={1}
+  reshape.34 = f32[] reshape(dynamic-slice.33)
+  call.35 = (f32[], f32[]) call(get-tuple-element.26, get-tuple-element.23, reshape.34), to_apply=None.10
+  get-tuple-element.36 = f32[] get-tuple-element(call.35), index=0
+  get-tuple-element.24 = f32[5]{0} get-tuple-element(arg_tuple.21), index=2
+  get-tuple-element.37 = f32[] get-tuple-element(call.35), index=1
+  reshape.38 = f32[1]{0} reshape(get-tuple-element.37)
+  compare.39 = pred[] compare(get-tuple-element.22, constant.29), direction=LT
+  add.40 = s32[] add(get-tuple-element.22, constant.28)
+  select.41 = s32[] select(compare.39, add.40, get-tuple-element.22)
+  dynamic-update-slice.42 = f32[5]{0} dynamic-update-slice(get-tuple-element.24, reshape.38, select.41)
+  ROOT tuple.44 = (s32[], f32[], f32[5]{0}, f32[5]{0}, f32[]) tuple(add.43, get-tuple-element.36, dynamic-update-slice.42, get-tuple-element.25, get-tuple-element.26)
+}
+
+region_1.45 {
+  arg_tuple.46 = (s32[], f32[], f32[5]{0}, f32[5]{0}, f32[]) parameter(0)
+  get-tuple-element.48 = f32[] get-tuple-element(arg_tuple.46), index=1
+  get-tuple-element.49 = f32[5]{0} get-tuple-element(arg_tuple.46), index=2
+  get-tuple-element.50 = f32[5]{0} get-tuple-element(arg_tuple.46), index=3
+  get-tuple-element.51 = f32[] get-tuple-element(arg_tuple.46), index=4
+  get-tuple-element.47 = s32[] get-tuple-element(arg_tuple.46), index=0
+  constant.52 = s32[] constant(5)
+  ROOT compare.53 = pred[] compare(get-tuple-element.47, constant.52), direction=LT
+}
+
+ENTRY main.61 {
+  constant.5 = s32[] constant(0)
+  Arg_0.1 = f32[6]{0} parameter(0)
+  slice.6 = f32[1]{0} slice(Arg_0.1), slice={[0:1]}
+  reshape.7 = f32[] reshape(slice.6)
+  constant.3 = f32[] constant(0)
+  broadcast.4 = f32[5]{0} broadcast(constant.3), dimensions={}
+  slice.8 = f32[5]{0} slice(Arg_0.1), slice={[1:6]}
+  Arg_1.2 = f32[] parameter(1)
+  tuple.9 = (s32[], f32[], f32[5]{0}, f32[5]{0}, f32[]) tuple(constant.5, reshape.7, broadcast.4, slice.8, Arg_1.2)
+  while.54 = (s32[], f32[], f32[5]{0}, f32[5]{0}, f32[]) while(tuple.9), condition=region_1.45, body=region_0.20
+  get-tuple-element.55 = s32[] get-tuple-element(while.54), index=0
+  get-tuple-element.56 = f32[] get-tuple-element(while.54), index=1
+  get-tuple-element.58 = f32[5]{0} get-tuple-element(while.54), index=3
+  get-tuple-element.59 = f32[] get-tuple-element(while.54), index=4
+  get-tuple-element.57 = f32[5]{0} get-tuple-element(while.54), index=2
+  ROOT concatenate.60 = f32[6]{0} concatenate(slice.6, get-tuple-element.57), dimensions={0}
+}
+
