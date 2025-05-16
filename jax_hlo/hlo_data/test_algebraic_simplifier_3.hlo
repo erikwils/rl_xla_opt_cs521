@@ -1,0 +1,29 @@
+HloModule test_algebraic_simplifier_3
+ENTRY main {
+  constant_one = f32[] constant(1)
+  constant_two = f32[] constant(2)
+  constant_neg_one = f32[] constant(-1)
+  constant_zero = f32[] constant(0)
+  zero_array = f32[16] broadcast(constant_zero), dimensions={}
+  one_array = f32[16] broadcast(constant_one), dimensions={}
+  two_array = f32[16] broadcast(constant_two), dimensions={}
+  neg_one_array = f32[16] broadcast(constant_neg_one), dimensions={}
+  add_neg_3_0 = f32[16] add(one_array, neg_one_array)
+  mul_one_3_1 = f32[16] multiply(zero_array, one_array)
+  mul_zero_3_2 = f32[16] multiply(one_array, zero_array)
+  complex_pow_mul_3_3 = f32[16] power(multiply(neg_one_array, one_array), one_array)
+  complex_sub_add_3_4 = f32[16] subtract(add(two_array, one_array), one_array)
+  complex_combo_3_combo_0 = f32[16] subtract(complex_pow_mul_3_3, add_neg_3_0)
+  complex_combo_3_combo_1 = f32[16] add(mul_zero_3_2, mul_zero_3_2)
+  complex_combo_3_combo_2 = f32[16] multiply(add_neg_3_0, mul_zero_3_2)
+  ROOT result = (f32[16], f32[16], f32[16], f32[16], f32[16], f32[16], f32[16], f32[16]) tuple(
+    add_neg_3_0,
+    mul_one_3_1,
+    mul_zero_3_2,
+    complex_pow_mul_3_3,
+    complex_sub_add_3_4,
+    complex_combo_3_combo_0,
+    complex_combo_3_combo_1,
+    complex_combo_3_combo_2
+  )
+}

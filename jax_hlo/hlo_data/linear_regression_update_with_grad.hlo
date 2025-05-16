@@ -1,0 +1,32 @@
+module @jit_linear_regression_update_for_hlo attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {
+  func.func public @main(%arg0: tensor<2xf32> {mhlo.layout_mode = "default"}, %arg1: tensor<f32> {mhlo.layout_mode = "default"}, %arg2: tensor<5x2xf32> {mhlo.layout_mode = "default"}, %arg3: tensor<5xf32> {mhlo.layout_mode = "default"}, %arg4: tensor<f32> {mhlo.layout_mode = "default"}) -> (tensor<2xf32> {jax.result_info = "[0]", mhlo.layout_mode = "default"}, tensor<f32> {jax.result_info = "[1]", mhlo.layout_mode = "default"}) {
+    %0 = stablehlo.dot_general %arg2, %arg0, contracting_dims = [1] x [0], precision = [DEFAULT, DEFAULT] : (tensor<5x2xf32>, tensor<2xf32>) -> tensor<5xf32>
+    %1 = stablehlo.convert %arg1 : tensor<f32>
+    %2 = stablehlo.broadcast_in_dim %1, dims = [] : (tensor<f32>) -> tensor<5xf32>
+    %3 = stablehlo.add %0, %2 : tensor<5xf32>
+    %4 = stablehlo.subtract %3, %arg3 : tensor<5xf32>
+    %5 = call @integer_pow(%4) : (tensor<5xf32>) -> tensor<5xf32>
+    %cst = stablehlo.constant dense<2.000000e+00> : tensor<f32>
+    %6 = stablehlo.broadcast_in_dim %cst, dims = [] : (tensor<f32>) -> tensor<5xf32>
+    %7 = stablehlo.multiply %6, %5 : tensor<5xf32>
+    %cst_0 = stablehlo.constant dense<1.000000e+00> : tensor<f32>
+    %cst_1 = stablehlo.constant dense<5.000000e+00> : tensor<f32>
+    %8 = stablehlo.divide %cst_0, %cst_1 : tensor<f32>
+    %9 = stablehlo.broadcast_in_dim %8, dims = [] : (tensor<f32>) -> tensor<5xf32>
+    %10 = stablehlo.multiply %9, %7 : tensor<5xf32>
+    %cst_2 = stablehlo.constant dense<0.000000e+00> : tensor<f32>
+    %11 = stablehlo.reduce(%10 init: %cst_2) applies stablehlo.add across dimensions = [0] : (tensor<5xf32>, tensor<f32>) -> tensor<f32>
+    %12 = stablehlo.convert %11 : tensor<f32>
+    %13 = stablehlo.dot_general %10, %arg2, contracting_dims = [0] x [0], precision = [DEFAULT, DEFAULT] : (tensor<5xf32>, tensor<5x2xf32>) -> tensor<2xf32>
+    %14 = stablehlo.convert %arg4 : tensor<f32>
+    %15 = stablehlo.broadcast_in_dim %14, dims = [] : (tensor<f32>) -> tensor<2xf32>
+    %16 = stablehlo.multiply %15, %13 : tensor<2xf32>
+    %17 = stablehlo.subtract %arg0, %16 : tensor<2xf32>
+    %18 = stablehlo.multiply %arg4, %12 : tensor<f32>
+    %19 = stablehlo.subtract %arg1, %18 : tensor<f32>
+    return %17, %19 : tensor<2xf32>, tensor<f32>
+  }
+  func.func private @integer_pow(%arg0: tensor<5xf32>) -> tensor<5xf32> {
+    return %arg0 : tensor<5xf32>
+  }
+}

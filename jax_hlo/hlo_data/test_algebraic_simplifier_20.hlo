@@ -1,0 +1,39 @@
+HloModule test_algebraic_simplifier_20
+ENTRY main {
+  constant_e = f32[] constant(2.71828)
+  constant_pi = f32[] constant(3.14159)
+  constant_half = f32[] constant(0.5)
+  constant_two = f32[] constant(2)
+  constant_neg_one = f32[] constant(-1)
+  constant_one = f32[] constant(1)
+  constant_zero = f32[] constant(0)
+  zero_array = f32[8,8] broadcast(constant_zero), dimensions={}
+  one_array = f32[8,8] broadcast(constant_one), dimensions={}
+  two_array = f32[8,8] broadcast(constant_two), dimensions={}
+  neg_one_array = f32[8,8] broadcast(constant_neg_one), dimensions={}
+  half_array = f32[8,8] broadcast(constant_half), dimensions={}
+  pi_array = f32[8,8] broadcast(constant_pi), dimensions={}
+  e_array = f32[8,8] broadcast(constant_e), dimensions={}
+  add_zero_20_0 = f32[8,8] add(two_array, zero_array)
+  complex_sub_add_20_1 = f32[8,8] subtract(add(e_array, half_array), half_array)
+  sub_zero_20_2 = f32[8,8] subtract(half_array, zero_array)
+  square_sqrt_20_3 = f32[8,8] power(sqrt(two_array), two_array)
+  power_one_20_4 = f32[8,8] power(neg_one_array, one_array)
+  mul_two_20_5 = f32[8,8] multiply(half_array, two_array)
+  double_neg_20_6 = f32[8,8] multiply(e_array, multiply(neg_one_array, neg_one_array))
+  complex_mul_add_20_7 = f32[8,8] multiply(add(neg_one_array, zero_array), one_array)
+  complex_combo_20_combo_0 = f32[8,8] multiply(power_one_20_4, complex_mul_add_20_7)
+  complex_combo_20_combo_1 = f32[8,8] add(sub_zero_20_2, double_neg_20_6)
+  ROOT result = (f32[8,8], f32[8,8], f32[8,8], f32[8,8], f32[8,8], f32[8,8], f32[8,8], f32[8,8], f32[8,8], f32[8,8]) tuple(
+    add_zero_20_0,
+    complex_sub_add_20_1,
+    sub_zero_20_2,
+    square_sqrt_20_3,
+    power_one_20_4,
+    mul_two_20_5,
+    double_neg_20_6,
+    complex_mul_add_20_7,
+    complex_combo_20_combo_0,
+    complex_combo_20_combo_1
+  )
+}

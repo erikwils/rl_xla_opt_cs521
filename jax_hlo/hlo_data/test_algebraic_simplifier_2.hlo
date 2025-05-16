@@ -1,0 +1,25 @@
+HloModule test_algebraic_simplifier_2
+ENTRY main {
+  constant_one = f32[] constant(1)
+  constant_two = f32[] constant(2)
+  constant_e = f32[] constant(2.71828)
+  constant_zero = f32[] constant(0)
+  zero_array = f32[3,5] broadcast(constant_zero), dimensions={}
+  one_array = f32[3,5] broadcast(constant_one), dimensions={}
+  two_array = f32[3,5] broadcast(constant_two), dimensions={}
+  e_array = f32[3,5] broadcast(constant_e), dimensions={}
+  mul_one_2_0 = f32[3,5] multiply(one_array, one_array)
+  complex_sub_add_2_1 = f32[3,5] subtract(add(two_array, one_array), one_array)
+  power_zero_2_2 = f32[3,5] power(two_array, zero_array)
+  mul_zero_2_3 = f32[3,5] multiply(e_array, zero_array)
+  square_sqrt_2_4 = f32[3,5] power(sqrt(one_array), two_array)
+  complex_combo_2_combo_0 = f32[3,5] add(square_sqrt_2_4, mul_one_2_0)
+  ROOT result = (f32[3,5], f32[3,5], f32[3,5], f32[3,5], f32[3,5], f32[3,5]) tuple(
+    mul_one_2_0,
+    complex_sub_add_2_1,
+    power_zero_2_2,
+    mul_zero_2_3,
+    square_sqrt_2_4,
+    complex_combo_2_combo_0
+  )
+}
