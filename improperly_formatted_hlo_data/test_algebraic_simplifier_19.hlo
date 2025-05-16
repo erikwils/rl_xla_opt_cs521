@@ -1,0 +1,35 @@
+HloModule test_algebraic_simplifier_19
+ENTRY main {
+  constant_e = f32[] constant(2.71828)
+  constant_zero = f32[] constant(0)
+  constant_two = f32[] constant(2)
+  constant_half = f32[] constant(0.5)
+  constant_neg_one = f32[] constant(-1)
+  constant_one = f32[] constant(1)
+  constant_pi = f32[] constant(3.14159)
+  zero_array = f32[4,4] broadcast(constant_zero), dimensions={}
+  one_array = f32[4,4] broadcast(constant_one), dimensions={}
+  two_array = f32[4,4] broadcast(constant_two), dimensions={}
+  neg_one_array = f32[4,4] broadcast(constant_neg_one), dimensions={}
+  half_array = f32[4,4] broadcast(constant_half), dimensions={}
+  pi_array = f32[4,4] broadcast(constant_pi), dimensions={}
+  e_array = f32[4,4] broadcast(constant_e), dimensions={}
+  complex_mul_add_19_0 = f32[4,4] multiply(add(e_array, zero_array), one_array)
+  div_one_19_1 = f32[4,4] divide(two_array, one_array)
+  mul_two_19_2 = f32[4,4] multiply(one_array, two_array)
+  sub_zero_19_3 = f32[4,4] subtract(two_array, zero_array)
+  add_zero_19_4 = f32[4,4] add(neg_one_array, zero_array)
+  add_neg_19_5 = f32[4,4] add(two_array, neg_one_array)
+  double_neg_19_6 = f32[4,4] multiply(half_array, multiply(neg_one_array, neg_one_array))
+  complex_add_mul_19_7 = f32[4,4] add(multiply(one_array, one_array), zero_array)
+  ROOT result = (f32[4,4], f32[4,4], f32[4,4], f32[4,4], f32[4,4], f32[4,4], f32[4,4], f32[4,4]) tuple(
+    complex_mul_add_19_0,
+    div_one_19_1,
+    mul_two_19_2,
+    sub_zero_19_3,
+    add_zero_19_4,
+    add_neg_19_5,
+    double_neg_19_6,
+    complex_add_mul_19_7
+  )
+}

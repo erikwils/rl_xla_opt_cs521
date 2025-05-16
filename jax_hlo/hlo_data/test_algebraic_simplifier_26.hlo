@@ -1,31 +1,36 @@
-HloModule test_algebraic_simplifier_26
-ENTRY main {
-  constant_e = f32[] constant(2.71828)
-  constant_two = f32[] constant(2)
-  constant_neg_one = f32[] constant(-1)
-  constant_one = f32[] constant(1)
-  constant_zero = f32[] constant(0)
-  zero_array = f32[2,3,4] broadcast(constant_zero), dimensions={}
-  one_array = f32[2,3,4] broadcast(constant_one), dimensions={}
-  two_array = f32[2,3,4] broadcast(constant_two), dimensions={}
-  neg_one_array = f32[2,3,4] broadcast(constant_neg_one), dimensions={}
-  e_array = f32[2,3,4] broadcast(constant_e), dimensions={}
-  mul_one_26_0 = f32[2,3,4] multiply(zero_array, one_array)
-  div_one_26_1 = f32[2,3,4] divide(one_array, one_array)
-  power_one_26_2 = f32[2,3,4] power(two_array, one_array)
-  double_neg_26_3 = f32[2,3,4] multiply(zero_array, multiply(neg_one_array, neg_one_array))
-  complex_pow_mul_26_4 = f32[2,3,4] power(multiply(one_array, one_array), one_array)
-  add_neg_26_5 = f32[2,3,4] add(zero_array, neg_one_array)
-  complex_combo_26_combo_0 = f32[2,3,4] add(div_one_26_1, add_neg_26_5)
-  complex_combo_26_combo_1 = f32[2,3,4] multiply(power_one_26_2, double_neg_26_3)
-  ROOT result = (f32[2,3,4], f32[2,3,4], f32[2,3,4], f32[2,3,4], f32[2,3,4], f32[2,3,4], f32[2,3,4], f32[2,3,4]) tuple(
-    mul_one_26_0,
-    div_one_26_1,
-    power_one_26_2,
-    double_neg_26_3,
-    complex_pow_mul_26_4,
-    add_neg_26_5,
-    complex_combo_26_combo_0,
-    complex_combo_26_combo_1
-  )
+HloModule test_algebraic_simplifier_26, entry_computation_layout={()->(f32[2,3,4]{2,1,0}, f32[2,3,4]{2,1,0}, f32[2,3,4]{2,1,0}, f32[2,3,4]{2,1,0}, f32[2,3,4]{2,1,0}, /*index=5*/f32[2,3,4]{2,1,0}, f32[2,3,4]{2,1,0}, f32[2,3,4]{2,1,0}, f32[2,3,4]{2,1,0}, f32[2,3,4]{2,1,0}, /*index=10*/f32[2,3,4]{2,1,0})}
+
+ENTRY %main () -> (f32[2,3,4], f32[2,3,4], f32[2,3,4], f32[2,3,4], f32[2,3,4], /*index=5*/f32[2,3,4], f32[2,3,4], f32[2,3,4], f32[2,3,4], f32[2,3,4], /*index=10*/f32[2,3,4]) {
+  %constant_half = f32[] constant(0.5)
+  %half_array = f32[2,3,4]{2,1,0} broadcast(%constant_half), dimensions={}
+  %constant_neg_one = f32[] constant(-1)
+  %neg_one_array = f32[2,3,4]{2,1,0} broadcast(%constant_neg_one), dimensions={}
+  %constant_zero = f32[] constant(0)
+  %zero_array = f32[2,3,4]{2,1,0} broadcast(%constant_zero), dimensions={}
+  %power_zero_26_0 = f32[2,3,4]{2,1,0} power(%neg_one_array, %zero_array)
+  %constant_one = f32[] constant(1)
+  %one_array = f32[2,3,4]{2,1,0} broadcast(%constant_one), dimensions={}
+  %mul_one_26_1 = f32[2,3,4]{2,1,0} multiply(%one_array, %one_array)
+  %constant_pi = f32[] constant(3.14159)
+  %pi_array = f32[2,3,4]{2,1,0} broadcast(%constant_pi), dimensions={}
+  %multiply.anon = f32[2,3,4]{2,1,0} multiply(%neg_one_array, %neg_one_array)
+  %double_neg_26_2 = f32[2,3,4]{2,1,0} multiply(%pi_array, %multiply.anon)
+  %sub_self_26_3 = f32[2,3,4]{2,1,0} subtract(%pi_array, %pi_array)
+  %constant_e = f32[] constant(2.71828)
+  %e_array = f32[2,3,4]{2,1,0} broadcast(%constant_e), dimensions={}
+  %multiply.anon.1 = f32[2,3,4]{2,1,0} multiply(%e_array, %one_array)
+  %complex_add_mul_26_4 = f32[2,3,4]{2,1,0} add(%multiply.anon.1, %zero_array)
+  %constant_two = f32[] constant(2)
+  %two_array = f32[2,3,4]{2,1,0} broadcast(%constant_two), dimensions={}
+  %mul_two_26_5 = f32[2,3,4]{2,1,0} multiply(%one_array, %two_array)
+  %sqrt.anon = f32[2,3,4]{2,1,0} sqrt(%two_array)
+  %square_sqrt_26_6 = f32[2,3,4]{2,1,0} power(%sqrt.anon, %two_array)
+  %add_neg_26_7 = f32[2,3,4]{2,1,0} add(%one_array, %neg_one_array)
+  %complex_combo_26_combo_0 = f32[2,3,4]{2,1,0} add(%power_zero_26_0, %sub_self_26_3)
+  %complex_combo_26_combo_1 = f32[2,3,4]{2,1,0} multiply(%complex_combo_26_combo_0, %square_sqrt_26_6)
+  %complex_combo_26_combo_2 = f32[2,3,4]{2,1,0} subtract(%square_sqrt_26_6, %add_neg_26_7)
+  ROOT %result = (f32[2,3,4]{2,1,0}, f32[2,3,4]{2,1,0}, f32[2,3,4]{2,1,0}, f32[2,3,4]{2,1,0}, f32[2,3,4]{2,1,0}, /*index=5*/f32[2,3,4]{2,1,0}, f32[2,3,4]{2,1,0}, f32[2,3,4]{2,1,0}, f32[2,3,4]{2,1,0}, f32[2,3,4]{2,1,0}, /*index=10*/f32[2,3,4]{2,1,0}) tuple(%power_zero_26_0, %mul_one_26_1, %double_neg_26_2, %sub_self_26_3, %complex_add_mul_26_4, /*index=5*/%mul_two_26_5, %square_sqrt_26_6, %add_neg_26_7, %complex_combo_26_combo_0, %complex_combo_26_combo_1, /*index=10*/%complex_combo_26_combo_2)
 }
+
+
+

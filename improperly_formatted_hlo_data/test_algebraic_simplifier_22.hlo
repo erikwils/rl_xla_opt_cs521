@@ -1,0 +1,33 @@
+HloModule test_algebraic_simplifier_22
+ENTRY main {
+  constant_e = f32[] constant(2.71828)
+  constant_zero = f32[] constant(0)
+  constant_two = f32[] constant(2)
+  constant_neg_one = f32[] constant(-1)
+  constant_half = f32[] constant(0.5)
+  constant_one = f32[] constant(1)
+  constant_pi = f32[] constant(3.14159)
+  zero_array = f32[16] broadcast(constant_zero), dimensions={}
+  one_array = f32[16] broadcast(constant_one), dimensions={}
+  two_array = f32[16] broadcast(constant_two), dimensions={}
+  neg_one_array = f32[16] broadcast(constant_neg_one), dimensions={}
+  half_array = f32[16] broadcast(constant_half), dimensions={}
+  pi_array = f32[16] broadcast(constant_pi), dimensions={}
+  e_array = f32[16] broadcast(constant_e), dimensions={}
+  add_zero_22_0 = f32[16] add(pi_array, zero_array)
+  power_one_22_1 = f32[16] power(neg_one_array, one_array)
+  complex_add_mul_22_2 = f32[16] add(multiply(e_array, one_array), zero_array)
+  sub_zero_22_3 = f32[16] subtract(two_array, zero_array)
+  double_neg_22_4 = f32[16] multiply(half_array, multiply(neg_one_array, neg_one_array))
+  square_sqrt_22_5 = f32[16] power(sqrt(zero_array), two_array)
+  sub_self_22_6 = f32[16] subtract(pi_array, pi_array)
+  ROOT result = (f32[16], f32[16], f32[16], f32[16], f32[16], f32[16], f32[16]) tuple(
+    add_zero_22_0,
+    power_one_22_1,
+    complex_add_mul_22_2,
+    sub_zero_22_3,
+    double_neg_22_4,
+    square_sqrt_22_5,
+    sub_self_22_6
+  )
+}

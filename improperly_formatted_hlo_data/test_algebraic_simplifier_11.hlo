@@ -1,0 +1,37 @@
+HloModule test_algebraic_simplifier_11
+ENTRY main {
+  constant_e = f32[] constant(2.71828)
+  constant_zero = f32[] constant(0)
+  constant_two = f32[] constant(2)
+  constant_half = f32[] constant(0.5)
+  constant_neg_one = f32[] constant(-1)
+  constant_one = f32[] constant(1)
+  constant_pi = f32[] constant(3.14159)
+  zero_array = f32[8,8] broadcast(constant_zero), dimensions={}
+  one_array = f32[8,8] broadcast(constant_one), dimensions={}
+  two_array = f32[8,8] broadcast(constant_two), dimensions={}
+  neg_one_array = f32[8,8] broadcast(constant_neg_one), dimensions={}
+  half_array = f32[8,8] broadcast(constant_half), dimensions={}
+  pi_array = f32[8,8] broadcast(constant_pi), dimensions={}
+  e_array = f32[8,8] broadcast(constant_e), dimensions={}
+  complex_pow_mul_11_0 = f32[8,8] power(multiply(e_array, one_array), one_array)
+  power_one_11_1 = f32[8,8] power(pi_array, one_array)
+  sub_self_11_2 = f32[8,8] subtract(one_array, one_array)
+  square_sqrt_11_3 = f32[8,8] power(sqrt(zero_array), two_array)
+  add_neg_11_4 = f32[8,8] add(zero_array, neg_one_array)
+  sub_zero_11_5 = f32[8,8] subtract(half_array, zero_array)
+  mul_two_11_6 = f32[8,8] multiply(half_array, two_array)
+  complex_combo_11_combo_0 = f32[8,8] multiply(square_sqrt_11_3, complex_pow_mul_11_0)
+  complex_combo_11_combo_1 = f32[8,8] add(add_neg_11_4, complex_combo_11_combo_0)
+  ROOT result = (f32[8,8], f32[8,8], f32[8,8], f32[8,8], f32[8,8], f32[8,8], f32[8,8], f32[8,8], f32[8,8]) tuple(
+    complex_pow_mul_11_0,
+    power_one_11_1,
+    sub_self_11_2,
+    square_sqrt_11_3,
+    add_neg_11_4,
+    sub_zero_11_5,
+    mul_two_11_6,
+    complex_combo_11_combo_0,
+    complex_combo_11_combo_1
+  )
+}

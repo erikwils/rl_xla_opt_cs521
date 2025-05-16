@@ -1,0 +1,11 @@
+HloModule jit_linear_regression_predict, entry_computation_layout={(f32[2]{0}, f32[], f32[5,2]{1,0})->f32[5]{0}}
+
+ENTRY main.7 {
+  Arg_2.3 = f32[5,2]{1,0} parameter(2)
+  Arg_0.1 = f32[2]{0} parameter(0)
+  dot.4 = f32[5]{0} dot(Arg_2.3, Arg_0.1), lhs_contracting_dims={1}, rhs_contracting_dims={0}
+  Arg_1.2 = f32[] parameter(1)
+  broadcast.5 = f32[5]{0} broadcast(Arg_1.2), dimensions={}
+  ROOT add.6 = f32[5]{0} add(dot.4, broadcast.5)
+}
+

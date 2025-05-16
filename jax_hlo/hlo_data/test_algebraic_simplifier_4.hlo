@@ -1,0 +1,24 @@
+HloModule test_algebraic_simplifier_4, entry_computation_layout={()->(f32[16]{0}, f32[16]{0}, f32[16]{0}, f32[16]{0}, f32[16]{0}, /*index=5*/f32[16]{0}, f32[16]{0})}
+
+ENTRY %main () -> (f32[16], f32[16], f32[16], f32[16], f32[16], /*index=5*/f32[16], f32[16]) {
+  %constant_half = f32[] constant(0.5)
+  %half_array = f32[16]{0} broadcast(%constant_half), dimensions={}
+  %constant_zero = f32[] constant(0)
+  %zero_array = f32[16]{0} broadcast(%constant_zero), dimensions={}
+  %add_zero_4_0 = f32[16]{0} add(%half_array, %zero_array)
+  %sub_zero_4_1 = f32[16]{0} subtract(%half_array, %zero_array)
+  %constant_two = f32[] constant(2)
+  %two_array = f32[16]{0} broadcast(%constant_two), dimensions={}
+  %add.anon = f32[16]{0} add(%two_array, %zero_array)
+  %constant_one = f32[] constant(1)
+  %one_array = f32[16]{0} broadcast(%constant_one), dimensions={}
+  %complex_mul_add_4_2 = f32[16]{0} multiply(%add.anon, %one_array)
+  %mul_two_4_3 = f32[16]{0} multiply(%half_array, %two_array)
+  %power_one_4_4 = f32[16]{0} power(%one_array, %one_array)
+  %mul_one_4_5 = f32[16]{0} multiply(%zero_array, %one_array)
+  %complex_combo_4_combo_0 = f32[16]{0} add(%mul_one_4_5, %complex_mul_add_4_2)
+  ROOT %result = (f32[16]{0}, f32[16]{0}, f32[16]{0}, f32[16]{0}, f32[16]{0}, /*index=5*/f32[16]{0}, f32[16]{0}) tuple(%add_zero_4_0, %sub_zero_4_1, %complex_mul_add_4_2, %mul_two_4_3, %power_one_4_4, /*index=5*/%mul_one_4_5, %complex_combo_4_combo_0)
+}
+
+
+

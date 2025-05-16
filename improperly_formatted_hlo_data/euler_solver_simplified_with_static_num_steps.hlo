@@ -1,0 +1,45 @@
+HloModule jit_euler_solver_for_hlo, entry_computation_layout={(f32[], f32[], f32[])->f32[]}
+
+None.6 {
+  Arg_2.9 = f32[] parameter(2)
+  Arg_1.8 = f32[] parameter(1)
+  Arg_0.7 = f32[] parameter(0)
+  negate.10 = f32[] negate(Arg_0.7)
+  multiply.11 = f32[] multiply(negate.10, Arg_2.9)
+  multiply.12 = f32[] multiply(Arg_1.8, multiply.11)
+  ROOT add.13 = f32[] add(Arg_2.9, multiply.12)
+}
+
+region_0.14 {
+  arg_tuple.15 = (s32[], f32[], f32[], f32[]) parameter(0)
+  get-tuple-element.16 = s32[] get-tuple-element(arg_tuple.15), index=0
+  constant.20 = s32[] constant(1)
+  add.22 = s32[] add(get-tuple-element.16, constant.20)
+  get-tuple-element.18 = f32[] get-tuple-element(arg_tuple.15), index=2
+  get-tuple-element.19 = f32[] get-tuple-element(arg_tuple.15), index=3
+  get-tuple-element.17 = f32[] get-tuple-element(arg_tuple.15), index=1
+  call.21 = f32[] call(get-tuple-element.18, get-tuple-element.19, get-tuple-element.17), to_apply=None.6
+  ROOT tuple.23 = (s32[], f32[], f32[], f32[]) tuple(add.22, call.21, get-tuple-element.18, get-tuple-element.19)
+}
+
+region_1.24 {
+  arg_tuple.25 = (s32[], f32[], f32[], f32[]) parameter(0)
+  get-tuple-element.27 = f32[] get-tuple-element(arg_tuple.25), index=1
+  get-tuple-element.28 = f32[] get-tuple-element(arg_tuple.25), index=2
+  get-tuple-element.29 = f32[] get-tuple-element(arg_tuple.25), index=3
+  get-tuple-element.26 = s32[] get-tuple-element(arg_tuple.25), index=0
+  constant.30 = s32[] constant(10)
+  ROOT compare.31 = pred[] compare(get-tuple-element.26, constant.30), direction=LT
+}
+
+ENTRY main.35 {
+  constant.4 = s32[] constant(0)
+  Arg_0.1 = f32[] parameter(0)
+  Arg_1.2 = f32[] parameter(1)
+  Arg_2.3 = f32[] parameter(2)
+  tuple.5 = (s32[], f32[], f32[], f32[]) tuple(constant.4, Arg_0.1, Arg_1.2, Arg_2.3)
+  while.32 = (s32[], f32[], f32[], f32[]) while(tuple.5), condition=region_1.24, body=region_0.14
+  get-tuple-element.33 = s32[] get-tuple-element(while.32), index=0
+  ROOT get-tuple-element.34 = f32[] get-tuple-element(while.32), index=1
+}
+

@@ -1,166 +1,175 @@
-module @jit_mean_variance_opt attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {
-  func.func public @main(%arg0: tensor<3xf32> {mhlo.layout_mode = "default"}, %arg1: tensor<3x3xf32> {mhlo.layout_mode = "default"}) -> (tensor<3xf32> {jax.result_info = "", mhlo.layout_mode = "default"}) {
-    %0 = call @inv(%arg1) : (tensor<3x3xf32>) -> tensor<3x3xf32>
-    %1 = stablehlo.dot_general %0, %arg0, contracting_dims = [1] x [0], precision = [DEFAULT, DEFAULT] : (tensor<3x3xf32>, tensor<3xf32>) -> tensor<3xf32>
-    %cst = stablehlo.constant dense<0.000000e+00> : tensor<f32>
-    %2 = stablehlo.reduce(%1 init: %cst) applies stablehlo.add across dimensions = [0] : (tensor<3xf32>, tensor<f32>) -> tensor<f32>
-    %3 = stablehlo.abs %2 : tensor<f32>
-    %cst_0 = stablehlo.constant dense<9.99999971E-10> : tensor<f32>
-    %4 = stablehlo.compare  LT, %3, %cst_0,  FLOAT : (tensor<f32>, tensor<f32>) -> tensor<i1>
-    %5 = stablehlo.sign %2 : tensor<f32>
-    %cst_1 = stablehlo.constant dense<9.99999971E-10> : tensor<f32>
-    %6 = stablehlo.multiply %cst_1, %5 : tensor<f32>
-    %7 = stablehlo.add %2, %6 : tensor<f32>
-    %cst_2 = stablehlo.constant dense<9.99999996E-13> : tensor<f32>
-    %8 = stablehlo.add %7, %cst_2 : tensor<f32>
-    %9 = stablehlo.broadcast_in_dim %8, dims = [] : (tensor<f32>) -> tensor<3xf32>
-    %10 = stablehlo.divide %1, %9 : tensor<3xf32>
-    %11 = call @_where(%4, %1, %10) : (tensor<i1>, tensor<3xf32>, tensor<3xf32>) -> tensor<3xf32>
-    return %11 : tensor<3xf32>
-  }
-  func.func private @inv(%arg0: tensor<3x3xf32> {mhlo.layout_mode = "default"}) -> (tensor<3x3xf32> {mhlo.layout_mode = "default"}) {
-    %0 = stablehlo.iota dim = 0 : tensor<3x3xi32>
-    %1 = stablehlo.iota dim = 1 : tensor<3x3xi32>
-    %c = stablehlo.constant dense<0> : tensor<i32>
-    %2 = stablehlo.broadcast_in_dim %c, dims = [] : (tensor<i32>) -> tensor<3x3xi32>
-    %3 = stablehlo.add %0, %2 : tensor<3x3xi32>
-    %4 = stablehlo.compare  EQ, %3, %1,  SIGNED : (tensor<3x3xi32>, tensor<3x3xi32>) -> tensor<3x3xi1>
-    %5 = stablehlo.convert %4 : (tensor<3x3xi1>) -> tensor<3x3xf32>
-    %6 = call @solve(%arg0, %5) : (tensor<3x3xf32>, tensor<3x3xf32>) -> tensor<3x3xf32>
-    return %6 : tensor<3x3xf32>
-  }
-  func.func private @solve(%arg0: tensor<3x3xf32> {mhlo.layout_mode = "default"}, %arg1: tensor<3x3xf32> {mhlo.layout_mode = "default"}) -> (tensor<3x3xf32> {mhlo.layout_mode = "default"}) {
-    %c = stablehlo.constant dense<3> : tensor<i32>
-    %c_0 = stablehlo.constant dense<3> : tensor<i32>
-    %c_1 = stablehlo.constant dense<1> : tensor<i32>
-    %c_2 = stablehlo.constant dense<3> : tensor<i32>
-    %c_3 = stablehlo.constant dense<3> : tensor<i32>
-    %0:3 = stablehlo.custom_call @lapack_sgetrf(%c_1, %c_2, %c_3, %arg0) {api_version = 2 : i32, operand_layouts = [dense<> : tensor<0xindex>, dense<> : tensor<0xindex>, dense<> : tensor<0xindex>, dense<[0, 1]> : tensor<2xindex>], output_operand_aliases = [#stablehlo.output_operand_alias<output_tuple_indices = [0], operand_index = 3, operand_tuple_indices = []>], result_layouts = [dense<[0, 1]> : tensor<2xindex>, dense<0> : tensor<1xindex>, dense<> : tensor<0xindex>]} : (tensor<i32>, tensor<i32>, tensor<i32>, tensor<3x3xf32>) -> (tensor<3x3xf32>, tensor<3xi32>, tensor<i32>)
-    %c_4 = stablehlo.constant dense<1> : tensor<i32>
-    %1 = stablehlo.broadcast_in_dim %c_4, dims = [] : (tensor<i32>) -> tensor<3xi32>
-    %2 = stablehlo.subtract %0#1, %1 : tensor<3xi32>
-    %c_5 = stablehlo.constant dense<0> : tensor<i32>
-    %3 = stablehlo.broadcast_in_dim %c_5, dims = [] : (tensor<i32>) -> tensor<i32>
-    %4 = stablehlo.compare  GE, %0#2, %3,  SIGNED : (tensor<i32>, tensor<i32>) -> tensor<i1>
-    %5 = stablehlo.broadcast_in_dim %4, dims = [] : (tensor<i1>) -> tensor<1x1xi1>
-    %cst = stablehlo.constant dense<0x7FC00000> : tensor<f32>
-    %6 = stablehlo.broadcast_in_dim %cst, dims = [] : (tensor<f32>) -> tensor<3x3xf32>
-    %7 = stablehlo.broadcast_in_dim %5, dims = [0, 1] : (tensor<1x1xi1>) -> tensor<3x3xi1>
-    %8 = stablehlo.select %7, %0#0, %6 : tensor<3x3xi1>, tensor<3x3xf32>
-    %9 = stablehlo.iota dim = 0 : tensor<3xi32>
-    %c_6 = stablehlo.constant dense<0> : tensor<i32>
-    %c_7 = stablehlo.constant dense<0> : tensor<i32>
-    %10:4 = stablehlo.while(%iterArg = %c_7, %iterArg_8 = %c_6, %iterArg_9 = %9, %iterArg_10 = %2) : tensor<i32>, tensor<i32>, tensor<3xi32>, tensor<3xi32>
-     cond {
-      %c_11 = stablehlo.constant dense<3> : tensor<i32>
-      %14 = stablehlo.compare  LT, %iterArg, %c_11,  SIGNED : (tensor<i32>, tensor<i32>) -> tensor<i1>
-      stablehlo.return %14 : tensor<i1>
-    } do {
-      %14:3 = func.call @None(%iterArg_8, %iterArg_9, %iterArg_10) : (tensor<i32>, tensor<3xi32>, tensor<3xi32>) -> (tensor<i32>, tensor<3xi32>, tensor<3xi32>)
-      %c_11 = stablehlo.constant dense<1> : tensor<i32>
-      %15 = stablehlo.add %iterArg, %c_11 : tensor<i32>
-      stablehlo.return %15, %14#0, %14#1, %14#2 : tensor<i32>, tensor<i32>, tensor<3xi32>, tensor<3xi32>
-    }
-    %11 = stablehlo.transpose %arg1, dims = [1, 0] : (tensor<3x3xf32>) -> tensor<3x3xf32>
-    %12 = call @_lu_solve(%8, %10#2, %11) : (tensor<3x3xf32>, tensor<3xi32>, tensor<3x3xf32>) -> tensor<3x3xf32>
-    %13 = stablehlo.transpose %12, dims = [1, 0] : (tensor<3x3xf32>) -> tensor<3x3xf32>
-    return %13 : tensor<3x3xf32>
-  }
-  func.func private @None(%arg0: tensor<i32>, %arg1: tensor<3xi32>, %arg2: tensor<3xi32>) -> (tensor<i32>, tensor<3xi32>, tensor<3xi32>) {
-    %c = stablehlo.constant dense<1> : tensor<i32>
-    %0 = stablehlo.add %arg0, %c : tensor<i32>
-    %c_0 = stablehlo.constant dense<0> : tensor<i32>
-    %1 = stablehlo.compare  LT, %arg0, %c_0,  SIGNED : (tensor<i32>, tensor<i32>) -> tensor<i1>
-    %c_1 = stablehlo.constant dense<3> : tensor<i32>
-    %2 = stablehlo.add %arg0, %c_1 : tensor<i32>
-    %3 = stablehlo.select %1, %2, %arg0 : tensor<i1>, tensor<i32>
-    %4 = stablehlo.convert %3 : tensor<i32>
-    %5 = stablehlo.broadcast_in_dim %4, dims = [] : (tensor<i32>) -> tensor<1xi32>
-    %6 = "stablehlo.gather"(%arg2, %5) <{dimension_numbers = #stablehlo.gather<collapsed_slice_dims = [0], start_index_map = [0]>, indices_are_sorted = true, slice_sizes = array<i64: 1>}> : (tensor<3xi32>, tensor<1xi32>) -> tensor<i32>
-    %c_2 = stablehlo.constant dense<0> : tensor<i32>
-    %7 = stablehlo.compare  LT, %arg0, %c_2,  SIGNED : (tensor<i32>, tensor<i32>) -> tensor<i1>
-    %c_3 = stablehlo.constant dense<3> : tensor<i32>
-    %8 = stablehlo.add %arg0, %c_3 : tensor<i32>
-    %9 = stablehlo.select %7, %8, %arg0 : tensor<i1>, tensor<i32>
-    %10 = stablehlo.convert %9 : tensor<i32>
-    %11 = stablehlo.broadcast_in_dim %10, dims = [] : (tensor<i32>) -> tensor<1xi32>
-    %12 = "stablehlo.gather"(%arg1, %11) <{dimension_numbers = #stablehlo.gather<collapsed_slice_dims = [0], start_index_map = [0]>, indices_are_sorted = true, slice_sizes = array<i64: 1>}> : (tensor<3xi32>, tensor<1xi32>) -> tensor<i32>
-    %c_4 = stablehlo.constant dense<0> : tensor<i32>
-    %13 = stablehlo.compare  LT, %6, %c_4,  SIGNED : (tensor<i32>, tensor<i32>) -> tensor<i1>
-    %c_5 = stablehlo.constant dense<3> : tensor<i32>
-    %14 = stablehlo.add %6, %c_5 : tensor<i32>
-    %15 = stablehlo.select %13, %14, %6 : tensor<i1>, tensor<i32>
-    %16 = stablehlo.dynamic_slice %arg1, %15, sizes = [1] : (tensor<3xi32>, tensor<i32>) -> tensor<1xi32>
-    %17 = stablehlo.reshape %16 : (tensor<1xi32>) -> tensor<i32>
-    %c_6 = stablehlo.constant dense<0> : tensor<i32>
-    %18 = stablehlo.compare  LT, %arg0, %c_6,  SIGNED : (tensor<i32>, tensor<i32>) -> tensor<i1>
-    %c_7 = stablehlo.constant dense<3> : tensor<i32>
-    %19 = stablehlo.add %arg0, %c_7 : tensor<i32>
-    %20 = stablehlo.select %18, %19, %arg0 : tensor<i1>, tensor<i32>
-    %21 = stablehlo.convert %20 : tensor<i32>
-    %22 = stablehlo.broadcast_in_dim %21, dims = [] : (tensor<i32>) -> tensor<1xi32>
-    %23 = "stablehlo.scatter"(%arg1, %22, %17) <{indices_are_sorted = true, scatter_dimension_numbers = #stablehlo.scatter<inserted_window_dims = [0], scatter_dims_to_operand_dims = [0]>, unique_indices = true}> ({
-    ^bb0(%arg3: tensor<i32>, %arg4: tensor<i32>):
-      stablehlo.return %arg4 : tensor<i32>
-    }) : (tensor<3xi32>, tensor<1xi32>, tensor<i32>) -> tensor<3xi32>
-    %c_8 = stablehlo.constant dense<0> : tensor<i32>
-    %24 = stablehlo.compare  LT, %6, %c_8,  SIGNED : (tensor<i32>, tensor<i32>) -> tensor<i1>
-    %c_9 = stablehlo.constant dense<3> : tensor<i32>
-    %25 = stablehlo.add %6, %c_9 : tensor<i32>
-    %26 = stablehlo.select %24, %25, %6 : tensor<i1>, tensor<i32>
-    %27 = stablehlo.broadcast_in_dim %26, dims = [] : (tensor<i32>) -> tensor<1xi32>
-    %28 = "stablehlo.scatter"(%23, %27, %12) <{indices_are_sorted = true, scatter_dimension_numbers = #stablehlo.scatter<inserted_window_dims = [0], scatter_dims_to_operand_dims = [0]>, unique_indices = true}> ({
-    ^bb0(%arg3: tensor<i32>, %arg4: tensor<i32>):
-      stablehlo.return %arg4 : tensor<i32>
-    }) : (tensor<3xi32>, tensor<1xi32>, tensor<i32>) -> tensor<3xi32>
-    return %0, %28, %arg2 : tensor<i32>, tensor<3xi32>, tensor<3xi32>
-  }
-  func.func private @_lu_solve(%arg0: tensor<3x3xf32> {mhlo.layout_mode = "default"}, %arg1: tensor<3xi32> {mhlo.layout_mode = "default"}, %arg2: tensor<3x3xf32> {mhlo.layout_mode = "default"}) -> (tensor<3x3xf32> {mhlo.layout_mode = "default"}) {
-    %0 = stablehlo.broadcast_in_dim %arg2, dims = [0, 1] : (tensor<3x3xf32>) -> tensor<3x3x1xf32>
-    %c = stablehlo.constant dense<0> : tensor<i32>
-    %1 = stablehlo.broadcast_in_dim %c, dims = [] : (tensor<i32>) -> tensor<3xi32>
-    %2 = stablehlo.compare  LT, %arg1, %1,  SIGNED : (tensor<3xi32>, tensor<3xi32>) -> tensor<3xi1>
-    %c_0 = stablehlo.constant dense<3> : tensor<i32>
-    %3 = stablehlo.broadcast_in_dim %c_0, dims = [] : (tensor<i32>) -> tensor<3xi32>
-    %4 = stablehlo.add %arg1, %3 : tensor<3xi32>
-    %5 = stablehlo.select %2, %4, %arg1 : tensor<3xi1>, tensor<3xi32>
-    %6 = stablehlo.broadcast_in_dim %5, dims = [0] : (tensor<3xi32>) -> tensor<3x1xi32>
-    %7 = "stablehlo.gather"(%0, %6) <{dimension_numbers = #stablehlo.gather<offset_dims = [0, 2], collapsed_slice_dims = [1], start_index_map = [1], index_vector_dim = 1>, indices_are_sorted = false, slice_sizes = array<i64: 3, 1, 1>}> : (tensor<3x3x1xf32>, tensor<3x1xi32>) -> tensor<3x3x1xf32>
-    %8 = stablehlo.transpose %7, dims = [1, 2, 0] : (tensor<3x3x1xf32>) -> tensor<3x1x3xf32>
-    %9 = stablehlo.reshape %8 : (tensor<3x1x3xf32>) -> tensor<3x3xf32>
-    %cst = stablehlo.constant dense<1.000000e+00> : tensor<f32>
-    %c_1 = stablehlo.constant dense<3> : tensor<i32>
-    %c_2 = stablehlo.constant dense<3> : tensor<i32>
-    %c_3 = stablehlo.constant dense<1> : tensor<i32>
-    %c_4 = stablehlo.constant dense<1> : tensor<i32>
-    %c_5 = stablehlo.constant dense<1> : tensor<i32>
-    %c_6 = stablehlo.constant dense<0> : tensor<i32>
-    %c_7 = stablehlo.constant dense<1> : tensor<i32>
-    %c_8 = stablehlo.constant dense<3> : tensor<i32>
-    %c_9 = stablehlo.constant dense<3> : tensor<i32>
-    %10 = stablehlo.custom_call @blas_strsm(%c_4, %c_5, %c_6, %c_7, %c_8, %c_9, %c_3, %cst, %arg0, %9) {api_version = 2 : i32, operand_layouts = [dense<> : tensor<0xindex>, dense<> : tensor<0xindex>, dense<> : tensor<0xindex>, dense<> : tensor<0xindex>, dense<> : tensor<0xindex>, dense<> : tensor<0xindex>, dense<> : tensor<0xindex>, dense<> : tensor<0xindex>, dense<[0, 1]> : tensor<2xindex>, dense<[0, 1]> : tensor<2xindex>], output_operand_aliases = [#stablehlo.output_operand_alias<output_tuple_indices = [], operand_index = 9, operand_tuple_indices = []>], result_layouts = [dense<[0, 1]> : tensor<2xindex>]} : (tensor<i32>, tensor<i32>, tensor<i32>, tensor<i32>, tensor<i32>, tensor<i32>, tensor<i32>, tensor<f32>, tensor<3x3xf32>, tensor<3x3xf32>) -> tensor<3x3xf32>
-    %11 = stablehlo.reshape %10 : (tensor<3x3xf32>) -> tensor<3x1x3xf32>
-    %12 = stablehlo.reshape %11 : (tensor<3x1x3xf32>) -> tensor<3x3xf32>
-    %cst_10 = stablehlo.constant dense<1.000000e+00> : tensor<f32>
-    %c_11 = stablehlo.constant dense<3> : tensor<i32>
-    %c_12 = stablehlo.constant dense<3> : tensor<i32>
-    %c_13 = stablehlo.constant dense<1> : tensor<i32>
-    %c_14 = stablehlo.constant dense<1> : tensor<i32>
-    %c_15 = stablehlo.constant dense<0> : tensor<i32>
-    %c_16 = stablehlo.constant dense<0> : tensor<i32>
-    %c_17 = stablehlo.constant dense<0> : tensor<i32>
-    %c_18 = stablehlo.constant dense<3> : tensor<i32>
-    %c_19 = stablehlo.constant dense<3> : tensor<i32>
-    %13 = stablehlo.custom_call @blas_strsm(%c_14, %c_15, %c_16, %c_17, %c_18, %c_19, %c_13, %cst_10, %arg0, %12) {api_version = 2 : i32, operand_layouts = [dense<> : tensor<0xindex>, dense<> : tensor<0xindex>, dense<> : tensor<0xindex>, dense<> : tensor<0xindex>, dense<> : tensor<0xindex>, dense<> : tensor<0xindex>, dense<> : tensor<0xindex>, dense<> : tensor<0xindex>, dense<[0, 1]> : tensor<2xindex>, dense<[0, 1]> : tensor<2xindex>], output_operand_aliases = [#stablehlo.output_operand_alias<output_tuple_indices = [], operand_index = 9, operand_tuple_indices = []>], result_layouts = [dense<[0, 1]> : tensor<2xindex>]} : (tensor<i32>, tensor<i32>, tensor<i32>, tensor<i32>, tensor<i32>, tensor<i32>, tensor<i32>, tensor<f32>, tensor<3x3xf32>, tensor<3x3xf32>) -> tensor<3x3xf32>
-    %14 = stablehlo.reshape %13 : (tensor<3x3xf32>) -> tensor<3x1x3xf32>
-    %15 = stablehlo.slice %14 [0:3, 0:1, 0:3] : (tensor<3x1x3xf32>) -> tensor<3x1x3xf32>
-    %16 = stablehlo.transpose %15, dims = [2, 0, 1] : (tensor<3x1x3xf32>) -> tensor<3x3x1xf32>
-    %17 = stablehlo.reshape %16 : (tensor<3x3x1xf32>) -> tensor<3x3xf32>
-    return %17 : tensor<3x3xf32>
-  }
-  func.func private @_where(%arg0: tensor<i1> {mhlo.layout_mode = "default"}, %arg1: tensor<3xf32> {mhlo.layout_mode = "default"}, %arg2: tensor<3xf32> {mhlo.layout_mode = "default"}) -> (tensor<3xf32> {mhlo.layout_mode = "default"}) {
-    %0 = stablehlo.broadcast_in_dim %arg0, dims = [] : (tensor<i1>) -> tensor<3xi1>
-    %1 = stablehlo.select %0, %arg1, %arg2 : tensor<3xi1>, tensor<3xf32>
-    return %1 : tensor<3xf32>
-  }
+HloModule jit_mean_variance_opt, entry_computation_layout={(f32[3]{0}, f32[3,3]{1,0})->f32[3]{0}}
+
+%region_1.6 (Arg_0.7: s32[], Arg_1.8: s32[]) -> s32[] {
+  %Arg_0.7 = s32[] parameter(0)
+  ROOT %Arg_1.8 = s32[] parameter(1)
 }
+
+%region_2.9 (Arg_0.10: s32[], Arg_1.11: s32[]) -> s32[] {
+  %Arg_0.10 = s32[] parameter(0)
+  ROOT %Arg_1.11 = s32[] parameter(1)
+}
+
+%None.12 (Arg_0.13: s32[], Arg_1.14: s32[3], Arg_2.15: s32[3]) -> (s32[], s32[3], s32[3]) {
+  %Arg_0.13 = s32[] parameter(0)
+  %constant.18 = s32[] constant(1)
+  %add.19 = s32[] add(%Arg_0.13, %constant.18)
+  %Arg_1.14 = s32[3]{0} parameter(1)
+  %constant.17 = s32[] constant(0)
+  %compare.35 = pred[] compare(%Arg_0.13, %constant.17), direction=LT
+  %constant.16 = s32[] constant(3)
+  %add.36 = s32[] add(%Arg_0.13, %constant.16)
+  %select.37 = s32[] select(%compare.35, %add.36, %Arg_0.13)
+  %reshape.38 = s32[1]{0} reshape(%select.37)
+  %Arg_2.15 = s32[3]{0} parameter(2)
+  %compare.20 = pred[] compare(%Arg_0.13, %constant.17), direction=LT
+  %add.21 = s32[] add(%Arg_0.13, %constant.16)
+  %select.22 = s32[] select(%compare.20, %add.21, %Arg_0.13)
+  %reshape.23 = s32[1]{0} reshape(%select.22)
+  %gather.24 = s32[] gather(%Arg_2.15, %reshape.23), offset_dims={}, collapsed_slice_dims={0}, start_index_map={0}, index_vector_dim=0, slice_sizes={1}, indices_are_sorted=true
+  %compare.30 = pred[] compare(%gather.24, %constant.17), direction=LT
+  %add.31 = s32[] add(%gather.24, %constant.16)
+  %select.32 = s32[] select(%compare.30, %add.31, %gather.24)
+  %dynamic-slice.33 = s32[1]{0} dynamic-slice(%Arg_1.14, %select.32), dynamic_slice_sizes={1}
+  %reshape.34 = s32[] reshape(%dynamic-slice.33)
+  %scatter.39 = s32[3]{0} scatter(%Arg_1.14, %reshape.38, %reshape.34), update_window_dims={}, inserted_window_dims={0}, scatter_dims_to_operand_dims={0}, index_vector_dim=0, indices_are_sorted=true, unique_indices=true, to_apply=%region_1.6
+  %compare.40 = pred[] compare(%gather.24, %constant.17), direction=LT
+  %add.41 = s32[] add(%gather.24, %constant.16)
+  %select.42 = s32[] select(%compare.40, %add.41, %gather.24)
+  %reshape.43 = s32[1]{0} reshape(%select.42)
+  %compare.25 = pred[] compare(%Arg_0.13, %constant.17), direction=LT
+  %add.26 = s32[] add(%Arg_0.13, %constant.16)
+  %select.27 = s32[] select(%compare.25, %add.26, %Arg_0.13)
+  %reshape.28 = s32[1]{0} reshape(%select.27)
+  %gather.29 = s32[] gather(%Arg_1.14, %reshape.28), offset_dims={}, collapsed_slice_dims={0}, start_index_map={0}, index_vector_dim=0, slice_sizes={1}, indices_are_sorted=true
+  %scatter.44 = s32[3]{0} scatter(%scatter.39, %reshape.43, %gather.29), update_window_dims={}, inserted_window_dims={0}, scatter_dims_to_operand_dims={0}, index_vector_dim=0, indices_are_sorted=true, unique_indices=true, to_apply=%region_2.9
+  ROOT %tuple.45 = (s32[], s32[3]{0}, s32[3]{0}) tuple(%add.19, %scatter.44, %Arg_2.15)
+}
+
+%region_0.46 (arg_tuple.47: (s32[], s32[], s32[3], s32[3])) -> (s32[], s32[], s32[3], s32[3]) {
+  %arg_tuple.47 = (s32[], s32[], s32[3]{0}, s32[3]{0}) parameter(0)
+  %get-tuple-element.48 = s32[] get-tuple-element(%arg_tuple.47), index=0
+  %constant.52 = s32[] constant(1)
+  %add.57 = s32[] add(%get-tuple-element.48, %constant.52)
+  %get-tuple-element.49 = s32[] get-tuple-element(%arg_tuple.47), index=1
+  %get-tuple-element.50 = s32[3]{0} get-tuple-element(%arg_tuple.47), index=2
+  %get-tuple-element.51 = s32[3]{0} get-tuple-element(%arg_tuple.47), index=3
+  %call.53 = (s32[], s32[3]{0}, s32[3]{0}) call(%get-tuple-element.49, %get-tuple-element.50, %get-tuple-element.51), to_apply=%None.12
+  %get-tuple-element.54 = s32[] get-tuple-element(%call.53), index=0
+  %get-tuple-element.55 = s32[3]{0} get-tuple-element(%call.53), index=1
+  %get-tuple-element.56 = s32[3]{0} get-tuple-element(%call.53), index=2
+  ROOT %tuple.58 = (s32[], s32[], s32[3]{0}, s32[3]{0}) tuple(%add.57, %get-tuple-element.54, %get-tuple-element.55, %get-tuple-element.56)
+}
+
+%region_3.59 (arg_tuple.60: (s32[], s32[], s32[3], s32[3])) -> pred[] {
+  %arg_tuple.60 = (s32[], s32[], s32[3]{0}, s32[3]{0}) parameter(0)
+  %get-tuple-element.62 = s32[] get-tuple-element(%arg_tuple.60), index=1
+  %get-tuple-element.63 = s32[3]{0} get-tuple-element(%arg_tuple.60), index=2
+  %get-tuple-element.64 = s32[3]{0} get-tuple-element(%arg_tuple.60), index=3
+  %get-tuple-element.61 = s32[] get-tuple-element(%arg_tuple.60), index=0
+  %constant.65 = s32[] constant(3)
+  ROOT %compare.66 = pred[] compare(%get-tuple-element.61, %constant.65), direction=LT
+}
+
+%_lu_solve.67 (Arg_0.68: f32[3,3], Arg_1.69: s32[3], Arg_2.70: f32[3,3]) -> f32[3,3] {
+  %Arg_0.68 = f32[3,3]{1,0} parameter(0)
+  %Arg_2.70 = f32[3,3]{1,0} parameter(2)
+  %reshape.76 = f32[3,3,1]{2,1,0} reshape(%Arg_2.70)
+  %Arg_1.69 = s32[3]{0} parameter(1)
+  %constant.73 = s32[] constant(0)
+  %broadcast.74 = s32[3]{0} broadcast(%constant.73), dimensions={}
+  %compare.77 = pred[3]{0} compare(%Arg_1.69, %broadcast.74), direction=LT
+  %constant.71 = s32[] constant(3)
+  %broadcast.72 = s32[3]{0} broadcast(%constant.71), dimensions={}
+  %add.78 = s32[3]{0} add(%Arg_1.69, %broadcast.72)
+  %select.79 = s32[3]{0} select(%compare.77, %add.78, %Arg_1.69)
+  %reshape.80 = s32[3,1]{1,0} reshape(%select.79)
+  %gather.81 = f32[3,3,1]{2,1,0} gather(%reshape.76, %reshape.80), offset_dims={0,2}, collapsed_slice_dims={1}, start_index_map={1}, index_vector_dim=1, slice_sizes={3,1,1}
+  %transpose.82 = f32[3,1,3]{1,0,2} transpose(%gather.81), dimensions={1,2,0}
+  %reshape.83 = f32[3,3]{1,0} reshape(%transpose.82)
+  %constant.75 = f32[] constant(1)
+  %custom-call.84 = f32[3,3]{0,1} custom-call(%Arg_0.68, %reshape.83, %constant.75), custom_call_target="lapack_strsm_ffi", operand_layout_constraints={f32[3,3]{0,1}, f32[3,3]{0,1}, f32[]}, output_to_operand_aliasing={{}: (1, {})}, api_version=API_VERSION_TYPED_FFI
+  %custom-call.85 = f32[3,3]{0,1} custom-call(%Arg_0.68, %custom-call.84, %constant.75), custom_call_target="lapack_strsm_ffi", operand_layout_constraints={f32[3,3]{0,1}, f32[3,3]{0,1}, f32[]}, output_to_operand_aliasing={{}: (1, {})}, api_version=API_VERSION_TYPED_FFI
+  %reshape.86 = f32[3,1,3]{2,1,0} reshape(%custom-call.85)
+  %transpose.87 = f32[3,3,1]{0,2,1} transpose(%reshape.86), dimensions={2,0,1}
+  ROOT %reshape.88 = f32[3,3]{1,0} reshape(%transpose.87)
+}
+
+%solve.89 (Arg_0.90: f32[3,3], Arg_1.91: f32[3,3]) -> f32[3,3] {
+  %constant.96 = s32[] constant(0)
+  %iota.108 = s32[3]{0} iota(), iota_dimension=0
+  %Arg_0.90 = f32[3,3]{1,0} parameter(0)
+  %custom-call.97 = (f32[3,3]{0,1}, s32[3]{0}, s32[]) custom-call(%Arg_0.90), custom_call_target="lapack_sgetrf_ffi", operand_layout_constraints={f32[3,3]{0,1}}, output_to_operand_aliasing={{0}: (0, {})}, api_version=API_VERSION_TYPED_FFI
+  %get-tuple-element.99 = s32[3]{0} get-tuple-element(%custom-call.97), index=1
+  %constant.94 = s32[] constant(1)
+  %broadcast.95 = s32[3]{0} broadcast(%constant.94), dimensions={}
+  %subtract.101 = s32[3]{0} subtract(%get-tuple-element.99, %broadcast.95)
+  %tuple.109 = (s32[], s32[], s32[3]{0}, s32[3]{0}) tuple(%constant.96, %constant.96, %iota.108, %subtract.101)
+  %while.110 = (s32[], s32[], s32[3]{0}, s32[3]{0}) while(%tuple.109), condition=%region_3.59, body=%region_0.46
+  %get-tuple-element.111 = s32[] get-tuple-element(%while.110), index=0
+  %get-tuple-element.112 = s32[] get-tuple-element(%while.110), index=1
+  %get-tuple-element.114 = s32[3]{0} get-tuple-element(%while.110), index=3
+  %get-tuple-element.100 = s32[] get-tuple-element(%custom-call.97), index=2
+  %compare.102 = pred[] compare(%get-tuple-element.100, %constant.96), direction=GE
+  %reshape.103 = pred[1,1]{1,0} reshape(%compare.102)
+  %broadcast.104 = pred[1,1]{1,0} broadcast(%reshape.103), dimensions={0,1}
+  %reshape.105 = pred[] reshape(%broadcast.104)
+  %broadcast.106 = pred[3,3]{1,0} broadcast(%reshape.105), dimensions={}
+  %get-tuple-element.98 = f32[3,3]{0,1} get-tuple-element(%custom-call.97), index=0
+  %constant.92 = f32[] constant(nan)
+  %broadcast.93 = f32[3,3]{1,0} broadcast(%constant.92), dimensions={}
+  %select.107 = f32[3,3]{1,0} select(%broadcast.106, %get-tuple-element.98, %broadcast.93)
+  %get-tuple-element.113 = s32[3]{0} get-tuple-element(%while.110), index=2
+  %Arg_1.91 = f32[3,3]{1,0} parameter(1)
+  %transpose.115 = f32[3,3]{0,1} transpose(%Arg_1.91), dimensions={1,0}
+  %call.116 = f32[3,3]{1,0} call(%select.107, %get-tuple-element.113, %transpose.115), to_apply=%_lu_solve.67
+  ROOT %transpose.117 = f32[3,3]{0,1} transpose(%call.116), dimensions={1,0}
+}
+
+%inv.118 (Arg_0.119: f32[3,3]) -> f32[3,3] {
+  %Arg_0.119 = f32[3,3]{1,0} parameter(0)
+  %iota.120 = s32[3]{0} iota(), iota_dimension=0
+  %broadcast.121 = s32[3,3]{1,0} broadcast(%iota.120), dimensions={0}
+  %iota.122 = s32[3]{0} iota(), iota_dimension=0
+  %broadcast.123 = s32[3,3]{1,0} broadcast(%iota.122), dimensions={1}
+  %compare.124 = pred[3,3]{1,0} compare(%broadcast.121, %broadcast.123), direction=EQ
+  %convert.125 = f32[3,3]{1,0} convert(%compare.124)
+  ROOT %call.126 = f32[3,3]{0,1} call(%Arg_0.119, %convert.125), to_apply=%solve.89
+}
+
+%region_4.129 (Arg_0.130: f32[], Arg_1.131: f32[]) -> f32[] {
+  %Arg_0.130 = f32[] parameter(0)
+  %Arg_1.131 = f32[] parameter(1)
+  ROOT %add.132 = f32[] add(%Arg_0.130, %Arg_1.131)
+}
+
+%_where.142 (Arg_0.143: pred[], Arg_1.144: f32[3], Arg_2.145: f32[3]) -> f32[3] {
+  %Arg_0.143 = pred[] parameter(0)
+  %broadcast.146 = pred[3]{0} broadcast(%Arg_0.143), dimensions={}
+  %Arg_1.144 = f32[3]{0} parameter(1)
+  %Arg_2.145 = f32[3]{0} parameter(2)
+  ROOT %select.147 = f32[3]{0} select(%broadcast.146, %Arg_1.144, %Arg_2.145)
+}
+
+ENTRY %main.149 (Arg_0.1: f32[3], Arg_1.2: f32[3,3]) -> f32[3] {
+  %Arg_1.2 = f32[3,3]{1,0} parameter(1)
+  %call.127 = f32[3,3]{0,1} call(%Arg_1.2), to_apply=%inv.118
+  %Arg_0.1 = f32[3]{0} parameter(0)
+  %dot.128 = f32[3]{0} dot(%call.127, %Arg_0.1), lhs_contracting_dims={1}, rhs_contracting_dims={0}
+  %constant.5 = f32[] constant(0)
+  %reduce.133 = f32[] reduce(%dot.128, %constant.5), dimensions={0}, to_apply=%region_4.129
+  %abs.134 = f32[] abs(%reduce.133)
+  %constant.4 = f32[] constant(1e-09)
+  %compare.135 = pred[] compare(%abs.134, %constant.4), direction=LT
+  %sign.136 = f32[] sign(%reduce.133)
+  %multiply.137 = f32[] multiply(%sign.136, %constant.4)
+  %add.138 = f32[] add(%reduce.133, %multiply.137)
+  %constant.3 = f32[] constant(1e-12)
+  %add.139 = f32[] add(%add.138, %constant.3)
+  %broadcast.140 = f32[3]{0} broadcast(%add.139), dimensions={}
+  %divide.141 = f32[3]{0} divide(%dot.128, %broadcast.140)
+  ROOT %call.148 = f32[3]{0} call(%compare.135, %dot.128, %divide.141), to_apply=%_where.142
+}
+
+
+

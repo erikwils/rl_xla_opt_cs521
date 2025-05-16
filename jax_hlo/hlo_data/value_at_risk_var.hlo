@@ -1,0 +1,74 @@
+HloModule jit_value_at_risk, entry_computation_layout={(f32[100]{0}, f32[])->f32[]}
+
+%region_0.3 (Arg_0.4: pred[], Arg_1.5: pred[]) -> pred[] {
+  %Arg_0.4 = pred[] parameter(0)
+  %Arg_1.5 = pred[] parameter(1)
+  ROOT %or.6 = pred[] or(%Arg_0.4, %Arg_1.5)
+}
+
+%_where.7 (Arg_0.8: pred[1], Arg_1.9: f32[], Arg_2.10: f32[100]) -> f32[100] {
+  %Arg_0.8 = pred[1]{0} parameter(0)
+  %broadcast.11 = pred[1]{0} broadcast(%Arg_0.8), dimensions={0}
+  %reshape.12 = pred[] reshape(%broadcast.11)
+  %broadcast.13 = pred[100]{0} broadcast(%reshape.12), dimensions={}
+  %Arg_1.9 = f32[] parameter(1)
+  %broadcast.14 = f32[100]{0} broadcast(%Arg_1.9), dimensions={}
+  %Arg_2.10 = f32[100]{0} parameter(2)
+  ROOT %select.15 = f32[100]{0} select(%broadcast.13, %broadcast.14, %Arg_2.10)
+}
+
+%region_1.16 (Arg_0.17: f32[], Arg_1.18: f32[]) -> pred[] {
+  %Arg_0.17 = f32[] parameter(0)
+  %compare.23 = pred[] compare(%Arg_0.17, %Arg_0.17), direction=NE
+  %constant.19 = f32[] constant(nan)
+  %constant.20 = f32[] constant(0)
+  %compare.21 = pred[] compare(%Arg_0.17, %constant.20), direction=EQ
+  %select.22 = f32[] select(%compare.21, %constant.20, %Arg_0.17)
+  %select.24 = f32[] select(%compare.23, %constant.19, %select.22)
+  %Arg_1.18 = f32[] parameter(1)
+  %compare.27 = pred[] compare(%Arg_1.18, %Arg_1.18), direction=NE
+  %compare.25 = pred[] compare(%Arg_1.18, %constant.20), direction=EQ
+  %select.26 = f32[] select(%compare.25, %constant.20, %Arg_1.18)
+  %select.28 = f32[] select(%compare.27, %constant.19, %select.26)
+  ROOT %compare.29 = pred[] compare(%select.24, %select.28), direction=LT, type=TOTALORDER
+}
+
+%quantile.30 (Arg_0.31: f32[100], Arg_1.32: f32[]) -> f32[] {
+  %Arg_0.31 = f32[100]{0} parameter(0)
+  %compare.38 = pred[100]{0} compare(%Arg_0.31, %Arg_0.31), direction=NE
+  %constant.37 = pred[] constant(false)
+  %reduce.39 = pred[] reduce(%compare.38, %constant.37), dimensions={0}, to_apply=%region_0.3
+  %reshape.40 = pred[1]{0} reshape(%reduce.39)
+  %constant.36 = f32[] constant(nan)
+  %call.41 = f32[100]{0} call(%reshape.40, %constant.36, %Arg_0.31), to_apply=%_where.7
+  %sort.42 = f32[100]{0} sort(%call.41), dimensions={0}, is_stable=true, to_apply=%region_1.16
+  %constant.35 = f32[] constant(0)
+  %Arg_1.32 = f32[] parameter(1)
+  %constant.33 = f32[] constant(99)
+  %multiply.43 = f32[] multiply(%Arg_1.32, %constant.33)
+  %floor.44 = f32[] floor(%multiply.43)
+  %clamp.48 = f32[] clamp(%constant.35, %floor.44, %constant.33)
+  %convert.50 = s32[] convert(%clamp.48)
+  %reshape.52 = s32[1]{0} reshape(%convert.50)
+  %gather.53 = f32[] gather(%sort.42, %reshape.52), offset_dims={}, collapsed_slice_dims={0}, start_index_map={0}, index_vector_dim=0, slice_sizes={1}
+  %constant.34 = f32[] constant(1)
+  %subtract.46 = f32[] subtract(%multiply.43, %floor.44)
+  %subtract.47 = f32[] subtract(%constant.34, %subtract.46)
+  %multiply.56 = f32[] multiply(%gather.53, %subtract.47)
+  %ceil.45 = f32[] ceil(%multiply.43)
+  %clamp.49 = f32[] clamp(%constant.35, %ceil.45, %constant.33)
+  %convert.51 = s32[] convert(%clamp.49)
+  %reshape.54 = s32[1]{0} reshape(%convert.51)
+  %gather.55 = f32[] gather(%sort.42, %reshape.54), offset_dims={}, collapsed_slice_dims={0}, start_index_map={0}, index_vector_dim=0, slice_sizes={1}
+  %multiply.57 = f32[] multiply(%gather.55, %subtract.46)
+  ROOT %add.58 = f32[] add(%multiply.56, %multiply.57)
+}
+
+ENTRY %main.60 (Arg_0.1: f32[100], Arg_1.2: f32[]) -> f32[] {
+  %Arg_0.1 = f32[100]{0} parameter(0)
+  %Arg_1.2 = f32[] parameter(1)
+  ROOT %call.59 = f32[] call(%Arg_0.1, %Arg_1.2), to_apply=%quantile.30
+}
+
+
+

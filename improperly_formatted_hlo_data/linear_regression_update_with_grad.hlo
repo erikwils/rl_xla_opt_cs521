@@ -1,0 +1,35 @@
+HloModule jit_linear_regression_update_for_hlo, entry_computation_layout={(f32[2]{0}, f32[], f32[5,2]{1,0}, f32[5]{0}, f32[])->(f32[2]{0}, f32[])}
+
+region_0.17 {
+  Arg_0.18 = f32[] parameter(0)
+  Arg_1.19 = f32[] parameter(1)
+  ROOT add.20 = f32[] add(Arg_0.18, Arg_1.19)
+}
+
+ENTRY main.29 {
+  Arg_0.1 = f32[2]{0} parameter(0)
+  Arg_4.5 = f32[] parameter(4)
+  broadcast.23 = f32[2]{0} broadcast(Arg_4.5), dimensions={}
+  Arg_2.3 = f32[5,2]{1,0} parameter(2)
+  dot.11 = f32[5]{0} dot(Arg_2.3, Arg_0.1), lhs_contracting_dims={1}, rhs_contracting_dims={0}
+  Arg_1.2 = f32[] parameter(1)
+  broadcast.12 = f32[5]{0} broadcast(Arg_1.2), dimensions={}
+  add.13 = f32[5]{0} add(dot.11, broadcast.12)
+  Arg_3.4 = f32[5]{0} parameter(3)
+  subtract.14 = f32[5]{0} subtract(add.13, Arg_3.4)
+  constant.8 = f32[] constant(2)
+  broadcast.9 = f32[5]{0} broadcast(constant.8), dimensions={}
+  multiply.15 = f32[5]{0} multiply(subtract.14, broadcast.9)
+  constant.6 = f32[] constant(0.2)
+  broadcast.7 = f32[5]{0} broadcast(constant.6), dimensions={}
+  multiply.16 = f32[5]{0} multiply(multiply.15, broadcast.7)
+  dot.22 = f32[2]{0} dot(multiply.16, Arg_2.3), lhs_contracting_dims={0}, rhs_contracting_dims={0}
+  multiply.24 = f32[2]{0} multiply(broadcast.23, dot.22)
+  subtract.25 = f32[2]{0} subtract(Arg_0.1, multiply.24)
+  constant.10 = f32[] constant(0)
+  reduce.21 = f32[] reduce(multiply.16, constant.10), dimensions={0}, to_apply=region_0.17
+  multiply.26 = f32[] multiply(Arg_4.5, reduce.21)
+  subtract.27 = f32[] subtract(Arg_1.2, multiply.26)
+  ROOT tuple.28 = (f32[2]{0}, f32[]) tuple(subtract.25, subtract.27)
+}
+

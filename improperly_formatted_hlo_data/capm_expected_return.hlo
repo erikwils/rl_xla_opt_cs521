@@ -1,0 +1,11 @@
+HloModule jit_capm_expected_return, entry_computation_layout={(f32[], f32[], f32[])->f32[]}
+
+ENTRY main.7 {
+  Arg_0.1 = f32[] parameter(0)
+  Arg_1.2 = f32[] parameter(1)
+  Arg_2.3 = f32[] parameter(2)
+  subtract.4 = f32[] subtract(Arg_2.3, Arg_0.1)
+  multiply.5 = f32[] multiply(Arg_1.2, subtract.4)
+  ROOT add.6 = f32[] add(Arg_0.1, multiply.5)
+}
+

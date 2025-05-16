@@ -1,0 +1,33 @@
+HloModule test_algebraic_simplifier_12
+ENTRY main {
+  constant_e = f32[] constant(2.71828)
+  constant_zero = f32[] constant(0)
+  constant_two = f32[] constant(2)
+  constant_neg_one = f32[] constant(-1)
+  constant_half = f32[] constant(0.5)
+  constant_one = f32[] constant(1)
+  constant_pi = f32[] constant(3.14159)
+  zero_array = f32[16] broadcast(constant_zero), dimensions={}
+  one_array = f32[16] broadcast(constant_one), dimensions={}
+  two_array = f32[16] broadcast(constant_two), dimensions={}
+  neg_one_array = f32[16] broadcast(constant_neg_one), dimensions={}
+  half_array = f32[16] broadcast(constant_half), dimensions={}
+  pi_array = f32[16] broadcast(constant_pi), dimensions={}
+  e_array = f32[16] broadcast(constant_e), dimensions={}
+  complex_add_mul_12_0 = f32[16] add(multiply(two_array, one_array), zero_array)
+  power_one_12_1 = f32[16] power(half_array, one_array)
+  power_zero_12_2 = f32[16] power(two_array, zero_array)
+  sub_zero_12_3 = f32[16] subtract(pi_array, zero_array)
+  complex_pow_mul_12_4 = f32[16] power(multiply(two_array, one_array), one_array)
+  complex_sub_add_12_5 = f32[16] subtract(add(e_array, one_array), one_array)
+  square_sqrt_12_6 = f32[16] power(sqrt(two_array), two_array)
+  ROOT result = (f32[16], f32[16], f32[16], f32[16], f32[16], f32[16], f32[16]) tuple(
+    complex_add_mul_12_0,
+    power_one_12_1,
+    power_zero_12_2,
+    sub_zero_12_3,
+    complex_pow_mul_12_4,
+    complex_sub_add_12_5,
+    square_sqrt_12_6
+  )
+}

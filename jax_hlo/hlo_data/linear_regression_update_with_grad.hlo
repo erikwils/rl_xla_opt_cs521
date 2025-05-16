@@ -1,32 +1,37 @@
-module @jit_linear_regression_update_for_hlo attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {
-  func.func public @main(%arg0: tensor<2xf32> {mhlo.layout_mode = "default"}, %arg1: tensor<f32> {mhlo.layout_mode = "default"}, %arg2: tensor<5x2xf32> {mhlo.layout_mode = "default"}, %arg3: tensor<5xf32> {mhlo.layout_mode = "default"}, %arg4: tensor<f32> {mhlo.layout_mode = "default"}) -> (tensor<2xf32> {jax.result_info = "[0]", mhlo.layout_mode = "default"}, tensor<f32> {jax.result_info = "[1]", mhlo.layout_mode = "default"}) {
-    %0 = stablehlo.dot_general %arg2, %arg0, contracting_dims = [1] x [0], precision = [DEFAULT, DEFAULT] : (tensor<5x2xf32>, tensor<2xf32>) -> tensor<5xf32>
-    %1 = stablehlo.convert %arg1 : tensor<f32>
-    %2 = stablehlo.broadcast_in_dim %1, dims = [] : (tensor<f32>) -> tensor<5xf32>
-    %3 = stablehlo.add %0, %2 : tensor<5xf32>
-    %4 = stablehlo.subtract %3, %arg3 : tensor<5xf32>
-    %5 = call @integer_pow(%4) : (tensor<5xf32>) -> tensor<5xf32>
-    %cst = stablehlo.constant dense<2.000000e+00> : tensor<f32>
-    %6 = stablehlo.broadcast_in_dim %cst, dims = [] : (tensor<f32>) -> tensor<5xf32>
-    %7 = stablehlo.multiply %6, %5 : tensor<5xf32>
-    %cst_0 = stablehlo.constant dense<1.000000e+00> : tensor<f32>
-    %cst_1 = stablehlo.constant dense<5.000000e+00> : tensor<f32>
-    %8 = stablehlo.divide %cst_0, %cst_1 : tensor<f32>
-    %9 = stablehlo.broadcast_in_dim %8, dims = [] : (tensor<f32>) -> tensor<5xf32>
-    %10 = stablehlo.multiply %9, %7 : tensor<5xf32>
-    %cst_2 = stablehlo.constant dense<0.000000e+00> : tensor<f32>
-    %11 = stablehlo.reduce(%10 init: %cst_2) applies stablehlo.add across dimensions = [0] : (tensor<5xf32>, tensor<f32>) -> tensor<f32>
-    %12 = stablehlo.convert %11 : tensor<f32>
-    %13 = stablehlo.dot_general %10, %arg2, contracting_dims = [0] x [0], precision = [DEFAULT, DEFAULT] : (tensor<5xf32>, tensor<5x2xf32>) -> tensor<2xf32>
-    %14 = stablehlo.convert %arg4 : tensor<f32>
-    %15 = stablehlo.broadcast_in_dim %14, dims = [] : (tensor<f32>) -> tensor<2xf32>
-    %16 = stablehlo.multiply %15, %13 : tensor<2xf32>
-    %17 = stablehlo.subtract %arg0, %16 : tensor<2xf32>
-    %18 = stablehlo.multiply %arg4, %12 : tensor<f32>
-    %19 = stablehlo.subtract %arg1, %18 : tensor<f32>
-    return %17, %19 : tensor<2xf32>, tensor<f32>
-  }
-  func.func private @integer_pow(%arg0: tensor<5xf32>) -> tensor<5xf32> {
-    return %arg0 : tensor<5xf32>
-  }
+HloModule jit_linear_regression_update_for_hlo, entry_computation_layout={(f32[2]{0}, f32[], f32[5,2]{1,0}, f32[5]{0}, f32[])->(f32[2]{0}, f32[])}
+
+%region_0.17 (Arg_0.18: f32[], Arg_1.19: f32[]) -> f32[] {
+  %Arg_0.18 = f32[] parameter(0)
+  %Arg_1.19 = f32[] parameter(1)
+  ROOT %add.20 = f32[] add(%Arg_0.18, %Arg_1.19)
 }
+
+ENTRY %main.29 (Arg_0.1: f32[2], Arg_1.2: f32[], Arg_2.3: f32[5,2], Arg_3.4: f32[5], Arg_4.5: f32[]) -> (f32[2], f32[]) {
+  %Arg_0.1 = f32[2]{0} parameter(0)
+  %Arg_4.5 = f32[] parameter(4)
+  %broadcast.23 = f32[2]{0} broadcast(%Arg_4.5), dimensions={}
+  %Arg_2.3 = f32[5,2]{1,0} parameter(2)
+  %dot.11 = f32[5]{0} dot(%Arg_2.3, %Arg_0.1), lhs_contracting_dims={1}, rhs_contracting_dims={0}
+  %Arg_1.2 = f32[] parameter(1)
+  %broadcast.12 = f32[5]{0} broadcast(%Arg_1.2), dimensions={}
+  %add.13 = f32[5]{0} add(%dot.11, %broadcast.12)
+  %Arg_3.4 = f32[5]{0} parameter(3)
+  %subtract.14 = f32[5]{0} subtract(%add.13, %Arg_3.4)
+  %constant.8 = f32[] constant(2)
+  %broadcast.9 = f32[5]{0} broadcast(%constant.8), dimensions={}
+  %multiply.15 = f32[5]{0} multiply(%subtract.14, %broadcast.9)
+  %constant.6 = f32[] constant(0.2)
+  %broadcast.7 = f32[5]{0} broadcast(%constant.6), dimensions={}
+  %multiply.16 = f32[5]{0} multiply(%multiply.15, %broadcast.7)
+  %dot.22 = f32[2]{0} dot(%multiply.16, %Arg_2.3), lhs_contracting_dims={0}, rhs_contracting_dims={0}
+  %multiply.24 = f32[2]{0} multiply(%broadcast.23, %dot.22)
+  %subtract.25 = f32[2]{0} subtract(%Arg_0.1, %multiply.24)
+  %constant.10 = f32[] constant(0)
+  %reduce.21 = f32[] reduce(%multiply.16, %constant.10), dimensions={0}, to_apply=%region_0.17
+  %multiply.26 = f32[] multiply(%Arg_4.5, %reduce.21)
+  %subtract.27 = f32[] subtract(%Arg_1.2, %multiply.26)
+  ROOT %tuple.28 = (f32[2]{0}, f32[]) tuple(%subtract.25, %subtract.27)
+}
+
+
+

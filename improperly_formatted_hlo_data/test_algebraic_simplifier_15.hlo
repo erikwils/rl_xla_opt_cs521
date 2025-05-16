@@ -1,0 +1,27 @@
+HloModule test_algebraic_simplifier_15
+ENTRY main {
+  constant_half = f32[] constant(0.5)
+  constant_one = f32[] constant(1)
+  constant_zero = f32[] constant(0)
+  constant_two = f32[] constant(2)
+  zero_array = f32[2,3,4] broadcast(constant_zero), dimensions={}
+  one_array = f32[2,3,4] broadcast(constant_one), dimensions={}
+  two_array = f32[2,3,4] broadcast(constant_two), dimensions={}
+  half_array = f32[2,3,4] broadcast(constant_half), dimensions={}
+  complex_add_mul_15_0 = f32[2,3,4] add(multiply(one_array, one_array), zero_array)
+  power_one_15_1 = f32[2,3,4] power(half_array, one_array)
+  mul_one_15_2 = f32[2,3,4] multiply(zero_array, one_array)
+  square_sqrt_15_3 = f32[2,3,4] power(sqrt(half_array), two_array)
+  complex_pow_mul_15_4 = f32[2,3,4] power(multiply(zero_array, one_array), one_array)
+  complex_combo_15_combo_0 = f32[2,3,4] multiply(mul_one_15_2, complex_add_mul_15_0)
+  complex_combo_15_combo_1 = f32[2,3,4] multiply(mul_one_15_2, power_one_15_1)
+  ROOT result = (f32[2,3,4], f32[2,3,4], f32[2,3,4], f32[2,3,4], f32[2,3,4], f32[2,3,4], f32[2,3,4]) tuple(
+    complex_add_mul_15_0,
+    power_one_15_1,
+    mul_one_15_2,
+    square_sqrt_15_3,
+    complex_pow_mul_15_4,
+    complex_combo_15_combo_0,
+    complex_combo_15_combo_1
+  )
+}

@@ -161,15 +161,15 @@ class XLAOptimizationEnv(gym.Env):
         """
         # Extract graph components safely
         nodes = np.array(features.get("graph_nodes", []), dtype=np.float32)
-        
+
         # Create edge indices from edge_links
         edge_links = features.get("graph_edge_links", [])
-        
+
         # Convert edge links to numpy array for consistency
         # Handle case where edge_links might be empty
         if edge_links:
             edge_indices = np.array(edge_links, dtype=np.int64)
-            
+
             # Create more informative edge features based on node properties
             # Each edge gets features based on its source and target nodes
             edge_features = []

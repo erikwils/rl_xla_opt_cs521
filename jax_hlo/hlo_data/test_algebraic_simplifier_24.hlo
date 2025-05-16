@@ -1,25 +1,34 @@
-HloModule test_algebraic_simplifier_24
-ENTRY main {
-  constant_one = f32[] constant(1)
-  constant_two = f32[] constant(2)
-  constant_pi = f32[] constant(3.14159)
-  constant_zero = f32[] constant(0)
-  zero_array = f32[3,5] broadcast(constant_zero), dimensions={}
-  one_array = f32[3,5] broadcast(constant_one), dimensions={}
-  two_array = f32[3,5] broadcast(constant_two), dimensions={}
-  pi_array = f32[3,5] broadcast(constant_pi), dimensions={}
-  power_one_24_0 = f32[3,5] power(pi_array, one_array)
-  mul_zero_24_1 = f32[3,5] multiply(pi_array, zero_array)
-  mul_one_24_2 = f32[3,5] multiply(pi_array, one_array)
-  add_zero_24_3 = f32[3,5] add(zero_array, zero_array)
-  complex_combo_24_combo_0 = f32[3,5] subtract(mul_one_24_2, mul_one_24_2)
-  complex_combo_24_combo_1 = f32[3,5] subtract(mul_one_24_2, mul_one_24_2)
-  ROOT result = (f32[3,5], f32[3,5], f32[3,5], f32[3,5], f32[3,5], f32[3,5]) tuple(
-    power_one_24_0,
-    mul_zero_24_1,
-    mul_one_24_2,
-    add_zero_24_3,
-    complex_combo_24_combo_0,
-    complex_combo_24_combo_1
-  )
+HloModule test_algebraic_simplifier_24, entry_computation_layout={()->(f32[3,5]{1,0}, f32[3,5]{1,0}, f32[3,5]{1,0}, f32[3,5]{1,0}, f32[3,5]{1,0}, /*index=5*/f32[3,5]{1,0}, f32[3,5]{1,0}, f32[3,5]{1,0})}
+
+ENTRY %main () -> (f32[3,5], f32[3,5], f32[3,5], f32[3,5], f32[3,5], /*index=5*/f32[3,5], f32[3,5], f32[3,5]) {
+  %constant_pi = f32[] constant(3.14159)
+  %pi_array = f32[3,5]{1,0} broadcast(%constant_pi), dimensions={}
+  %constant_two = f32[] constant(2)
+  %two_array = f32[3,5]{1,0} broadcast(%constant_two), dimensions={}
+  %constant_one = f32[] constant(1)
+  %one_array = f32[3,5]{1,0} broadcast(%constant_one), dimensions={}
+  %add.anon = f32[3,5]{1,0} add(%two_array, %one_array)
+  %complex_sub_add_24_0 = f32[3,5]{1,0} subtract(%add.anon, %one_array)
+  %constant_neg_one = f32[] constant(-1)
+  %neg_one_array = f32[3,5]{1,0} broadcast(%constant_neg_one), dimensions={}
+  %constant_zero = f32[] constant(0)
+  %zero_array = f32[3,5]{1,0} broadcast(%constant_zero), dimensions={}
+  %add_zero_24_1 = f32[3,5]{1,0} add(%neg_one_array, %zero_array)
+  %constant_half = f32[] constant(0.5)
+  %half_array = f32[3,5]{1,0} broadcast(%constant_half), dimensions={}
+  %multiply.anon = f32[3,5]{1,0} multiply(%neg_one_array, %neg_one_array)
+  %double_neg_24_2 = f32[3,5]{1,0} multiply(%half_array, %multiply.anon)
+  %sqrt.anon = f32[3,5]{1,0} sqrt(%one_array)
+  %square_sqrt_24_3 = f32[3,5]{1,0} power(%sqrt.anon, %two_array)
+  %constant_e = f32[] constant(2.71828)
+  %e_array = f32[3,5]{1,0} broadcast(%constant_e), dimensions={}
+  %mul_two_24_4 = f32[3,5]{1,0} multiply(%e_array, %two_array)
+  %sub_zero_24_5 = f32[3,5]{1,0} subtract(%one_array, %zero_array)
+  %mul_one_24_6 = f32[3,5]{1,0} multiply(%half_array, %one_array)
+  %add.anon.1 = f32[3,5]{1,0} add(%half_array, %zero_array)
+  %complex_mul_add_24_7 = f32[3,5]{1,0} multiply(%add.anon.1, %one_array)
+  ROOT %result = (f32[3,5]{1,0}, f32[3,5]{1,0}, f32[3,5]{1,0}, f32[3,5]{1,0}, f32[3,5]{1,0}, /*index=5*/f32[3,5]{1,0}, f32[3,5]{1,0}, f32[3,5]{1,0}) tuple(%complex_sub_add_24_0, %add_zero_24_1, %double_neg_24_2, %square_sqrt_24_3, %mul_two_24_4, /*index=5*/%sub_zero_24_5, %mul_one_24_6, %complex_mul_add_24_7)
 }
+
+
+

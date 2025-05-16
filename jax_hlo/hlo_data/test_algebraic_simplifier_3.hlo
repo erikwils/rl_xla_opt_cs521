@@ -1,29 +1,31 @@
-HloModule test_algebraic_simplifier_3
-ENTRY main {
-  constant_one = f32[] constant(1)
-  constant_two = f32[] constant(2)
-  constant_neg_one = f32[] constant(-1)
-  constant_zero = f32[] constant(0)
-  zero_array = f32[16] broadcast(constant_zero), dimensions={}
-  one_array = f32[16] broadcast(constant_one), dimensions={}
-  two_array = f32[16] broadcast(constant_two), dimensions={}
-  neg_one_array = f32[16] broadcast(constant_neg_one), dimensions={}
-  add_neg_3_0 = f32[16] add(one_array, neg_one_array)
-  mul_one_3_1 = f32[16] multiply(zero_array, one_array)
-  mul_zero_3_2 = f32[16] multiply(one_array, zero_array)
-  complex_pow_mul_3_3 = f32[16] power(multiply(neg_one_array, one_array), one_array)
-  complex_sub_add_3_4 = f32[16] subtract(add(two_array, one_array), one_array)
-  complex_combo_3_combo_0 = f32[16] subtract(complex_pow_mul_3_3, add_neg_3_0)
-  complex_combo_3_combo_1 = f32[16] add(mul_zero_3_2, mul_zero_3_2)
-  complex_combo_3_combo_2 = f32[16] multiply(add_neg_3_0, mul_zero_3_2)
-  ROOT result = (f32[16], f32[16], f32[16], f32[16], f32[16], f32[16], f32[16], f32[16]) tuple(
-    add_neg_3_0,
-    mul_one_3_1,
-    mul_zero_3_2,
-    complex_pow_mul_3_3,
-    complex_sub_add_3_4,
-    complex_combo_3_combo_0,
-    complex_combo_3_combo_1,
-    complex_combo_3_combo_2
-  )
+HloModule test_algebraic_simplifier_3, entry_computation_layout={()->(f32[2,3,4]{2,1,0}, f32[2,3,4]{2,1,0}, f32[2,3,4]{2,1,0}, f32[2,3,4]{2,1,0}, f32[2,3,4]{2,1,0}, /*index=5*/f32[2,3,4]{2,1,0}, f32[2,3,4]{2,1,0})}
+
+ENTRY %main () -> (f32[2,3,4], f32[2,3,4], f32[2,3,4], f32[2,3,4], f32[2,3,4], /*index=5*/f32[2,3,4], f32[2,3,4]) {
+  %constant_half = f32[] constant(0.5)
+  %half_array = f32[2,3,4]{2,1,0} broadcast(%constant_half), dimensions={}
+  %constant_e = f32[] constant(2.71828)
+  %e_array = f32[2,3,4]{2,1,0} broadcast(%constant_e), dimensions={}
+  %constant_zero = f32[] constant(0)
+  %zero_array = f32[2,3,4]{2,1,0} broadcast(%constant_zero), dimensions={}
+  %sub_zero_3_0 = f32[2,3,4]{2,1,0} subtract(%zero_array, %zero_array)
+  %constant_one = f32[] constant(1)
+  %one_array = f32[2,3,4]{2,1,0} broadcast(%constant_one), dimensions={}
+  %power_zero_3_1 = f32[2,3,4]{2,1,0} power(%one_array, %zero_array)
+  %constant_neg_one = f32[] constant(-1)
+  %neg_one_array = f32[2,3,4]{2,1,0} broadcast(%constant_neg_one), dimensions={}
+  %multiply.anon = f32[2,3,4]{2,1,0} multiply(%neg_one_array, %neg_one_array)
+  %double_neg_3_2 = f32[2,3,4]{2,1,0} multiply(%neg_one_array, %multiply.anon)
+  %constant_two = f32[] constant(2)
+  %two_array = f32[2,3,4]{2,1,0} broadcast(%constant_two), dimensions={}
+  %mul_two_3_3 = f32[2,3,4]{2,1,0} multiply(%zero_array, %two_array)
+  %constant_pi = f32[] constant(3.14159)
+  %pi_array = f32[2,3,4]{2,1,0} broadcast(%constant_pi), dimensions={}
+  %sqrt.anon = f32[2,3,4]{2,1,0} sqrt(%pi_array)
+  %square_sqrt_3_4 = f32[2,3,4]{2,1,0} power(%sqrt.anon, %two_array)
+  %complex_combo_3_combo_0 = f32[2,3,4]{2,1,0} add(%mul_two_3_3, %square_sqrt_3_4)
+  %complex_combo_3_combo_1 = f32[2,3,4]{2,1,0} multiply(%double_neg_3_2, %sub_zero_3_0)
+  ROOT %result = (f32[2,3,4]{2,1,0}, f32[2,3,4]{2,1,0}, f32[2,3,4]{2,1,0}, f32[2,3,4]{2,1,0}, f32[2,3,4]{2,1,0}, /*index=5*/f32[2,3,4]{2,1,0}, f32[2,3,4]{2,1,0}) tuple(%sub_zero_3_0, %power_zero_3_1, %double_neg_3_2, %mul_two_3_3, %square_sqrt_3_4, /*index=5*/%complex_combo_3_combo_0, %complex_combo_3_combo_1)
 }
+
+
+

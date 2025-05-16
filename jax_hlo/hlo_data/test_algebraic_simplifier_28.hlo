@@ -1,0 +1,27 @@
+HloModule test_algebraic_simplifier_28, entry_computation_layout={()->(f32[3,5]{1,0}, f32[3,5]{1,0}, f32[3,5]{1,0}, f32[3,5]{1,0}, f32[3,5]{1,0}, /*index=5*/f32[3,5]{1,0}, f32[3,5]{1,0}, f32[3,5]{1,0})}
+
+ENTRY %main () -> (f32[3,5], f32[3,5], f32[3,5], f32[3,5], f32[3,5], /*index=5*/f32[3,5], f32[3,5], f32[3,5]) {
+  %constant_one = f32[] constant(1)
+  %one_array = f32[3,5]{1,0} broadcast(%constant_one), dimensions={}
+  %sub_self_28_0 = f32[3,5]{1,0} subtract(%one_array, %one_array)
+  %constant_two = f32[] constant(2)
+  %two_array = f32[3,5]{1,0} broadcast(%constant_two), dimensions={}
+  %add.anon = f32[3,5]{1,0} add(%two_array, %two_array)
+  %complex_sub_add_28_1 = f32[3,5]{1,0} subtract(%add.anon, %two_array)
+  %constant_half = f32[] constant(0.5)
+  %half_array = f32[3,5]{1,0} broadcast(%constant_half), dimensions={}
+  %mul_one_28_2 = f32[3,5]{1,0} multiply(%half_array, %one_array)
+  %constant_zero = f32[] constant(0)
+  %zero_array = f32[3,5]{1,0} broadcast(%constant_zero), dimensions={}
+  %power_one_28_3 = f32[3,5]{1,0} power(%zero_array, %one_array)
+  %add_zero_28_4 = f32[3,5]{1,0} add(%two_array, %zero_array)
+  %multiply.anon = f32[3,5]{1,0} multiply(%two_array, %one_array)
+  %complex_add_mul_28_5 = f32[3,5]{1,0} add(%multiply.anon, %zero_array)
+  %sqrt.anon = f32[3,5]{1,0} sqrt(%half_array)
+  %square_sqrt_28_6 = f32[3,5]{1,0} power(%sqrt.anon, %two_array)
+  %complex_combo_28_combo_0 = f32[3,5]{1,0} add(%sub_self_28_0, %complex_add_mul_28_5)
+  ROOT %result = (f32[3,5]{1,0}, f32[3,5]{1,0}, f32[3,5]{1,0}, f32[3,5]{1,0}, f32[3,5]{1,0}, /*index=5*/f32[3,5]{1,0}, f32[3,5]{1,0}, f32[3,5]{1,0}) tuple(%sub_self_28_0, %complex_sub_add_28_1, %mul_one_28_2, %power_one_28_3, %add_zero_28_4, /*index=5*/%complex_add_mul_28_5, %square_sqrt_28_6, %complex_combo_28_combo_0)
+}
+
+
+

@@ -1,0 +1,37 @@
+HloModule test_algebraic_simplifier_5
+ENTRY main {
+  constant_e = f32[] constant(2.71828)
+  constant_zero = f32[] constant(0)
+  constant_two = f32[] constant(2)
+  constant_half = f32[] constant(0.5)
+  constant_neg_one = f32[] constant(-1)
+  constant_one = f32[] constant(1)
+  constant_pi = f32[] constant(3.14159)
+  zero_array = f32[3,5] broadcast(constant_zero), dimensions={}
+  one_array = f32[3,5] broadcast(constant_one), dimensions={}
+  two_array = f32[3,5] broadcast(constant_two), dimensions={}
+  neg_one_array = f32[3,5] broadcast(constant_neg_one), dimensions={}
+  half_array = f32[3,5] broadcast(constant_half), dimensions={}
+  pi_array = f32[3,5] broadcast(constant_pi), dimensions={}
+  e_array = f32[3,5] broadcast(constant_e), dimensions={}
+  power_one_5_0 = f32[3,5] power(zero_array, one_array)
+  mul_two_5_1 = f32[3,5] multiply(half_array, two_array)
+  sub_zero_5_2 = f32[3,5] subtract(pi_array, zero_array)
+  mul_one_5_3 = f32[3,5] multiply(pi_array, one_array)
+  add_zero_5_4 = f32[3,5] add(e_array, zero_array)
+  complex_pow_mul_5_5 = f32[3,5] power(multiply(two_array, one_array), one_array)
+  complex_add_mul_5_6 = f32[3,5] add(multiply(e_array, one_array), zero_array)
+  complex_combo_5_combo_0 = f32[3,5] multiply(complex_add_mul_5_6, power_one_5_0)
+  complex_combo_5_combo_1 = f32[3,5] multiply(power_one_5_0, complex_combo_5_combo_0)
+  ROOT result = (f32[3,5], f32[3,5], f32[3,5], f32[3,5], f32[3,5], f32[3,5], f32[3,5], f32[3,5], f32[3,5]) tuple(
+    power_one_5_0,
+    mul_two_5_1,
+    sub_zero_5_2,
+    mul_one_5_3,
+    add_zero_5_4,
+    complex_pow_mul_5_5,
+    complex_add_mul_5_6,
+    complex_combo_5_combo_0,
+    complex_combo_5_combo_1
+  )
+}

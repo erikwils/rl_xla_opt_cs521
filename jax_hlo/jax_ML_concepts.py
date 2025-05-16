@@ -30,7 +30,7 @@ def save_hlo_to_file(description, target_fn, example_args, example_kwargs=None,
         lowered_computation = jitted_fn.lower(*example_args, **example_kwargs)
 
         # Get HLO text from the Lowered object
-        hlo_text = lowered_computation.as_text()
+        hlo_text = lowered_computation.compiler_ir(dialect="hlo").as_hlo_text()
 
         with open(filepath, 'w', encoding='utf-8') as f:
             f.write(hlo_text)

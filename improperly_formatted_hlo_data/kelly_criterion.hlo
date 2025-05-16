@@ -1,0 +1,13 @@
+HloModule jit_kelly_criterion, entry_computation_layout={(f32[], f32[], f32[])->f32[]}
+
+ENTRY main.9 {
+  Arg_0.1 = f32[] parameter(0)
+  Arg_1.2 = f32[] parameter(1)
+  subtract.5 = f32[] subtract(Arg_0.1, Arg_1.2)
+  Arg_2.3 = f32[] parameter(2)
+  multiply.6 = f32[] multiply(Arg_2.3, Arg_2.3)
+  constant.4 = f32[] constant(1e-09)
+  add.7 = f32[] add(multiply.6, constant.4)
+  ROOT divide.8 = f32[] divide(subtract.5, add.7)
+}
+

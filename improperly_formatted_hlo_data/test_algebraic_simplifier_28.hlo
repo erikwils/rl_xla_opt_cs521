@@ -1,0 +1,29 @@
+HloModule test_algebraic_simplifier_28
+ENTRY main {
+  constant_half = f32[] constant(0.5)
+  constant_one = f32[] constant(1)
+  constant_zero = f32[] constant(0)
+  constant_two = f32[] constant(2)
+  zero_array = f32[3,5] broadcast(constant_zero), dimensions={}
+  one_array = f32[3,5] broadcast(constant_one), dimensions={}
+  two_array = f32[3,5] broadcast(constant_two), dimensions={}
+  half_array = f32[3,5] broadcast(constant_half), dimensions={}
+  sub_self_28_0 = f32[3,5] subtract(one_array, one_array)
+  complex_sub_add_28_1 = f32[3,5] subtract(add(two_array, two_array), two_array)
+  mul_one_28_2 = f32[3,5] multiply(half_array, one_array)
+  power_one_28_3 = f32[3,5] power(zero_array, one_array)
+  add_zero_28_4 = f32[3,5] add(two_array, zero_array)
+  complex_add_mul_28_5 = f32[3,5] add(multiply(two_array, one_array), zero_array)
+  square_sqrt_28_6 = f32[3,5] power(sqrt(half_array), two_array)
+  complex_combo_28_combo_0 = f32[3,5] add(sub_self_28_0, complex_add_mul_28_5)
+  ROOT result = (f32[3,5], f32[3,5], f32[3,5], f32[3,5], f32[3,5], f32[3,5], f32[3,5], f32[3,5]) tuple(
+    sub_self_28_0,
+    complex_sub_add_28_1,
+    mul_one_28_2,
+    power_one_28_3,
+    add_zero_28_4,
+    complex_add_mul_28_5,
+    square_sqrt_28_6,
+    complex_combo_28_combo_0
+  )
+}

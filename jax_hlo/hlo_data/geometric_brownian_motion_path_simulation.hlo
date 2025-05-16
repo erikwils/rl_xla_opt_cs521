@@ -1,189 +1,340 @@
-module @jit_simulate_gbm_for_hlo attributes {mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {
-  func.func public @main(%arg0: tensor<f32> {mhlo.layout_mode = "default"}, %arg1: tensor<f32> {mhlo.layout_mode = "default"}, %arg2: tensor<f32> {mhlo.layout_mode = "default"}, %arg3: tensor<f32> {mhlo.layout_mode = "default"}, %arg4: tensor<f32> {mhlo.layout_mode = "default"}, %arg5: tensor<2xui32> {mhlo.layout_mode = "default"}) -> (tensor<101xf32> {jax.result_info = "", mhlo.layout_mode = "default"}) {
-    %cst = stablehlo.constant dense<0.000000e+00> : tensor<1xf32>
-    %c = stablehlo.constant dense<0> : tensor<i32>
-    %0 = call @_linspace(%c, %arg3) : (tensor<i32>, tensor<f32>) -> tensor<101xf32>
-    %1 = call @_normal(%arg5) : (tensor<2xui32>) -> tensor<100xf32>
-    %2 = stablehlo.sqrt %arg4 : tensor<f32>
-    %3 = stablehlo.convert %2 : tensor<f32>
-    %4 = stablehlo.broadcast_in_dim %3, dims = [] : (tensor<f32>) -> tensor<100xf32>
-    %5 = stablehlo.multiply %1, %4 : tensor<100xf32>
-    %6 = call @_cumulative_reduction(%5) : (tensor<100xf32>) -> tensor<100xf32>
-    %7 = stablehlo.concatenate %cst, %6, dim = 0 : (tensor<1xf32>, tensor<100xf32>) -> tensor<101xf32>
-    %8 = stablehlo.multiply %arg2, %arg2 : tensor<f32>
-    %cst_0 = stablehlo.constant dense<5.000000e-01> : tensor<f32>
-    %9 = stablehlo.multiply %cst_0, %8 : tensor<f32>
-    %10 = stablehlo.subtract %arg1, %9 : tensor<f32>
-    %11 = stablehlo.convert %10 : tensor<f32>
-    %12 = stablehlo.broadcast_in_dim %11, dims = [] : (tensor<f32>) -> tensor<101xf32>
-    %13 = stablehlo.multiply %12, %0 : tensor<101xf32>
-    %14 = stablehlo.convert %arg2 : tensor<f32>
-    %15 = stablehlo.broadcast_in_dim %14, dims = [] : (tensor<f32>) -> tensor<101xf32>
-    %16 = stablehlo.multiply %15, %7 : tensor<101xf32>
-    %17 = stablehlo.add %13, %16 : tensor<101xf32>
-    %18 = stablehlo.exponential %17 : tensor<101xf32>
-    %19 = stablehlo.convert %arg0 : tensor<f32>
-    %20 = stablehlo.broadcast_in_dim %19, dims = [] : (tensor<f32>) -> tensor<101xf32>
-    %21 = stablehlo.multiply %20, %18 : tensor<101xf32>
-    return %21 : tensor<101xf32>
-  }
-  func.func private @_linspace(%arg0: tensor<i32> {mhlo.layout_mode = "default"}, %arg1: tensor<f32> {mhlo.layout_mode = "default"}) -> (tensor<101xf32> {mhlo.layout_mode = "default"}) {
-    %0 = stablehlo.convert %arg0 : (tensor<i32>) -> tensor<f32>
-    %1 = stablehlo.convert %arg1 : tensor<f32>
-    %2 = stablehlo.iota dim = 0 : tensor<100xf32>
-    %cst = stablehlo.constant dense<1.000000e+02> : tensor<f32>
-    %3 = stablehlo.broadcast_in_dim %cst, dims = [] : (tensor<f32>) -> tensor<100xf32>
-    %4 = stablehlo.divide %2, %3 : tensor<100xf32>
-    %5 = stablehlo.reshape %0 : (tensor<f32>) -> tensor<1xf32>
-    %cst_0 = stablehlo.constant dense<1.000000e+00> : tensor<f32>
-    %6 = stablehlo.broadcast_in_dim %cst_0, dims = [] : (tensor<f32>) -> tensor<100xf32>
-    %7 = stablehlo.subtract %6, %4 : tensor<100xf32>
-    %8 = stablehlo.broadcast_in_dim %5, dims = [0] : (tensor<1xf32>) -> tensor<100xf32>
-    %9 = stablehlo.multiply %8, %7 : tensor<100xf32>
-    %10 = stablehlo.reshape %1 : (tensor<f32>) -> tensor<1xf32>
-    %11 = stablehlo.broadcast_in_dim %10, dims = [0] : (tensor<1xf32>) -> tensor<100xf32>
-    %12 = stablehlo.multiply %11, %4 : tensor<100xf32>
-    %13 = stablehlo.add %9, %12 : tensor<100xf32>
-    %14 = stablehlo.broadcast_in_dim %1, dims = [] : (tensor<f32>) -> tensor<1xf32>
-    %15 = stablehlo.concatenate %13, %14, dim = 0 : (tensor<100xf32>, tensor<1xf32>) -> tensor<101xf32>
-    return %15 : tensor<101xf32>
-  }
-  func.func private @_normal(%arg0: tensor<2xui32> {mhlo.layout_mode = "default"}) -> (tensor<100xf32> {mhlo.layout_mode = "default"}) {
-    %0 = call @_normal_real(%arg0) : (tensor<2xui32>) -> tensor<100xf32>
-    return %0 : tensor<100xf32>
-  }
-  func.func private @_normal_real(%arg0: tensor<2xui32> {mhlo.layout_mode = "default"}) -> (tensor<100xf32> {mhlo.layout_mode = "default"}) {
-    %cst = stablehlo.constant dense<-0.99999994> : tensor<f32>
-    %cst_0 = stablehlo.constant dense<1.000000e+00> : tensor<f32>
-    %0 = call @_uniform(%arg0, %cst, %cst_0) : (tensor<2xui32>, tensor<f32>, tensor<f32>) -> tensor<100xf32>
-    %1 = chlo.erf_inv %0 : tensor<100xf32> -> tensor<100xf32>
-    %cst_1 = stablehlo.constant dense<1.41421354> : tensor<f32>
-    %2 = stablehlo.broadcast_in_dim %cst_1, dims = [] : (tensor<f32>) -> tensor<100xf32>
-    %3 = stablehlo.multiply %2, %1 : tensor<100xf32>
-    return %3 : tensor<100xf32>
-  }
-  func.func private @_uniform(%arg0: tensor<2xui32> {mhlo.layout_mode = "default"}, %arg1: tensor<f32> {mhlo.layout_mode = "default"}, %arg2: tensor<f32> {mhlo.layout_mode = "default"}) -> (tensor<100xf32> {mhlo.layout_mode = "default"}) {
-    %0 = stablehlo.broadcast_in_dim %arg1, dims = [] : (tensor<f32>) -> tensor<1xf32>
-    %1 = stablehlo.broadcast_in_dim %arg2, dims = [] : (tensor<f32>) -> tensor<1xf32>
-    %2 = stablehlo.iota dim = 0 : tensor<100xui32>
-    %3 = stablehlo.slice %arg0 [0:1] : (tensor<2xui32>) -> tensor<1xui32>
-    %4 = stablehlo.reshape %3 : (tensor<1xui32>) -> tensor<ui32>
-    %5 = stablehlo.slice %arg0 [1:2] : (tensor<2xui32>) -> tensor<1xui32>
-    %6 = stablehlo.reshape %5 : (tensor<1xui32>) -> tensor<ui32>
-    %7 = stablehlo.slice %2 [0:50] : (tensor<100xui32>) -> tensor<50xui32>
-    %8 = stablehlo.slice %2 [50:100] : (tensor<100xui32>) -> tensor<50xui32>
-    %c = stablehlo.constant dense<[13, 15, 26, 6]> : tensor<4xui32>
-    %c_0 = stablehlo.constant dense<[17, 29, 16, 24]> : tensor<4xui32>
-    %9 = stablehlo.xor %4, %6 : tensor<ui32>
-    %c_1 = stablehlo.constant dense<466688986> : tensor<ui32>
-    %10 = stablehlo.xor %9, %c_1 : tensor<ui32>
-    %11 = stablehlo.broadcast_in_dim %4, dims = [] : (tensor<ui32>) -> tensor<50xui32>
-    %12 = stablehlo.add %7, %11 : tensor<50xui32>
-    %13 = stablehlo.broadcast_in_dim %6, dims = [] : (tensor<ui32>) -> tensor<50xui32>
-    %14 = stablehlo.add %8, %13 : tensor<50xui32>
-    %c_2 = stablehlo.constant dense<0> : tensor<i32>
-    %c_3 = stablehlo.constant dense<0> : tensor<i32>
-    %15:9 = stablehlo.while(%iterArg = %c_3, %iterArg_6 = %c_2, %iterArg_7 = %12, %iterArg_8 = %14, %iterArg_9 = %6, %iterArg_10 = %10, %iterArg_11 = %4, %iterArg_12 = %c, %iterArg_13 = %c_0) : tensor<i32>, tensor<i32>, tensor<50xui32>, tensor<50xui32>, tensor<ui32>, tensor<ui32>, tensor<ui32>, tensor<4xui32>, tensor<4xui32>
-     cond {
-      %c_14 = stablehlo.constant dense<5> : tensor<i32>
-      %31 = stablehlo.compare  LT, %iterArg, %c_14,  SIGNED : (tensor<i32>, tensor<i32>) -> tensor<i1>
-      stablehlo.return %31 : tensor<i1>
-    } do {
-      %31:8 = func.call @None(%iterArg_6, %iterArg_7, %iterArg_8, %iterArg_9, %iterArg_10, %iterArg_11, %iterArg_12, %iterArg_13) : (tensor<i32>, tensor<50xui32>, tensor<50xui32>, tensor<ui32>, tensor<ui32>, tensor<ui32>, tensor<4xui32>, tensor<4xui32>) -> (tensor<i32>, tensor<50xui32>, tensor<50xui32>, tensor<ui32>, tensor<ui32>, tensor<ui32>, tensor<4xui32>, tensor<4xui32>)
-      %c_14 = stablehlo.constant dense<1> : tensor<i32>
-      %32 = stablehlo.add %iterArg, %c_14 : tensor<i32>
-      stablehlo.return %32, %31#0, %31#1, %31#2, %31#3, %31#4, %31#5, %31#6, %31#7 : tensor<i32>, tensor<i32>, tensor<50xui32>, tensor<50xui32>, tensor<ui32>, tensor<ui32>, tensor<ui32>, tensor<4xui32>, tensor<4xui32>
-    }
-    %16 = stablehlo.concatenate %15#2, %15#3, dim = 0 : (tensor<50xui32>, tensor<50xui32>) -> tensor<100xui32>
-    %c_4 = stablehlo.constant dense<9> : tensor<ui32>
-    %17 = stablehlo.broadcast_in_dim %c_4, dims = [] : (tensor<ui32>) -> tensor<100xui32>
-    %18 = stablehlo.shift_right_logical %16, %17 : tensor<100xui32>
-    %c_5 = stablehlo.constant dense<1065353216> : tensor<ui32>
-    %19 = stablehlo.broadcast_in_dim %c_5, dims = [] : (tensor<ui32>) -> tensor<100xui32>
-    %20 = stablehlo.or %18, %19 : tensor<100xui32>
-    %21 = stablehlo.bitcast_convert %20 : (tensor<100xui32>) -> tensor<100xf32>
-    %cst = stablehlo.constant dense<1.000000e+00> : tensor<f32>
-    %22 = stablehlo.broadcast_in_dim %cst, dims = [] : (tensor<f32>) -> tensor<100xf32>
-    %23 = stablehlo.subtract %21, %22 : tensor<100xf32>
-    %24 = stablehlo.subtract %1, %0 : tensor<1xf32>
-    %25 = stablehlo.broadcast_in_dim %24, dims = [0] : (tensor<1xf32>) -> tensor<100xf32>
-    %26 = stablehlo.multiply %23, %25 : tensor<100xf32>
-    %27 = stablehlo.broadcast_in_dim %0, dims = [0] : (tensor<1xf32>) -> tensor<100xf32>
-    %28 = stablehlo.add %26, %27 : tensor<100xf32>
-    %29 = stablehlo.broadcast_in_dim %0, dims = [0] : (tensor<1xf32>) -> tensor<100xf32>
-    %30 = stablehlo.maximum %29, %28 : tensor<100xf32>
-    return %30 : tensor<100xf32>
-  }
-  func.func private @None(%arg0: tensor<i32>, %arg1: tensor<50xui32>, %arg2: tensor<50xui32>, %arg3: tensor<ui32>, %arg4: tensor<ui32>, %arg5: tensor<ui32>, %arg6: tensor<4xui32>, %arg7: tensor<4xui32>) -> (tensor<i32>, tensor<50xui32>, tensor<50xui32>, tensor<ui32>, tensor<ui32>, tensor<ui32>, tensor<4xui32>, tensor<4xui32>) {
-    %c = stablehlo.constant dense<1> : tensor<i32>
-    %0 = stablehlo.add %arg0, %c : tensor<i32>
-    %1 = stablehlo.slice %arg6 [0:1] : (tensor<4xui32>) -> tensor<1xui32>
-    %2 = stablehlo.reshape %1 : (tensor<1xui32>) -> tensor<ui32>
-    %3 = stablehlo.add %arg1, %arg2 : tensor<50xui32>
-    %4 = stablehlo.broadcast_in_dim %2, dims = [] : (tensor<ui32>) -> tensor<50xui32>
-    %5 = stablehlo.shift_left %arg2, %4 : tensor<50xui32>
-    %c_0 = stablehlo.constant dense<32> : tensor<ui32>
-    %6 = stablehlo.subtract %c_0, %2 : tensor<ui32>
-    %7 = stablehlo.broadcast_in_dim %6, dims = [] : (tensor<ui32>) -> tensor<50xui32>
-    %8 = stablehlo.shift_right_logical %arg2, %7 : tensor<50xui32>
-    %9 = stablehlo.or %5, %8 : tensor<50xui32>
-    %10 = stablehlo.xor %3, %9 : tensor<50xui32>
-    %11 = stablehlo.slice %arg6 [1:2] : (tensor<4xui32>) -> tensor<1xui32>
-    %12 = stablehlo.reshape %11 : (tensor<1xui32>) -> tensor<ui32>
-    %13 = stablehlo.add %3, %10 : tensor<50xui32>
-    %14 = stablehlo.broadcast_in_dim %12, dims = [] : (tensor<ui32>) -> tensor<50xui32>
-    %15 = stablehlo.shift_left %10, %14 : tensor<50xui32>
-    %c_1 = stablehlo.constant dense<32> : tensor<ui32>
-    %16 = stablehlo.subtract %c_1, %12 : tensor<ui32>
-    %17 = stablehlo.broadcast_in_dim %16, dims = [] : (tensor<ui32>) -> tensor<50xui32>
-    %18 = stablehlo.shift_right_logical %10, %17 : tensor<50xui32>
-    %19 = stablehlo.or %15, %18 : tensor<50xui32>
-    %20 = stablehlo.xor %13, %19 : tensor<50xui32>
-    %21 = stablehlo.slice %arg6 [2:3] : (tensor<4xui32>) -> tensor<1xui32>
-    %22 = stablehlo.reshape %21 : (tensor<1xui32>) -> tensor<ui32>
-    %23 = stablehlo.add %13, %20 : tensor<50xui32>
-    %24 = stablehlo.broadcast_in_dim %22, dims = [] : (tensor<ui32>) -> tensor<50xui32>
-    %25 = stablehlo.shift_left %20, %24 : tensor<50xui32>
-    %c_2 = stablehlo.constant dense<32> : tensor<ui32>
-    %26 = stablehlo.subtract %c_2, %22 : tensor<ui32>
-    %27 = stablehlo.broadcast_in_dim %26, dims = [] : (tensor<ui32>) -> tensor<50xui32>
-    %28 = stablehlo.shift_right_logical %20, %27 : tensor<50xui32>
-    %29 = stablehlo.or %25, %28 : tensor<50xui32>
-    %30 = stablehlo.xor %23, %29 : tensor<50xui32>
-    %31 = stablehlo.slice %arg6 [3:4] : (tensor<4xui32>) -> tensor<1xui32>
-    %32 = stablehlo.reshape %31 : (tensor<1xui32>) -> tensor<ui32>
-    %33 = stablehlo.add %23, %30 : tensor<50xui32>
-    %34 = stablehlo.broadcast_in_dim %32, dims = [] : (tensor<ui32>) -> tensor<50xui32>
-    %35 = stablehlo.shift_left %30, %34 : tensor<50xui32>
-    %c_3 = stablehlo.constant dense<32> : tensor<ui32>
-    %36 = stablehlo.subtract %c_3, %32 : tensor<ui32>
-    %37 = stablehlo.broadcast_in_dim %36, dims = [] : (tensor<ui32>) -> tensor<50xui32>
-    %38 = stablehlo.shift_right_logical %30, %37 : tensor<50xui32>
-    %39 = stablehlo.or %35, %38 : tensor<50xui32>
-    %40 = stablehlo.xor %33, %39 : tensor<50xui32>
-    %41 = stablehlo.broadcast_in_dim %arg3, dims = [] : (tensor<ui32>) -> tensor<50xui32>
-    %42 = stablehlo.add %33, %41 : tensor<50xui32>
-    %43 = stablehlo.broadcast_in_dim %arg4, dims = [] : (tensor<ui32>) -> tensor<50xui32>
-    %44 = stablehlo.add %40, %43 : tensor<50xui32>
-    %c_4 = stablehlo.constant dense<1> : tensor<i32>
-    %45 = stablehlo.add %arg0, %c_4 : tensor<i32>
-    %46 = stablehlo.convert %45 : (tensor<i32>) -> tensor<ui32>
-    %47 = stablehlo.broadcast_in_dim %46, dims = [] : (tensor<ui32>) -> tensor<50xui32>
-    %48 = stablehlo.add %44, %47 : tensor<50xui32>
-    return %0, %42, %48, %arg4, %arg5, %arg3, %arg7, %arg6 : tensor<i32>, tensor<50xui32>, tensor<50xui32>, tensor<ui32>, tensor<ui32>, tensor<ui32>, tensor<4xui32>, tensor<4xui32>
-  }
-  func.func private @_cumulative_reduction(%arg0: tensor<100xf32> {mhlo.layout_mode = "default"}) -> (tensor<100xf32> {mhlo.layout_mode = "default"}) {
-    %0 = call @cumsum(%arg0) : (tensor<100xf32>) -> tensor<100xf32>
-    return %0 : tensor<100xf32>
-  }
-  func.func private @cumsum(%arg0: tensor<100xf32>) -> tensor<100xf32> {
-    %cst = stablehlo.constant dense<0.000000e+00> : tensor<f32>
-    %0 = stablehlo.broadcast_in_dim %cst, dims = [] : (tensor<f32>) -> tensor<f32>
-    %1 = "stablehlo.reduce_window"(%arg0, %0) <{base_dilations = array<i64: 1>, padding = dense<[[99, 0]]> : tensor<1x2xi64>, window_dilations = array<i64: 1>, window_dimensions = array<i64: 100>, window_strides = array<i64: 1>}> ({
-    ^bb0(%arg1: tensor<f32>, %arg2: tensor<f32>):
-      %2 = stablehlo.add %arg1, %arg2 : tensor<f32>
-      stablehlo.return %2 : tensor<f32>
-    }) : (tensor<100xf32>, tensor<f32>) -> tensor<100xf32>
-    return %1 : tensor<100xf32>
-  }
+HloModule jit_simulate_gbm_for_hlo, entry_computation_layout={(f32[], f32[], f32[], f32[], f32[], /*index=5*/u32[2]{0})->f32[101]{0}}
+
+%_linspace.10 (Arg_0.11: s32[], Arg_1.12: f32[]) -> f32[101] {
+  %Arg_0.11 = s32[] parameter(0)
+  %convert.17 = f32[] convert(%Arg_0.11)
+  %reshape.20 = f32[1]{0} reshape(%convert.17)
+  %broadcast.22 = f32[1]{0} broadcast(%reshape.20), dimensions={0}
+  %reshape.23 = f32[] reshape(%broadcast.22)
+  %broadcast.24 = f32[100]{0} broadcast(%reshape.23), dimensions={}
+  %constant.13 = f32[] constant(1)
+  %broadcast.14 = f32[100]{0} broadcast(%constant.13), dimensions={}
+  %iota.18 = f32[100]{0} iota(), iota_dimension=0
+  %constant.15 = f32[] constant(100)
+  %broadcast.16 = f32[100]{0} broadcast(%constant.15), dimensions={}
+  %divide.19 = f32[100]{0} divide(%iota.18, %broadcast.16)
+  %subtract.21 = f32[100]{0} subtract(%broadcast.14, %divide.19)
+  %multiply.25 = f32[100]{0} multiply(%broadcast.24, %subtract.21)
+  %Arg_1.12 = f32[] parameter(1)
+  %reshape.26 = f32[1]{0} reshape(%Arg_1.12)
+  %broadcast.27 = f32[1]{0} broadcast(%reshape.26), dimensions={0}
+  %reshape.28 = f32[] reshape(%broadcast.27)
+  %broadcast.29 = f32[100]{0} broadcast(%reshape.28), dimensions={}
+  %multiply.30 = f32[100]{0} multiply(%broadcast.29, %divide.19)
+  %add.31 = f32[100]{0} add(%multiply.25, %multiply.30)
+  %reshape.32 = f32[1]{0} reshape(%Arg_1.12)
+  ROOT %concatenate.33 = f32[101]{0} concatenate(%add.31, %reshape.32), dimensions={0}
 }
+
+%None.35 (Arg_0.36: s32[], Arg_1.37: u32[50], Arg_2.38: u32[50], Arg_3.39: u32[], Arg_4.40: u32[], Arg_5.41: u32[], Arg_6.42: u32[4], Arg_7.43: u32[4]) -> (s32[], u32[50], u32[50], u32[], u32[], /*index=5*/u32[], u32[4], u32[4]) {
+  %Arg_0.36 = s32[] parameter(0)
+  %constant.45 = s32[] constant(1)
+  %add.46 = s32[] add(%Arg_0.36, %constant.45)
+  %Arg_1.37 = u32[50]{0} parameter(1)
+  %Arg_2.38 = u32[50]{0} parameter(2)
+  %add.49 = u32[50]{0} add(%Arg_1.37, %Arg_2.38)
+  %Arg_6.42 = u32[4]{0} parameter(6)
+  %slice.47 = u32[1]{0} slice(%Arg_6.42), slice={[0:1]}
+  %reshape.48 = u32[] reshape(%slice.47)
+  %broadcast.50 = u32[50]{0} broadcast(%reshape.48), dimensions={}
+  %shift-left.51 = u32[50]{0} shift-left(%Arg_2.38, %broadcast.50)
+  %constant.44 = u32[] constant(32)
+  %subtract.52 = u32[] subtract(%constant.44, %reshape.48)
+  %broadcast.53 = u32[50]{0} broadcast(%subtract.52), dimensions={}
+  %shift-right-logical.54 = u32[50]{0} shift-right-logical(%Arg_2.38, %broadcast.53)
+  %or.55 = u32[50]{0} or(%shift-left.51, %shift-right-logical.54)
+  %xor.56 = u32[50]{0} xor(%add.49, %or.55)
+  %add.59 = u32[50]{0} add(%add.49, %xor.56)
+  %slice.57 = u32[1]{0} slice(%Arg_6.42), slice={[1:2]}
+  %reshape.58 = u32[] reshape(%slice.57)
+  %broadcast.60 = u32[50]{0} broadcast(%reshape.58), dimensions={}
+  %shift-left.61 = u32[50]{0} shift-left(%xor.56, %broadcast.60)
+  %subtract.62 = u32[] subtract(%constant.44, %reshape.58)
+  %broadcast.63 = u32[50]{0} broadcast(%subtract.62), dimensions={}
+  %shift-right-logical.64 = u32[50]{0} shift-right-logical(%xor.56, %broadcast.63)
+  %or.65 = u32[50]{0} or(%shift-left.61, %shift-right-logical.64)
+  %xor.66 = u32[50]{0} xor(%add.59, %or.65)
+  %add.69 = u32[50]{0} add(%add.59, %xor.66)
+  %slice.67 = u32[1]{0} slice(%Arg_6.42), slice={[2:3]}
+  %reshape.68 = u32[] reshape(%slice.67)
+  %broadcast.70 = u32[50]{0} broadcast(%reshape.68), dimensions={}
+  %shift-left.71 = u32[50]{0} shift-left(%xor.66, %broadcast.70)
+  %subtract.72 = u32[] subtract(%constant.44, %reshape.68)
+  %broadcast.73 = u32[50]{0} broadcast(%subtract.72), dimensions={}
+  %shift-right-logical.74 = u32[50]{0} shift-right-logical(%xor.66, %broadcast.73)
+  %or.75 = u32[50]{0} or(%shift-left.71, %shift-right-logical.74)
+  %xor.76 = u32[50]{0} xor(%add.69, %or.75)
+  %add.79 = u32[50]{0} add(%add.69, %xor.76)
+  %Arg_3.39 = u32[] parameter(3)
+  %broadcast.87 = u32[50]{0} broadcast(%Arg_3.39), dimensions={}
+  %add.88 = u32[50]{0} add(%add.79, %broadcast.87)
+  %slice.77 = u32[1]{0} slice(%Arg_6.42), slice={[3:4]}
+  %reshape.78 = u32[] reshape(%slice.77)
+  %broadcast.80 = u32[50]{0} broadcast(%reshape.78), dimensions={}
+  %shift-left.81 = u32[50]{0} shift-left(%xor.76, %broadcast.80)
+  %subtract.82 = u32[] subtract(%constant.44, %reshape.78)
+  %broadcast.83 = u32[50]{0} broadcast(%subtract.82), dimensions={}
+  %shift-right-logical.84 = u32[50]{0} shift-right-logical(%xor.76, %broadcast.83)
+  %or.85 = u32[50]{0} or(%shift-left.81, %shift-right-logical.84)
+  %xor.86 = u32[50]{0} xor(%add.79, %or.85)
+  %Arg_4.40 = u32[] parameter(4)
+  %broadcast.89 = u32[50]{0} broadcast(%Arg_4.40), dimensions={}
+  %add.90 = u32[50]{0} add(%xor.86, %broadcast.89)
+  %add.91 = s32[] add(%Arg_0.36, %constant.45)
+  %convert.92 = u32[] convert(%add.91)
+  %broadcast.93 = u32[50]{0} broadcast(%convert.92), dimensions={}
+  %add.94 = u32[50]{0} add(%add.90, %broadcast.93)
+  %Arg_5.41 = u32[] parameter(5)
+  %Arg_7.43 = u32[4]{0} parameter(7)
+  ROOT %tuple.95 = (s32[], u32[50]{0}, u32[50]{0}, u32[], u32[], /*index=5*/u32[], u32[4]{0}, u32[4]{0}) tuple(%add.46, %add.88, %add.94, %Arg_4.40, %Arg_5.41, /*index=5*/%Arg_3.39, %Arg_7.43, %Arg_6.42)
+}
+
+%region_0.96 (arg_tuple.97: (s32[], s32[], u32[50], u32[50], u32[], /*index=5*/u32[], u32[], u32[4], u32[4])) -> (s32[], s32[], u32[50], u32[50], u32[], /*index=5*/u32[], u32[], u32[4], u32[4]) {
+  %arg_tuple.97 = (s32[], s32[], u32[50]{0}, u32[50]{0}, u32[], /*index=5*/u32[], u32[], u32[4]{0}, u32[4]{0}) parameter(0)
+  %get-tuple-element.98 = s32[] get-tuple-element(%arg_tuple.97), index=0
+  %constant.107 = s32[] constant(1)
+  %add.117 = s32[] add(%get-tuple-element.98, %constant.107)
+  %get-tuple-element.99 = s32[] get-tuple-element(%arg_tuple.97), index=1
+  %get-tuple-element.100 = u32[50]{0} get-tuple-element(%arg_tuple.97), index=2
+  %get-tuple-element.101 = u32[50]{0} get-tuple-element(%arg_tuple.97), index=3
+  %get-tuple-element.102 = u32[] get-tuple-element(%arg_tuple.97), index=4
+  %get-tuple-element.103 = u32[] get-tuple-element(%arg_tuple.97), index=5
+  %get-tuple-element.104 = u32[] get-tuple-element(%arg_tuple.97), index=6
+  %get-tuple-element.105 = u32[4]{0} get-tuple-element(%arg_tuple.97), index=7
+  %get-tuple-element.106 = u32[4]{0} get-tuple-element(%arg_tuple.97), index=8
+  %call.108 = (s32[], u32[50]{0}, u32[50]{0}, u32[], u32[], /*index=5*/u32[], u32[4]{0}, u32[4]{0}) call(%get-tuple-element.99, %get-tuple-element.100, %get-tuple-element.101, %get-tuple-element.102, %get-tuple-element.103, /*index=5*/%get-tuple-element.104, %get-tuple-element.105, %get-tuple-element.106), to_apply=%None.35
+  %get-tuple-element.109 = s32[] get-tuple-element(%call.108), index=0
+  %get-tuple-element.110 = u32[50]{0} get-tuple-element(%call.108), index=1
+  %get-tuple-element.111 = u32[50]{0} get-tuple-element(%call.108), index=2
+  %get-tuple-element.112 = u32[] get-tuple-element(%call.108), index=3
+  %get-tuple-element.113 = u32[] get-tuple-element(%call.108), index=4
+  %get-tuple-element.114 = u32[] get-tuple-element(%call.108), index=5
+  %get-tuple-element.115 = u32[4]{0} get-tuple-element(%call.108), index=6
+  %get-tuple-element.116 = u32[4]{0} get-tuple-element(%call.108), index=7
+  ROOT %tuple.118 = (s32[], s32[], u32[50]{0}, u32[50]{0}, u32[], /*index=5*/u32[], u32[], u32[4]{0}, u32[4]{0}) tuple(%add.117, %get-tuple-element.109, %get-tuple-element.110, %get-tuple-element.111, %get-tuple-element.112, /*index=5*/%get-tuple-element.113, %get-tuple-element.114, %get-tuple-element.115, %get-tuple-element.116)
+}
+
+%region_1.119 (arg_tuple.120: (s32[], s32[], u32[50], u32[50], u32[], /*index=5*/u32[], u32[], u32[4], u32[4])) -> pred[] {
+  %arg_tuple.120 = (s32[], s32[], u32[50]{0}, u32[50]{0}, u32[], /*index=5*/u32[], u32[], u32[4]{0}, u32[4]{0}) parameter(0)
+  %get-tuple-element.122 = s32[] get-tuple-element(%arg_tuple.120), index=1
+  %get-tuple-element.123 = u32[50]{0} get-tuple-element(%arg_tuple.120), index=2
+  %get-tuple-element.124 = u32[50]{0} get-tuple-element(%arg_tuple.120), index=3
+  %get-tuple-element.125 = u32[] get-tuple-element(%arg_tuple.120), index=4
+  %get-tuple-element.126 = u32[] get-tuple-element(%arg_tuple.120), index=5
+  %get-tuple-element.127 = u32[] get-tuple-element(%arg_tuple.120), index=6
+  %get-tuple-element.128 = u32[4]{0} get-tuple-element(%arg_tuple.120), index=7
+  %get-tuple-element.129 = u32[4]{0} get-tuple-element(%arg_tuple.120), index=8
+  %get-tuple-element.121 = s32[] get-tuple-element(%arg_tuple.120), index=0
+  %constant.130 = s32[] constant(5)
+  ROOT %compare.131 = pred[] compare(%get-tuple-element.121, %constant.130), direction=LT
+}
+
+%_uniform.132 (Arg_0.133: u32[2], Arg_1.134: f32[], Arg_2.135: f32[]) -> f32[100] {
+  %constant.142 = s32[] constant(0)
+  %iota.148 = u32[100]{0} iota(), iota_dimension=0
+  %slice.153 = u32[50]{0} slice(%iota.148), slice={[0:50]}
+  %Arg_0.133 = u32[2]{0} parameter(0)
+  %slice.149 = u32[1]{0} slice(%Arg_0.133), slice={[0:1]}
+  %reshape.150 = u32[] reshape(%slice.149)
+  %broadcast.157 = u32[50]{0} broadcast(%reshape.150), dimensions={}
+  %add.158 = u32[50]{0} add(%slice.153, %broadcast.157)
+  %slice.154 = u32[50]{0} slice(%iota.148), slice={[50:100]}
+  %slice.151 = u32[1]{0} slice(%Arg_0.133), slice={[1:2]}
+  %reshape.152 = u32[] reshape(%slice.151)
+  %broadcast.159 = u32[50]{0} broadcast(%reshape.152), dimensions={}
+  %add.160 = u32[50]{0} add(%slice.154, %broadcast.159)
+  %xor.155 = u32[] xor(%reshape.150, %reshape.152)
+  %constant.143 = u32[] constant(466688986)
+  %xor.156 = u32[] xor(%xor.155, %constant.143)
+  %constant.145 = u32[4]{0} constant({13, 15, 26, 6})
+  %constant.144 = u32[4]{0} constant({17, 29, 16, 24})
+  %tuple.161 = (s32[], s32[], u32[50]{0}, u32[50]{0}, u32[], /*index=5*/u32[], u32[], u32[4]{0}, u32[4]{0}) tuple(%constant.142, %constant.142, %add.158, %add.160, %reshape.152, /*index=5*/%xor.156, %reshape.150, %constant.145, %constant.144)
+  %while.162 = (s32[], s32[], u32[50]{0}, u32[50]{0}, u32[], /*index=5*/u32[], u32[], u32[4]{0}, u32[4]{0}) while(%tuple.161), condition=%region_1.119, body=%region_0.96
+  %get-tuple-element.163 = s32[] get-tuple-element(%while.162), index=0
+  %get-tuple-element.164 = s32[] get-tuple-element(%while.162), index=1
+  %get-tuple-element.167 = u32[] get-tuple-element(%while.162), index=4
+  %get-tuple-element.168 = u32[] get-tuple-element(%while.162), index=5
+  %get-tuple-element.169 = u32[] get-tuple-element(%while.162), index=6
+  %get-tuple-element.170 = u32[4]{0} get-tuple-element(%while.162), index=7
+  %get-tuple-element.171 = u32[4]{0} get-tuple-element(%while.162), index=8
+  %Arg_1.134 = f32[] parameter(1)
+  %reshape.146 = f32[1]{0} reshape(%Arg_1.134)
+  %broadcast.186 = f32[1]{0} broadcast(%reshape.146), dimensions={0}
+  %reshape.187 = f32[] reshape(%broadcast.186)
+  %broadcast.188 = f32[100]{0} broadcast(%reshape.187), dimensions={}
+  %get-tuple-element.165 = u32[50]{0} get-tuple-element(%while.162), index=2
+  %get-tuple-element.166 = u32[50]{0} get-tuple-element(%while.162), index=3
+  %concatenate.172 = u32[100]{0} concatenate(%get-tuple-element.165, %get-tuple-element.166), dimensions={0}
+  %constant.140 = u32[] constant(9)
+  %broadcast.141 = u32[100]{0} broadcast(%constant.140), dimensions={}
+  %shift-right-logical.173 = u32[100]{0} shift-right-logical(%concatenate.172, %broadcast.141)
+  %constant.138 = u32[] constant(1065353216)
+  %broadcast.139 = u32[100]{0} broadcast(%constant.138), dimensions={}
+  %or.174 = u32[100]{0} or(%shift-right-logical.173, %broadcast.139)
+  %bitcast-convert.175 = f32[100]{0} bitcast-convert(%or.174)
+  %constant.136 = f32[] constant(1)
+  %broadcast.137 = f32[100]{0} broadcast(%constant.136), dimensions={}
+  %subtract.176 = f32[100]{0} subtract(%bitcast-convert.175, %broadcast.137)
+  %Arg_2.135 = f32[] parameter(2)
+  %reshape.147 = f32[1]{0} reshape(%Arg_2.135)
+  %subtract.177 = f32[1]{0} subtract(%reshape.147, %reshape.146)
+  %broadcast.178 = f32[1]{0} broadcast(%subtract.177), dimensions={0}
+  %reshape.179 = f32[] reshape(%broadcast.178)
+  %broadcast.180 = f32[100]{0} broadcast(%reshape.179), dimensions={}
+  %multiply.181 = f32[100]{0} multiply(%subtract.176, %broadcast.180)
+  %broadcast.182 = f32[1]{0} broadcast(%reshape.146), dimensions={0}
+  %reshape.183 = f32[] reshape(%broadcast.182)
+  %broadcast.184 = f32[100]{0} broadcast(%reshape.183), dimensions={}
+  %add.185 = f32[100]{0} add(%multiply.181, %broadcast.184)
+  ROOT %maximum.189 = f32[100]{0} maximum(%broadcast.188, %add.185)
+}
+
+%_normal_real.190 (Arg_0.191: u32[2]) -> f32[100] {
+  %Arg_0.191 = u32[2]{0} parameter(0)
+  %constant.240 = f32[] constant(-0.99999994)
+  %constant.241 = f32[] constant(1)
+  %call.242 = f32[100]{0} call(%Arg_0.191, %constant.240, %constant.241), to_apply=%_uniform.132
+  %abs.278 = f32[100]{0} abs(%call.242)
+  %constant.196 = f32[] constant(1)
+  %broadcast.197 = f32[100]{0} broadcast(%constant.196), dimensions={}
+  %compare.279 = pred[100]{0} compare(%abs.278, %broadcast.197), direction=EQ
+  %constant.194 = f32[] constant(inf)
+  %broadcast.195 = f32[100]{0} broadcast(%constant.194), dimensions={}
+  %multiply.280 = f32[100]{0} multiply(%call.242, %broadcast.195)
+  %negate.243 = f32[100]{0} negate(%call.242)
+  %multiply.244 = f32[100]{0} multiply(%call.242, %negate.243)
+  %log-plus-one.245 = f32[100]{0} log-plus-one(%multiply.244)
+  %negate.246 = f32[100]{0} negate(%log-plus-one.245)
+  %constant.238 = f32[] constant(5)
+  %broadcast.239 = f32[100]{0} broadcast(%constant.238), dimensions={}
+  %compare.247 = pred[100]{0} compare(%negate.246, %broadcast.239), direction=LT
+  %constant.200 = f32[] constant(1.50140941)
+  %broadcast.201 = f32[100]{0} broadcast(%constant.200), dimensions={}
+  %constant.198 = f32[] constant(2.83297682)
+  %broadcast.199 = f32[100]{0} broadcast(%constant.198), dimensions={}
+  %select.274 = f32[100]{0} select(%compare.247, %broadcast.201, %broadcast.199)
+  %constant.204 = f32[] constant(0.246640727)
+  %broadcast.205 = f32[100]{0} broadcast(%constant.204), dimensions={}
+  %constant.202 = f32[] constant(1.00167406)
+  %broadcast.203 = f32[100]{0} broadcast(%constant.202), dimensions={}
+  %select.271 = f32[100]{0} select(%compare.247, %broadcast.205, %broadcast.203)
+  %constant.208 = f32[] constant(-0.00417768164)
+  %broadcast.209 = f32[100]{0} broadcast(%constant.208), dimensions={}
+  %constant.206 = f32[] constant(0.00943887047)
+  %broadcast.207 = f32[100]{0} broadcast(%constant.206), dimensions={}
+  %select.268 = f32[100]{0} select(%compare.247, %broadcast.209, %broadcast.207)
+  %constant.212 = f32[] constant(-0.00125372503)
+  %broadcast.213 = f32[100]{0} broadcast(%constant.212), dimensions={}
+  %constant.210 = f32[] constant(-0.0076224613)
+  %broadcast.211 = f32[100]{0} broadcast(%constant.210), dimensions={}
+  %select.265 = f32[100]{0} select(%compare.247, %broadcast.213, %broadcast.211)
+  %constant.216 = f32[] constant(0.00021858087)
+  %broadcast.217 = f32[100]{0} broadcast(%constant.216), dimensions={}
+  %constant.214 = f32[] constant(0.00573950773)
+  %broadcast.215 = f32[100]{0} broadcast(%constant.214), dimensions={}
+  %select.262 = f32[100]{0} select(%compare.247, %broadcast.217, %broadcast.215)
+  %constant.220 = f32[] constant(-4.39150654e-06)
+  %broadcast.221 = f32[100]{0} broadcast(%constant.220), dimensions={}
+  %constant.218 = f32[] constant(-0.00367342844)
+  %broadcast.219 = f32[100]{0} broadcast(%constant.218), dimensions={}
+  %select.259 = f32[100]{0} select(%compare.247, %broadcast.221, %broadcast.219)
+  %constant.224 = f32[] constant(-3.5233877e-06)
+  %broadcast.225 = f32[100]{0} broadcast(%constant.224), dimensions={}
+  %constant.222 = f32[] constant(0.00134934322)
+  %broadcast.223 = f32[100]{0} broadcast(%constant.222), dimensions={}
+  %select.256 = f32[100]{0} select(%compare.247, %broadcast.225, %broadcast.223)
+  %constant.228 = f32[] constant(3.43273939e-07)
+  %broadcast.229 = f32[100]{0} broadcast(%constant.228), dimensions={}
+  %constant.226 = f32[] constant(0.000100950558)
+  %broadcast.227 = f32[100]{0} broadcast(%constant.226), dimensions={}
+  %select.253 = f32[100]{0} select(%compare.247, %broadcast.229, %broadcast.227)
+  %constant.232 = f32[] constant(2.81022636e-08)
+  %broadcast.233 = f32[100]{0} broadcast(%constant.232), dimensions={}
+  %constant.230 = f32[] constant(-0.000200214257)
+  %broadcast.231 = f32[100]{0} broadcast(%constant.230), dimensions={}
+  %select.252 = f32[100]{0} select(%compare.247, %broadcast.233, %broadcast.231)
+  %constant.236 = f32[] constant(2.5)
+  %broadcast.237 = f32[100]{0} broadcast(%constant.236), dimensions={}
+  %subtract.248 = f32[100]{0} subtract(%negate.246, %broadcast.237)
+  %sqrt.249 = f32[100]{0} sqrt(%negate.246)
+  %constant.234 = f32[] constant(3)
+  %broadcast.235 = f32[100]{0} broadcast(%constant.234), dimensions={}
+  %subtract.250 = f32[100]{0} subtract(%sqrt.249, %broadcast.235)
+  %select.251 = f32[100]{0} select(%compare.247, %subtract.248, %subtract.250)
+  %multiply.254 = f32[100]{0} multiply(%select.252, %select.251)
+  %add.255 = f32[100]{0} add(%select.253, %multiply.254)
+  %multiply.257 = f32[100]{0} multiply(%add.255, %select.251)
+  %add.258 = f32[100]{0} add(%select.256, %multiply.257)
+  %multiply.260 = f32[100]{0} multiply(%add.258, %select.251)
+  %add.261 = f32[100]{0} add(%select.259, %multiply.260)
+  %multiply.263 = f32[100]{0} multiply(%add.261, %select.251)
+  %add.264 = f32[100]{0} add(%select.262, %multiply.263)
+  %multiply.266 = f32[100]{0} multiply(%add.264, %select.251)
+  %add.267 = f32[100]{0} add(%select.265, %multiply.266)
+  %multiply.269 = f32[100]{0} multiply(%add.267, %select.251)
+  %add.270 = f32[100]{0} add(%select.268, %multiply.269)
+  %multiply.272 = f32[100]{0} multiply(%add.270, %select.251)
+  %add.273 = f32[100]{0} add(%select.271, %multiply.272)
+  %multiply.275 = f32[100]{0} multiply(%add.273, %select.251)
+  %add.276 = f32[100]{0} add(%select.274, %multiply.275)
+  %multiply.277 = f32[100]{0} multiply(%add.276, %call.242)
+  %select.281 = f32[100]{0} select(%compare.279, %multiply.280, %multiply.277)
+  %constant.192 = f32[] constant(1.41421354)
+  %broadcast.193 = f32[100]{0} broadcast(%constant.192), dimensions={}
+  ROOT %multiply.282 = f32[100]{0} multiply(%select.281, %broadcast.193)
+}
+
+%_normal.283 (Arg_0.284: u32[2]) -> f32[100] {
+  %Arg_0.284 = u32[2]{0} parameter(0)
+  ROOT %call.285 = f32[100]{0} call(%Arg_0.284), to_apply=%_normal_real.190
+}
+
+%region_2.290 (Arg_0.291: f32[], Arg_1.292: f32[]) -> f32[] {
+  %Arg_0.291 = f32[] parameter(0)
+  %Arg_1.292 = f32[] parameter(1)
+  ROOT %add.293 = f32[] add(%Arg_0.291, %Arg_1.292)
+}
+
+%cumsum_0.294 (Arg_0.295: f32[100]) -> f32[100] {
+  %Arg_0.295 = f32[100]{0} parameter(0)
+  %constant.296 = f32[] constant(0)
+  ROOT %reduce-window.297 = f32[100]{0} reduce-window(%Arg_0.295, %constant.296), window={size=100 pad=99_0}, to_apply=%region_2.290
+}
+
+%cumsum.298 (Arg_0.299: f32[100]) -> f32[100] {
+  %Arg_0.299 = f32[100]{0} parameter(0)
+  ROOT %call.300 = f32[100]{0} call(%Arg_0.299), to_apply=%cumsum_0.294
+}
+
+ENTRY %main.314 (Arg_0.1: f32[], Arg_1.2: f32[], Arg_2.3: f32[], Arg_3.4: f32[], Arg_4.5: f32[], Arg_5.6: u32[2]) -> f32[101] {
+  %Arg_0.1 = f32[] parameter(0)
+  %broadcast.312 = f32[101]{0} broadcast(%Arg_0.1), dimensions={}
+  %Arg_1.2 = f32[] parameter(1)
+  %Arg_2.3 = f32[] parameter(2)
+  %multiply.303 = f32[] multiply(%Arg_2.3, %Arg_2.3)
+  %constant.7 = f32[] constant(0.5)
+  %multiply.304 = f32[] multiply(%multiply.303, %constant.7)
+  %subtract.305 = f32[] subtract(%Arg_1.2, %multiply.304)
+  %broadcast.306 = f32[101]{0} broadcast(%subtract.305), dimensions={}
+  %constant.9 = s32[] constant(0)
+  %Arg_3.4 = f32[] parameter(3)
+  %call.34 = f32[101]{0} call(%constant.9, %Arg_3.4), to_apply=%_linspace.10
+  %multiply.307 = f32[101]{0} multiply(%broadcast.306, %call.34)
+  %broadcast.308 = f32[101]{0} broadcast(%Arg_2.3), dimensions={}
+  %constant.8 = f32[1]{0} constant({0})
+  %Arg_5.6 = u32[2]{0} parameter(5)
+  %call.286 = f32[100]{0} call(%Arg_5.6), to_apply=%_normal.283
+  %Arg_4.5 = f32[] parameter(4)
+  %sqrt.287 = f32[] sqrt(%Arg_4.5)
+  %broadcast.288 = f32[100]{0} broadcast(%sqrt.287), dimensions={}
+  %multiply.289 = f32[100]{0} multiply(%call.286, %broadcast.288)
+  %call.301 = f32[100]{0} call(%multiply.289), to_apply=%cumsum.298
+  %concatenate.302 = f32[101]{0} concatenate(%constant.8, %call.301), dimensions={0}
+  %multiply.309 = f32[101]{0} multiply(%broadcast.308, %concatenate.302)
+  %add.310 = f32[101]{0} add(%multiply.307, %multiply.309)
+  %exponential.311 = f32[101]{0} exponential(%add.310)
+  ROOT %multiply.313 = f32[101]{0} multiply(%broadcast.312, %exponential.311)
+}
+
+
+
