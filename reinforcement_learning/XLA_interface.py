@@ -90,6 +90,14 @@ class XLAInterface:
             Tuple of (success, output_file_path)
             If success is False, output_file_path will be None
         """
+        # Ensure we're using absolute paths
+        hlo_file = os.path.abspath(hlo_file)
+        
+        # Check if the file exists
+        if not os.path.exists(hlo_file):
+            print(f"Error: HLO file not found: {hlo_file}")
+            return False, None
+            
         # Create a descriptive filename based on the input file and pass name
         input_filename = os.path.basename(hlo_file)
         base_name = os.path.splitext(input_filename)[0]
@@ -103,11 +111,14 @@ class XLAInterface:
         timestamp = int(time.time() * 1000)
         output_filename = f"{base_name}_{timestamp}.hlo"
         output_file = os.path.join(self.optimized_dir, output_filename)
+        output_file = os.path.abspath(output_file)
+
+        if self.verbose:
+            print(f"Applying pass {pass_name} to file {hlo_file}")
 
         # Build the command to run the pass:
         # Based on the error message, hlo-opt doesn't like the -o flag
         # Instead we'll use shell redirection (>) to save the output
-
         cmd = f"{self.hlo_opt_path} --passes={pass_name} {hlo_file} > {output_file}"
 
         if self.verbose:
@@ -167,8 +178,15 @@ class XLAInterface:
         Returns:
             numpy array of features for the HLO module
         """
+        # Ensure we're using absolute paths
+        hlo_file = os.path.abspath(hlo_file)
+        
+        # Check if the file exists
+        if not os.path.exists(hlo_file):
+            print(f"Error: HLO file not found for feature extraction: {hlo_file}")
+            raise FileNotFoundError(f"HLO file not found: {hlo_file}")
+            
         # pass the hlo txt file into the jax_hlo pipeline to extract the features
-
         try:
             hlo_module = parse_hlo_from_filepath(hlo_file)
             features_dict = extract_all_features(hlo_module) # type: ignore

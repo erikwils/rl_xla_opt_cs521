@@ -4,6 +4,7 @@ from xla_opt_env import XLAOptimizationEnv
 from simple_agent import SimpleQLearningAgent
 from XLA_interface import XLAInterface
 import os
+import pickle
 import glob
 
 def train_agent(
@@ -65,7 +66,7 @@ def train_agent(
 def train_on_multiple_files(
         hlo_files,
         xla_dir,
-        episodes_per_file = 100,
+        episodes_per_file = 10,
         max_steps_per_episode = 30,
         print_interval = 10,
         verbose = True
@@ -214,7 +215,7 @@ def main():
     Set up and run training process on multiple HLO files using a single environment
     """
     # XLA directory
-    xla_dir = "/Users/rayaanfaruqi/Documents/CS521/Final_Project/xla"
+    xla_dir = "/Users/rayaanfaruqi/Documents/CS521/Final_Project/xla" # OTHER USERS CHANGE HERE
     
     # Find all HLO files to train on
     script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -247,11 +248,29 @@ def main():
     trained_agent, results, available_passes = train_on_multiple_files(
         hlo_files=valid_hlo_files,
         xla_dir=xla_dir,
-        episodes_per_file=20,
+        episodes_per_file=25,
         max_steps_per_episode=25,
         print_interval=50,
         verbose=True
     )
+    
+    
+
+    agent_data = {
+        "q_table": dict(trained_agent.q_table),
+        "learning_rate": trained_agent.learning_rate,
+        "discount_factor": trained_agent.discount_factor,
+        "exploration_rate": trained_agent.exploration_rate,
+        "available_passes": available_passes
+    }
+
+    script_dir = os.path.dirname(os.path.abspath(__file__))  # Gets the reinforcement_learning directory
+    models_dir = os.path.join(script_dir, "models")
+    os.makedirs(models_dir, exist_ok=True)  # Create models directory if it doesn't exist
+    model_path = os.path.join(models_dir, "trained_agent.pkl")
+    with open(model_path, "wb") as f:
+        pickle.dump(agent_data, f)
+
     
     # Print summary of results
     print("\n\nTraining Summary Across All Files:")

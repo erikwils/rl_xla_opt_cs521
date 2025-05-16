@@ -51,30 +51,155 @@ class SimpleQLearningAgent:
         """
         Discretize a graph state for the Q-table
 
-        # TODO: Change function to fn approximation instead??
-
         Args:
             state: graph observation with nodes, edges, and edge_links
 
         Returns:
             a tuple representing the discretized state
         """
-
-        # extract features from the graph observation
-        # for simplicity, use summary of the node features
-
+        # Extract features from the graph observation
         nodes = state["nodes"]
-
-        # compute summary statistics of node features
-        # TODO: more sophisticated approach?
-        node_mean = np.mean(nodes, axis=0)
+        edges = state.get("edges", [])
+        edge_links = state.get("edge_links", [])
+        
+        features = []
+        
+        # Graph size features (more precise than before)
         node_count = len(nodes)
-
-        # create a simple feature vector and discretize it:
-        features = np.append(node_count, node_mean)
-        discretized = tuple(np.round(features * 2)/2)
-
-        return discretized
+        edge_count = len(edges)
+        features.append(node_count)  # Use exact count instead of rounding
+        features.append(edge_count)  # Add edge count as a feature
+        
+        # Graph density/connectivity
+        if node_count > 1:
+            density = edge_count / (node_count * (node_count - 1) / 2)
+            features.append(np.round(density * 20) / 20)  # Discretize with 0.05 intervals
+        else:
+            features.append(0.0)
+        
+        # Node features statistics
+        if node_count > 0:
+            node_array = np.array(nodes)
+            
+            # For each feature dimension, compute multiple statistics
+            for dim in range(node_array.shape[1]):
+                col_data = node_array[:, dim]
+                
+                # More granular statistics with finer discretization
+                mean_val = np.mean(col_data)
+                median_val = np.median(col_data)
+                max_val = np.max(col_data)
+                min_val = np.min(col_data)
+                std_val = np.std(col_data)
+                p25 = np.percentile(col_data, 25)
+                p75 = np.percentile(col_data, 75)
+                
+                # Use different precision for different ranges
+                if max_val > 1000:
+                    # For large values use coarser discretization
+                    features.append(np.round(mean_val / 50) * 50)
+                    features.append(np.round(median_val / 50) * 50)
+                    features.append(np.round(max_val / 100) * 100)
+                    features.append(np.round(min_val / 20) * 20)
+                else:
+                    # For smaller values use finer discretization
+                    features.append(np.round(mean_val * 10) / 10)
+                    features.append(np.round(median_val * 10) / 10)
+                    features.append(np.round(max_val * 5) / 5)
+                    features.append(np.round(min_val * 5) / 5)
+                
+                # Add standard deviation and quartiles
+                features.append(np.round(std_val * 5) / 5)
+                features.append(np.round(p25 * 5) / 5)
+                features.append(np.round(p75 * 5) / 5)
+                
+                # Add histogram features (capture distribution better)
+                if max_val > min_val:
+                    hist_bins = 8  # More bins than before
+                    histogram, _ = np.histogram(col_data, bins=hist_bins, range=(min_val, max_val))
+                    # Normalize and discretize histogram bins
+                    if np.sum(histogram) > 0:
+                        norm_hist = histogram / np.sum(histogram)
+                        for bin_val in norm_hist:
+                            features.append(np.round(bin_val * 20) / 20)
+                    else:
+                        features.extend([0.0] * hist_bins)
+        else:
+            # Handle empty graph case
+            features.extend([0.0] * 20)  # Pad with zeros
+        
+        # Edge feature statistics if available
+        if len(edges) > 0:
+            edge_array = np.array(edges)
+            features.append(np.mean(edge_array))
+            features.append(np.std(edge_array))
+        else:
+            features.extend([0.0, 0.0])
+        
+        # Graph structural hash - use edge patterns
+        if len(edge_links) > 0:
+            # Count nodes by their connectivity (in-degree and out-degree)
+            # This helps distinguish different graph structures
+            in_degrees = np.zeros(node_count)
+            out_degrees = np.zeros(node_count)
+            
+            for edge in edge_links:
+                if len(edge) >= 2:
+                    src, dst = edge[0], edge[1]
+                    if 0 <= src < node_count and 0 <= dst < node_count:
+                        out_degrees[src] += 1
+                        in_degrees[dst] += 1
+            
+            # Discretize degree distributions
+            in_degree_hist, _ = np.histogram(in_degrees, bins=5)
+            out_degree_hist, _ = np.histogram(out_degrees, bins=5)
+            
+            # Add normalized and discretized degree histograms
+            if np.sum(in_degree_hist) > 0:
+                norm_in_hist = in_degree_hist / np.sum(in_degree_hist)
+                for val in norm_in_hist:
+                    features.append(np.round(val * 10) / 10)
+            else:
+                features.extend([0.0] * 5)
+                
+            if np.sum(out_degree_hist) > 0:
+                norm_out_hist = out_degree_hist / np.sum(out_degree_hist)
+                for val in norm_out_hist:
+                    features.append(np.round(val * 10) / 10)
+            else:
+                features.extend([0.0] * 5)
+                
+            # Add count of nodes with specific connectivity patterns
+            # These act as graph motif detectors
+            isolated_nodes = np.sum((in_degrees == 0) & (out_degrees == 0))
+            source_nodes = np.sum((in_degrees == 0) & (out_degrees > 0))
+            sink_nodes = np.sum((in_degrees > 0) & (out_degrees == 0))
+            transfer_nodes = np.sum((in_degrees == 1) & (out_degrees == 1))
+            computation_nodes = np.sum((in_degrees > 1) & (out_degrees >= 1))
+            
+            features.append(isolated_nodes / node_count if node_count > 0 else 0)
+            features.append(source_nodes / node_count if node_count > 0 else 0)
+            features.append(sink_nodes / node_count if node_count > 0 else 0)
+            features.append(transfer_nodes / node_count if node_count > 0 else 0)
+            features.append(computation_nodes / node_count if node_count > 0 else 0)
+        
+        # Include a graph signature that captures the rough graph structure
+        if node_count > 0 and node_array.shape[1] > 0:
+            # Use the top 3 most common node feature values as a signature
+            for dim in range(min(3, node_array.shape[1])):
+                if dim < node_array.shape[1]:
+                    col_data = node_array[:, dim]
+                    unique, counts = np.unique(np.round(col_data), return_counts=True)
+                    if len(unique) > 0:
+                        # Get top 3 most frequent values
+                        sorted_indices = np.argsort(-counts)
+                        for i in range(min(3, len(sorted_indices))):
+                            features.append(unique[sorted_indices[i]])
+        
+        # Convert to tuple and return
+        # Make all values hashable (convert numpy types to Python types)
+        hashable_features = tuple(float(f) for f in features)
+        return hashable_features
 
     def select_action(self, state: Dict[str, Any], training: bool = True) -> int:
         """

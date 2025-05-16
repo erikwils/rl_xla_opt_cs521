@@ -1,0 +1,51 @@
+HloModule test_algebraic_simplifier, entry_computation_layout={()->(f32[4,4]{1,0}, f32[4,4]{1,0}, f32[4,4]{1,0}, f32[4,4]{1,0}, f32[4,4]{1,0}, /*index=5*/f32[4,4]{1,0}, f32[4,4]{1,0}, f32[4,4]{1,0})}
+
+ENTRY %main () -> (f32[4,4], f32[4,4], f32[4,4], f32[4,4], f32[4,4], /*index=5*/f32[4,4], f32[4,4], f32[4,4]) {
+  %constant_two = f32[] constant(2), origin={{"constant_two"}}
+  %two_array = f32[4,4]{1,0} broadcast(%constant_two), dimensions={}, origin={{"power_one"}}
+  %constant_zero = f32[] constant(0), origin={{"constant_zero"}}
+  %zero_array = f32[4,4]{1,0} broadcast(%constant_zero), dimensions={}, origin={{"zero_array"}}
+  %mul_zero = f32[4,4]{1,0} multiply(%two_array, %zero_array), origin={{"mul_zero"}}
+  %reshape = f32[] reshape(%constant_two)
+  %constant_one = f32[] constant(1), origin={{"constant_one"}}
+  %reshape.1 = f32[] reshape(%constant_one)
+  %mul_one.1 = f32[] multiply(%reshape, %reshape.1)
+  %broadcast.5 = f32[4,4]{1,0} broadcast(%mul_one.1), dimensions={}
+  %reshape.2 = f32[] reshape(%constant_two)
+  %reshape.3 = f32[] reshape(%constant_zero)
+  %sub_zero.1 = f32[] subtract(%reshape.2, %reshape.3)
+  %broadcast.11 = f32[4,4]{1,0} broadcast(%sub_zero.1), dimensions={}
+  %complex_1 = f32[4,4]{1,0} add(%broadcast.5, %broadcast.11), origin={{"complex_1"}}
+  %reshape.4 = f32[] reshape(%mul_one.1)
+  %reshape.5 = f32[] reshape(%sub_zero.1)
+  %complex_1.1 = f32[] add(%reshape.4, %reshape.5)
+  %broadcast.21 = f32[4,4]{1,0} broadcast(%complex_1.1), dimensions={}
+  %reshape.6 = f32[] reshape(%constant_two)
+  %reshape.7 = f32[] reshape(%constant_one)
+  %power_one.1 = f32[] power(%reshape.6, %reshape.7)
+  %broadcast.8 = f32[4,4]{1,0} broadcast(%power_one.1), dimensions={}
+  %complex_2 = f32[4,4]{1,0} multiply(%broadcast.21, %broadcast.8), origin={{"complex_2"}}
+  %broadcast = f32[] broadcast(%constant_one), dimensions={}
+  %broadcast.1 = f32[] broadcast(%constant_zero), dimensions={}
+  %add_zero.1 = f32[] add(%broadcast, %broadcast.1)
+  %broadcast.2 = f32[4,4]{1,0} broadcast(%add_zero.1), dimensions={}
+  %broadcast.12 = f32[] broadcast(%constant_two), dimensions={}
+  %broadcast.13 = f32[] broadcast(%constant_zero), dimensions={}
+  %mul_zero.1 = f32[] multiply(%broadcast.12, %broadcast.13)
+  %broadcast.14 = f32[4,4]{1,0} broadcast(%mul_zero.1), dimensions={}
+  %broadcast.15 = f32[] broadcast(%constant_two), dimensions={}
+  %broadcast.16 = f32[] broadcast(%constant_two), dimensions={}
+  %sub_self.1 = f32[] subtract(%broadcast.15, %broadcast.16)
+  %broadcast.17 = f32[4,4]{1,0} broadcast(%sub_self.1), dimensions={}
+  %broadcast.22 = f32[] broadcast(%complex_1.1), dimensions={}
+  %broadcast.23 = f32[] broadcast(%power_one.1), dimensions={}
+  %complex_2.1 = f32[] multiply(%broadcast.22, %broadcast.23)
+  %broadcast.24 = f32[4,4]{1,0} broadcast(%complex_2.1), dimensions={}
+  ROOT %result = (f32[4,4]{1,0}, f32[4,4]{1,0}, f32[4,4]{1,0}, f32[4,4]{1,0}, f32[4,4]{1,0}, /*index=5*/f32[4,4]{1,0}, f32[4,4]{1,0}, f32[4,4]{1,0}) tuple(%broadcast.2, %broadcast.5, %broadcast.11, %broadcast.14, %broadcast.8, /*index=5*/%broadcast.17, %broadcast.21, %broadcast.24), origin={({"add_zero"}, {"mul_one"}, {"sub_zero"}, {"mul_zero"}, {"power_one"}, {"sub_self"}, {"complex_1"}, {"complex_2"})}
+  %negate = f32[] negate(%constant_two)
+  %broadcast.18 = f32[4,4]{1,0} broadcast(%negate), dimensions={}
+  %add = f32[4,4]{1,0} add(%two_array, %broadcast.18), origin={{"sub_self"}}
+}
+
+
+

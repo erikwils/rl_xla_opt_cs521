@@ -1,0 +1,22 @@
+HloModule test_algebraic_simplifier, is_scheduled=true, entry_computation_layout={()->(f32[4,4]{1,0}, f32[4,4]{1,0}, f32[4,4]{1,0}, f32[4,4]{1,0}, f32[4,4]{1,0}, /*index=5*/f32[4,4]{1,0}, f32[4,4]{1,0}, f32[4,4]{1,0})}
+
+ENTRY %main () -> (f32[4,4], f32[4,4], f32[4,4], f32[4,4], f32[4,4], /*index=5*/f32[4,4], f32[4,4], f32[4,4]) {
+  %constant_one = f32[] constant(1), origin={{"constant_one"}}
+  %one_array = f32[4,4]{1,0} broadcast(%constant_one), dimensions={}, origin={{"one_array"}}
+  %constant_zero = f32[] constant(0), origin={{"constant_zero"}}
+  %zero_array = f32[4,4]{1,0} broadcast(%constant_zero), dimensions={}, origin={{"zero_array"}}
+  %add_zero = f32[4,4]{1,0} add(%one_array, %zero_array), origin={{"add_zero"}}
+  %constant_two = f32[] constant(2), origin={{"constant_two"}}
+  %two_array = f32[4,4]{1,0} broadcast(%constant_two), dimensions={}, origin={{"two_array"}}
+  %mul_one = f32[4,4]{1,0} multiply(%two_array, %one_array), origin={{"mul_one"}}
+  %sub_zero = f32[4,4]{1,0} subtract(%two_array, %zero_array), origin={{"sub_zero"}}
+  %mul_zero = f32[4,4]{1,0} multiply(%two_array, %zero_array), origin={{"mul_zero"}}
+  %power_one = f32[4,4]{1,0} power(%two_array, %one_array), origin={{"power_one"}}
+  %sub_self = f32[4,4]{1,0} subtract(%two_array, %two_array), origin={{"sub_self"}}
+  %complex_1 = f32[4,4]{1,0} add(%mul_one, %sub_zero), origin={{"complex_1"}}
+  %complex_2 = f32[4,4]{1,0} multiply(%complex_1, %power_one), origin={{"complex_2"}}
+  ROOT %result = (f32[4,4]{1,0}, f32[4,4]{1,0}, f32[4,4]{1,0}, f32[4,4]{1,0}, f32[4,4]{1,0}, /*index=5*/f32[4,4]{1,0}, f32[4,4]{1,0}, f32[4,4]{1,0}) tuple(%add_zero, %mul_one, %sub_zero, %mul_zero, %power_one, /*index=5*/%sub_self, %complex_1, %complex_2), origin={({"add_zero"}, {"mul_one"}, {"sub_zero"}, {"mul_zero"}, {"power_one"}, {"sub_self"}, {"complex_1"}, {"complex_2"})}
+}
+
+
+

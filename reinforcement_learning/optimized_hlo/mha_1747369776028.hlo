@@ -1,0 +1,62 @@
+HloModule jit_multihead_self_attention, entry_computation_layout={(f32[256,256]{1,0}, f32[256,256]{1,0}, f32[256,256]{1,0}, f32[256,256]{1,0}, f32[1,64,256]{2,1,0})->f32[1,64,256]{2,1,0}}
+
+%region_0.20 (Arg_0.21: f32[], Arg_1.22: f32[]) -> f32[] {
+  %Arg_0.21 = f32[] parameter(0), origin={{"Arg_0.21"}}
+  %Arg_1.22 = f32[] parameter(1), origin={{"Arg_1.22"}}
+  ROOT %maximum.23 = f32[] maximum(%Arg_0.21, %Arg_1.22), origin={{"maximum.23"}}
+}
+
+%region_1.32 (Arg_0.33: f32[], Arg_1.34: f32[]) -> f32[] {
+  %Arg_0.33 = f32[] parameter(0), origin={{"Arg_0.33"}}
+  %Arg_1.34 = f32[] parameter(1), origin={{"Arg_1.34"}}
+  ROOT %add.35 = f32[] add(%Arg_0.33, %Arg_1.34), origin={{"add.35"}}
+}
+
+ENTRY %main.46 (Arg_0.1: f32[256,256], Arg_1.2: f32[256,256], Arg_2.3: f32[256,256], Arg_3.4: f32[256,256], Arg_4.5: f32[1,64,256]) -> f32[1,64,256] {
+  %Arg_4.5 = f32[1,64,256]{2,1,0} parameter(4), origin={{"Arg_4.5"}}
+  %Arg_0.1 = f32[256,256]{1,0} parameter(0), origin={{"Arg_0.1"}}
+  %dot.12 = f32[1,64,256]{2,1,0} dot(%Arg_4.5, %Arg_0.1), lhs_contracting_dims={2}, rhs_contracting_dims={0}, origin={{"dot.12"}}
+  %reshape.13 = f32[1,4,64,64]{3,2,1,0} reshape(%dot.12), origin={{"reshape.13"}}
+  %reshape = f32[4,64,64]{2,1,0} reshape(%reshape.13)
+  %Arg_1.2 = f32[256,256]{1,0} parameter(1), origin={{"Arg_1.2"}}
+  %dot.14 = f32[1,64,256]{2,1,0} dot(%Arg_4.5, %Arg_1.2), lhs_contracting_dims={2}, rhs_contracting_dims={0}, origin={{"dot.14"}}
+  %reshape.15 = f32[1,4,64,64]{3,2,1,0} reshape(%dot.14), origin={{"reshape.15"}}
+  %reshape.1 = f32[4,64,64]{2,1,0} reshape(%reshape.15)
+  %dot = f32[4,64,64]{2,1,0} dot(%reshape, %reshape.1), lhs_batch_dims={0}, lhs_contracting_dims={2}, rhs_batch_dims={0}, rhs_contracting_dims={2}
+  %reshape.2 = f32[1,4,64,64]{3,2,1,0} reshape(%dot), origin={{"dot.18"}}
+  %constant.8 = f32[] constant(8), origin={{"constant.8"}}
+  %broadcast.9 = f32[1,4,64,64]{3,2,1,0} broadcast(%constant.8), dimensions={}, origin={{"broadcast.9"}}
+  %divide.19 = f32[1,4,64,64]{3,2,1,0} divide(%reshape.2, %broadcast.9), origin={{"divide.19"}}
+  %constant.11 = f32[] constant(-inf), origin={{"constant.11"}}
+  %reduce.24 = f32[1,4,64]{2,1,0} reduce(%divide.19, %constant.11), dimensions={3}, to_apply=%region_0.20, origin={{"reduce.24"}}
+  %constant.6 = f32[] constant(-inf), origin={{"constant.6"}}
+  %broadcast.7 = f32[1,4,64]{2,1,0} broadcast(%constant.6), dimensions={}, origin={{"broadcast.7"}}
+  %maximum.25 = f32[1,4,64]{2,1,0} maximum(%reduce.24, %broadcast.7), origin={{"maximum.25"}}
+  %reshape.26 = f32[1,4,64,1]{3,2,1,0} reshape(%maximum.25), origin={{"reshape.26"}}
+  %broadcast.27 = f32[1,4,64,1]{3,2,1,0} broadcast(%reshape.26), dimensions={0,1,2,3}, origin={{"broadcast.27"}}
+  %reshape.28 = f32[1,4,64]{2,1,0} reshape(%broadcast.27), origin={{"reshape.28"}}
+  %broadcast.29 = f32[1,4,64,64]{3,2,1,0} broadcast(%reshape.28), dimensions={0,1,2}, origin={{"broadcast.29"}}
+  %subtract.30 = f32[1,4,64,64]{3,2,1,0} subtract(%divide.19, %broadcast.29), origin={{"subtract.30"}}
+  %exponential.31 = f32[1,4,64,64]{3,2,1,0} exponential(%subtract.30), origin={{"exponential.31"}}
+  %constant.10 = f32[] constant(0), origin={{"constant.10"}}
+  %reduce.36 = f32[1,4,64]{2,1,0} reduce(%exponential.31, %constant.10), dimensions={3}, to_apply=%region_1.32, origin={{"reduce.36"}}
+  %reshape.37 = f32[1,4,64,1]{3,2,1,0} reshape(%reduce.36), origin={{"reshape.37"}}
+  %broadcast.38 = f32[1,4,64,1]{3,2,1,0} broadcast(%reshape.37), dimensions={0,1,2,3}, origin={{"broadcast.38"}}
+  %reshape.39 = f32[1,4,64]{2,1,0} reshape(%broadcast.38), origin={{"reshape.39"}}
+  %broadcast.40 = f32[1,4,64,64]{3,2,1,0} broadcast(%reshape.39), dimensions={0,1,2}, origin={{"broadcast.40"}}
+  %divide.41 = f32[1,4,64,64]{3,2,1,0} divide(%exponential.31, %broadcast.40), origin={{"divide.41"}}
+  %reshape.3 = f32[4,64,64]{2,1,0} reshape(%divide.41)
+  %Arg_2.3 = f32[256,256]{1,0} parameter(2), origin={{"Arg_2.3"}}
+  %dot.16 = f32[1,64,256]{2,1,0} dot(%Arg_4.5, %Arg_2.3), lhs_contracting_dims={2}, rhs_contracting_dims={0}, origin={{"dot.16"}}
+  %reshape.17 = f32[1,4,64,64]{3,2,1,0} reshape(%dot.16), origin={{"reshape.17"}}
+  %reshape.4 = f32[4,64,64]{2,1,0} reshape(%reshape.17)
+  %dot.1 = f32[4,64,64]{2,1,0} dot(%reshape.3, %reshape.4), lhs_batch_dims={0}, lhs_contracting_dims={2}, rhs_batch_dims={0}, rhs_contracting_dims={1}
+  %reshape.5 = f32[1,4,64,64]{3,2,1,0} reshape(%dot.1), origin={{"dot.42"}}
+  %transpose.43 = f32[1,64,4,64]{3,1,2,0} transpose(%reshape.5), dimensions={0,2,1,3}, origin={{"transpose.43"}}
+  %reshape.44 = f32[1,64,256]{2,1,0} reshape(%transpose.43), origin={{"reshape.44"}}
+  %Arg_3.4 = f32[256,256]{1,0} parameter(3), origin={{"Arg_3.4"}}
+  ROOT %dot.45 = f32[1,64,256]{2,1,0} dot(%reshape.44, %Arg_3.4), lhs_contracting_dims={2}, rhs_contracting_dims={0}, origin={{"dot.45"}}
+}
+
+
+

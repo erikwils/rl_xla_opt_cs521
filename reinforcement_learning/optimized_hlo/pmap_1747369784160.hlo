@@ -1,0 +1,219 @@
+HloModule pmap_train_step, is_scheduled=true, entry_computation_layout={(f32[1,10]{1,0}, f32[1,16,10]{2,1,0}, f32[1,8,16]{2,1,0}, s32[1,8]{1,0})->(f32[1,10]{1,0}, f32[1,16,10]{2,1,0}, f32[1]{0})}
+
+%region_0.31 (Arg_0.32: f32[], Arg_1.33: f32[]) -> f32[] {
+  %Arg_0.32 = f32[] parameter(0), origin={{"Arg_0.32"}}
+  %Arg_1.33 = f32[] parameter(1), origin={{"Arg_1.33"}}
+  ROOT %maximum.34 = f32[] maximum(%Arg_0.32, %Arg_1.33), origin={{"maximum.34"}}
+}
+
+%region_1.43 (Arg_0.44: pred[], Arg_1.45: pred[]) -> pred[] {
+  %Arg_0.44 = pred[] parameter(0), origin={{"Arg_0.44"}}
+  %Arg_1.45 = pred[] parameter(1), origin={{"Arg_1.45"}}
+  ROOT %and.46 = pred[] and(%Arg_0.44, %Arg_1.45), origin={{"and.46"}}
+}
+
+%take_along_axis.47 (Arg_0.48: f32[8,10], Arg_1.49: s32[8,1]) -> (f32[8,1], s32[8,1,1]) {
+  %Arg_1.49 = s32[8,1]{1,0} parameter(1), origin={{"Arg_1.49"}}
+  %constant.59 = s32[] constant(0), origin={{"constant.59"}}
+  %broadcast.60 = s32[8,1]{1,0} broadcast(%constant.59), dimensions={}, origin={{"broadcast.60"}}
+  %compare.61 = pred[8,1]{1,0} compare(%Arg_1.49, %broadcast.60), direction=LT, origin={{"compare.61"}}
+  %constant.56 = s32[] constant(10), origin={{"constant.56"}}
+  %broadcast.57 = s32[8,1]{1,0} broadcast(%constant.56), dimensions={}, origin={{"broadcast.57"}}
+  %add.62 = s32[8,1]{1,0} add(%Arg_1.49, %broadcast.57), origin={{"add.62"}}
+  %select.63 = s32[8,1]{1,0} select(%compare.61, %add.62, %Arg_1.49), origin={{"select.63"}}
+  %reshape.64 = s32[8,1,1]{2,1,0} reshape(%select.63), origin={{"reshape.64"}}
+  %constant.54 = s32[] constant(0), origin={{"constant.54"}}
+  %broadcast.55 = s32[8,1,1]{2,1,0} broadcast(%constant.54), dimensions={}, origin={{"broadcast.55"}}
+  %compare.65 = pred[8,1,1]{2,1,0} compare(%reshape.64, %broadcast.55), direction=GE, origin={{"compare.65"}}
+  %constant.52 = s32[] constant(9), origin={{"constant.52"}}
+  %broadcast.53 = s32[8,1,1]{2,1,0} broadcast(%constant.52), dimensions={}, origin={{"broadcast.53"}}
+  %compare.66 = pred[8,1,1]{2,1,0} compare(%reshape.64, %broadcast.53), direction=LE, origin={{"compare.66"}}
+  %and.67 = pred[8,1,1]{2,1,0} and(%compare.65, %compare.66), origin={{"and.67"}}
+  %constant.58 = pred[] constant(true), origin={{"constant.58"}}
+  %reduce.68 = pred[8,1]{1,0} reduce(%and.67, %constant.58), dimensions={2}, to_apply=%region_1.43, origin={{"reduce.68"}}
+  %Arg_0.48 = f32[8,10]{1,0} parameter(0), origin={{"Arg_0.48"}}
+  %gather.69 = f32[8,1]{1,0} gather(%Arg_0.48, %reshape.64), offset_dims={}, collapsed_slice_dims={1}, start_index_map={1}, operand_batching_dims={0}, start_indices_batching_dims={0}, index_vector_dim=2, slice_sizes={1,1}, origin={{"gather.69"}}
+  %constant.50 = f32[] constant(nan), origin={{"constant.50"}}
+  %broadcast.51 = f32[8,1]{1,0} broadcast(%constant.50), dimensions={}, origin={{"broadcast.51"}}
+  %select.70 = f32[8,1]{1,0} select(%reduce.68, %gather.69, %broadcast.51), origin={{"select.70"}}
+  ROOT %tuple.71 = (f32[8,1]{1,0}, s32[8,1,1]{2,1,0}) tuple(%select.70, %reshape.64), origin={({"select.70"}, {"reshape.64"})}
+}
+
+%_where.75 (Arg_0.76: pred[], Arg_1.77: s32[], Arg_2.78: s32[]) -> s32[] {
+  %Arg_0.76 = pred[] parameter(0), origin={{"Arg_0.76"}}
+  %Arg_1.77 = s32[] parameter(1), origin={{"Arg_1.77"}}
+  %Arg_2.78 = s32[] parameter(2), origin={{"Arg_2.78"}}
+  ROOT %select.79 = s32[] select(%Arg_0.76, %Arg_1.77, %Arg_2.78), origin={{"select.79"}}
+}
+
+%region_2.80 (Arg_0.81: pred[], Arg_1.82: pred[]) -> pred[] {
+  %Arg_0.81 = pred[] parameter(0), origin={{"Arg_0.81"}}
+  %Arg_1.82 = pred[] parameter(1), origin={{"Arg_1.82"}}
+  ROOT %and.83 = pred[] and(%Arg_0.81, %Arg_1.82), origin={{"and.83"}}
+}
+
+%_take.84 (Arg_0.85: f32[8,1], Arg_1.86: s32[]) -> (f32[8], s32[1]) {
+  %Arg_1.86 = s32[] parameter(1), origin={{"Arg_1.86"}}
+  %constant.92 = s32[] constant(0), origin={{"constant.92"}}
+  %compare.93 = pred[] compare(%Arg_1.86, %constant.92), direction=LT, origin={{"compare.93"}}
+  %constant.91 = s32[] constant(1), origin={{"constant.91"}}
+  %add.94 = s32[] add(%Arg_1.86, %constant.91), origin={{"add.94"}}
+  %call.95 = s32[] call(%compare.93, %add.94, %Arg_1.86), to_apply=%_where.75, origin={{"call.95"}}
+  %reshape.96 = s32[1]{0} reshape(%call.95), origin={{"reshape.96"}}
+  %constant.90 = s32[1]{0} constant({0}), origin={{"constant.90"}}
+  %compare.97 = pred[1]{0} compare(%reshape.96, %constant.90), direction=GE, origin={{"compare.97"}}
+  %compare.98 = pred[1]{0} compare(%reshape.96, %constant.90), direction=LE, origin={{"compare.98"}}
+  %and.99 = pred[1]{0} and(%compare.97, %compare.98), origin={{"and.99"}}
+  %constant.89 = pred[] constant(true), origin={{"constant.89"}}
+  %reduce.100 = pred[] reduce(%and.99, %constant.89), dimensions={0}, to_apply=%region_2.80, origin={{"reduce.100"}}
+  %broadcast.102 = pred[8]{0} broadcast(%reduce.100), dimensions={}, origin={{"broadcast.102"}}
+  %Arg_0.85 = f32[8,1]{1,0} parameter(0), origin={{"Arg_0.85"}}
+  %gather.101 = f32[8]{0} gather(%Arg_0.85, %reshape.96), offset_dims={0}, collapsed_slice_dims={1}, start_index_map={1}, index_vector_dim=0, slice_sizes={8,1}, origin={{"gather.101"}}
+  %constant.87 = f32[] constant(nan), origin={{"constant.87"}}
+  %broadcast.88 = f32[8]{0} broadcast(%constant.87), dimensions={}, origin={{"broadcast.88"}}
+  %select.103 = f32[8]{0} select(%broadcast.102, %gather.101, %broadcast.88), origin={{"select.103"}}
+  ROOT %tuple.104 = (f32[8]{0}, s32[1]{0}) tuple(%select.103, %reshape.96), origin={({"select.103"}, {"reshape.96"})}
+}
+
+%region_5.122 (Arg_0.123: f32[], Arg_1.124: f32[]) -> f32[] {
+  %Arg_0.123 = f32[] parameter(0), origin={{"Arg_0.123"}}
+  %Arg_1.124 = f32[] parameter(1), origin={{"Arg_1.124"}}
+  ROOT %add.125 = f32[] add(%Arg_0.123, %Arg_1.124), origin={{"add.125"}}
+}
+
+%_take_0.126 (Arg_0.127: s32[1], Arg_1.128: f32[8]) -> f32[8,1] {
+  %constant.129 = f32[] constant(0), origin={{"constant.129"}}
+  %broadcast.130 = f32[8,1]{1,0} broadcast(%constant.129), dimensions={}, origin={{"broadcast.130"}}
+  %Arg_0.127 = s32[1]{0} parameter(0), origin={{"Arg_0.127"}}
+  %Arg_1.128 = f32[8]{0} parameter(1), origin={{"Arg_1.128"}}
+  ROOT %scatter.131 = f32[8,1]{1,0} scatter(%broadcast.130, %Arg_0.127, %Arg_1.128), update_window_dims={0}, inserted_window_dims={1}, scatter_dims_to_operand_dims={1}, index_vector_dim=0, to_apply=%region_5.122, origin={{"scatter.131"}}
+}
+
+%region_6.133 (Arg_0.134: f32[], Arg_1.135: f32[]) -> f32[] {
+  %Arg_0.134 = f32[] parameter(0), origin={{"Arg_0.134"}}
+  %Arg_1.135 = f32[] parameter(1), origin={{"Arg_1.135"}}
+  ROOT %add.136 = f32[] add(%Arg_0.134, %Arg_1.135), origin={{"add.136"}}
+}
+
+%take_along_axis_1.137 (Arg_0.138: s32[8,1,1], Arg_1.139: f32[8,1]) -> f32[8,10] {
+  %constant.140 = f32[] constant(0), origin={{"constant.140"}}
+  %broadcast.141 = f32[8,10]{1,0} broadcast(%constant.140), dimensions={}, origin={{"broadcast.141"}}
+  %Arg_0.138 = s32[8,1,1]{2,1,0} parameter(0), origin={{"Arg_0.138"}}
+  %Arg_1.139 = f32[8,1]{1,0} parameter(1), origin={{"Arg_1.139"}}
+  ROOT %scatter.142 = f32[8,10]{1,0} scatter(%broadcast.141, %Arg_0.138, %Arg_1.139), update_window_dims={}, inserted_window_dims={1}, scatter_dims_to_operand_dims={1}, input_batching_dims={0}, scatter_indices_batching_dims={0}, index_vector_dim=2, to_apply=%region_6.133, origin={{"scatter.142"}}
+}
+
+%region_3.109 (Arg_0.110: f32[], Arg_1.111: f32[]) -> f32[] {
+  %Arg_0.110 = f32[] parameter(0), origin={{"Arg_0.110"}}
+  %Arg_1.111 = f32[] parameter(1), origin={{"Arg_1.111"}}
+  ROOT %add.112 = f32[] add(%Arg_0.110, %Arg_1.111), origin={{"add.112"}}
+}
+
+%region_7.148 (Arg_0.149: f32[], Arg_1.150: f32[]) -> f32[] {
+  %Arg_0.149 = f32[] parameter(0), origin={{"Arg_0.149"}}
+  %Arg_1.150 = f32[] parameter(1), origin={{"Arg_1.150"}}
+  ROOT %add.151 = f32[] add(%Arg_0.149, %Arg_1.150), origin={{"add.151"}}
+}
+
+%region_8.154 (Arg_0.155: f32[], Arg_1.156: f32[]) -> f32[] {
+  %Arg_0.155 = f32[] parameter(0), origin={{"Arg_0.155"}}
+  %Arg_1.156 = f32[] parameter(1), origin={{"Arg_1.156"}}
+  ROOT %add.157 = f32[] add(%Arg_0.155, %Arg_1.156), origin={{"add.157"}}
+}
+
+%region_9.161 (Arg_0.162: f32[], Arg_1.163: f32[]) -> f32[] {
+  %Arg_0.162 = f32[] parameter(0), origin={{"Arg_0.162"}}
+  %Arg_1.163 = f32[] parameter(1), origin={{"Arg_1.163"}}
+  ROOT %add.164 = f32[] add(%Arg_0.162, %Arg_1.163), origin={{"add.164"}}
+}
+
+%region_10.166 (Arg_0.167: f32[], Arg_1.168: f32[]) -> f32[] {
+  %Arg_0.167 = f32[] parameter(0), origin={{"Arg_0.167"}}
+  %Arg_1.168 = f32[] parameter(1), origin={{"Arg_1.168"}}
+  ROOT %add.169 = f32[] add(%Arg_0.167, %Arg_1.168), origin={{"add.169"}}
+}
+
+%region_4.116 (Arg_0.117: f32[], Arg_1.118: f32[]) -> f32[] {
+  %Arg_0.117 = f32[] parameter(0), origin={{"Arg_0.117"}}
+  %Arg_1.118 = f32[] parameter(1), origin={{"Arg_1.118"}}
+  ROOT %add.119 = f32[] add(%Arg_0.117, %Arg_1.118), origin={{"add.119"}}
+}
+
+ENTRY %main.181 (Arg_0.1: f32[1,10], Arg_1.2: f32[1,16,10], Arg_2.3: f32[1,8,16], Arg_3.4: s32[1,8]) -> (f32[1,10], f32[1,16,10], f32[1]) {
+  %Arg_0.1 = f32[1,10]{1,0} parameter(0), origin={{"Arg_0.1"}}
+  %reshape.23 = f32[10]{0} reshape(%Arg_0.1), origin={{"reshape.23"}}
+  %Arg_2.3 = f32[1,8,16]{2,1,0} parameter(2), origin={{"Arg_2.3"}}
+  %reshape.25 = f32[8,16]{1,0} reshape(%Arg_2.3), origin={{"reshape.25"}}
+  %Arg_1.2 = f32[1,16,10]{2,1,0} parameter(1), origin={{"Arg_1.2"}}
+  %reshape.24 = f32[16,10]{1,0} reshape(%Arg_1.2), origin={{"reshape.24"}}
+  %dot.26 = f32[8,10]{1,0} dot(%reshape.25, %reshape.24), lhs_contracting_dims={1}, rhs_contracting_dims={0}, origin={{"dot.26"}}
+  %broadcast.27 = f32[1,10]{1,0} broadcast(%Arg_0.1), dimensions={0,1}, origin={{"broadcast.27"}}
+  %reshape.28 = f32[10]{0} reshape(%broadcast.27), origin={{"reshape.28"}}
+  %broadcast.29 = f32[8,10]{1,0} broadcast(%reshape.28), dimensions={1}, origin={{"broadcast.29"}}
+  %add.30 = f32[8,10]{1,0} add(%dot.26, %broadcast.29), origin={{"add.30"}}
+  %constant.22 = f32[] constant(-inf), origin={{"constant.22"}}
+  %reduce.35 = f32[8]{0} reduce(%add.30, %constant.22), dimensions={1}, to_apply=%region_0.31, origin={{"reduce.35"}}
+  %constant.17 = f32[] constant(-inf), origin={{"constant.17"}}
+  %broadcast.18 = f32[8]{0} broadcast(%constant.17), dimensions={}, origin={{"broadcast.18"}}
+  %maximum.36 = f32[8]{0} maximum(%reduce.35, %broadcast.18), origin={{"maximum.36"}}
+  %reshape.37 = f32[8,1]{1,0} reshape(%maximum.36), origin={{"reshape.37"}}
+  %broadcast.38 = f32[8,1]{1,0} broadcast(%reshape.37), dimensions={0,1}, origin={{"broadcast.38"}}
+  %reshape.39 = f32[8]{0} reshape(%broadcast.38), origin={{"reshape.39"}}
+  %broadcast.40 = f32[8,10]{1,0} broadcast(%reshape.39), dimensions={0}, origin={{"broadcast.40"}}
+  %subtract.41 = f32[8,10]{1,0} subtract(%add.30, %broadcast.40), origin={{"subtract.41"}}
+  %Arg_3.4 = s32[1,8]{1,0} parameter(3), origin={{"Arg_3.4"}}
+  %reshape.42 = s32[8,1]{1,0} reshape(%Arg_3.4), origin={{"reshape.42"}}
+  %call.72 = (f32[8,1]{1,0}, s32[8,1,1]{2,1,0}) call(%subtract.41, %reshape.42), to_apply=%take_along_axis.47, origin={({"call.72" {0}}, {"call.72" {1}})}
+  %get-tuple-element.74 = s32[8,1,1]{2,1,0} get-tuple-element(%call.72), index=1, origin={{"call.72" {1}}}
+  %get-tuple-element.73 = f32[8,1]{1,0} get-tuple-element(%call.72), index=0, origin={{"call.72" {0}}}
+  %constant.20 = s32[] constant(0), origin={{"constant.20"}}
+  %call.105 = (f32[8]{0}, s32[1]{0}) call(%get-tuple-element.73, %constant.20), to_apply=%_take.84, origin={({"call.105" {0}}, {"call.105" {1}})}
+  %get-tuple-element.107 = s32[1]{0} get-tuple-element(%call.105), index=1, origin={{"call.105" {1}}}
+  %constant.13 = f32[] constant(-0.125), origin={{"constant.13"}}
+  %broadcast.14 = f32[8]{0} broadcast(%constant.13), dimensions={}, origin={{"broadcast.14"}}
+  %call.132 = f32[8,1]{1,0} call(%get-tuple-element.107, %broadcast.14), to_apply=%_take_0.126, origin={{"call.132"}}
+  %call.143 = f32[8,10]{1,0} call(%get-tuple-element.74, %call.132), to_apply=%take_along_axis_1.137, origin={{"call.143"}}
+  %constant.15 = f32[] constant(0.125), origin={{"constant.15"}}
+  %broadcast.16 = f32[8]{0} broadcast(%constant.15), dimensions={}, origin={{"broadcast.16"}}
+  %exponential.108 = f32[8,10]{1,0} exponential(%subtract.41), origin={{"exponential.108"}}
+  %constant.21 = f32[] constant(0), origin={{"constant.21"}}
+  %reduce.113 = f32[8]{0} reduce(%exponential.108, %constant.21), dimensions={1}, to_apply=%region_3.109, origin={{"reduce.113"}}
+  %divide.144 = f32[8]{0} divide(%broadcast.16, %reduce.113), origin={{"divide.144"}}
+  %broadcast.145 = f32[8,10]{1,0} broadcast(%divide.144), dimensions={0}, origin={{"broadcast.145"}}
+  %multiply.146 = f32[8,10]{1,0} multiply(%broadcast.145, %exponential.108), origin={{"multiply.146"}}
+  %add.147 = f32[8,10]{1,0} add(%call.143, %multiply.146), origin={{"add.147"}}
+  %reduce.152 = f32[10]{0} reduce(%add.147, %constant.21), dimensions={0}, to_apply=%region_7.148, origin={{"reduce.152"}}
+  %reshape.153 = f32[1,10]{1,0} reshape(%reduce.152), origin={{"reshape.153"}}
+  %reduce.158 = f32[10]{0} reduce(%reshape.153, %constant.21), dimensions={0}, to_apply=%region_8.154, origin={{"reduce.158"}}
+  %all-reduce.165 = f32[10]{0} all-reduce(%reduce.158), replica_groups={{0}}, to_apply=%region_9.161, origin={{"all-reduce.165"}}
+  %constant.11 = f32[] constant(1), origin={{"constant.11"}}
+  %broadcast.12 = f32[10]{0} broadcast(%constant.11), dimensions={}, origin={{"broadcast.12"}}
+  %divide.171 = f32[10]{0} divide(%all-reduce.165, %broadcast.12), origin={{"divide.171"}}
+  %constant.7 = f32[] constant(-0.01), origin={{"constant.7"}}
+  %broadcast.8 = f32[10]{0} broadcast(%constant.7), dimensions={}, origin={{"broadcast.8"}}
+  %multiply.173 = f32[10]{0} multiply(%divide.171, %broadcast.8), origin={{"multiply.173"}}
+  %add.175 = f32[10]{0} add(%reshape.23, %multiply.173), origin={{"add.175"}}
+  %reshape.177 = f32[1,10]{1,0} reshape(%add.175), origin={{"reshape.177"}}
+  %dot.159 = f32[10,16]{1,0} dot(%add.147, %reshape.25), lhs_contracting_dims={0}, rhs_contracting_dims={0}, origin={{"dot.159"}}
+  %transpose.160 = f32[16,10]{0,1} transpose(%dot.159), dimensions={1,0}, origin={{"transpose.160"}}
+  %all-reduce.170 = f32[16,10]{0,1} all-reduce(%transpose.160), replica_groups={{0}}, to_apply=%region_10.166, origin={{"all-reduce.170"}}
+  %constant.9 = f32[] constant(1), origin={{"constant.9"}}
+  %broadcast.10 = f32[16,10]{1,0} broadcast(%constant.9), dimensions={}, origin={{"broadcast.10"}}
+  %divide.172 = f32[16,10]{0,1} divide(%all-reduce.170, %broadcast.10), origin={{"divide.172"}}
+  %constant.5 = f32[] constant(-0.01), origin={{"constant.5"}}
+  %broadcast.6 = f32[16,10]{1,0} broadcast(%constant.5), dimensions={}, origin={{"broadcast.6"}}
+  %multiply.174 = f32[16,10]{0,1} multiply(%divide.172, %broadcast.6), origin={{"multiply.174"}}
+  %add.176 = f32[16,10]{1,0} add(%reshape.24, %multiply.174), origin={{"add.176"}}
+  %reshape.178 = f32[1,16,10]{2,1,0} reshape(%add.176), origin={{"reshape.178"}}
+  %log.114 = f32[8]{0} log(%reduce.113), origin={{"log.114"}}
+  %get-tuple-element.106 = f32[8]{0} get-tuple-element(%call.105), index=0, origin={{"call.105" {0}}}
+  %subtract.115 = f32[8]{0} subtract(%log.114, %get-tuple-element.106), origin={{"subtract.115"}}
+  %reduce.120 = f32[] reduce(%subtract.115, %constant.21), dimensions={0}, to_apply=%region_4.116, origin={{"reduce.120"}}
+  %constant.19 = f32[] constant(8), origin={{"constant.19"}}
+  %divide.121 = f32[] divide(%reduce.120, %constant.19), origin={{"divide.121"}}
+  %reshape.179 = f32[1]{0} reshape(%divide.121), origin={{"reshape.179"}}
+  ROOT %tuple.180 = (f32[1,10]{1,0}, f32[1,16,10]{2,1,0}, f32[1]{0}) tuple(%reshape.177, %reshape.178, %reshape.179), origin={({"reshape.177"}, {"reshape.178"}, {"reshape.179"})}
+}
+
+
+

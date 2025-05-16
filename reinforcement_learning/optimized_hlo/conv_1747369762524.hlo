@@ -1,0 +1,80 @@
+HloModule jit_conv_block_mp, entry_computation_layout={(f32[16]{0}, f32[32]{0}, f32[3,3,3,16]{3,2,1,0}, f32[3,3,16,32]{3,2,1,0}, f32[1,32,32,3]{3,2,1,0})->f32[1,16,16,32]{3,2,1,0}}
+
+%relu.16 (Arg_0.17: f32[1,32,32,16]) -> f32[1,32,32,16] {
+  %Arg_0.17 = f32[1,32,32,16]{3,2,1,0} parameter(0), origin={{"Arg_0.17"}}
+  %constant.18 = f32[] constant(0), origin={{"constant.18"}}
+  %broadcast.19 = f32[1,32,32,16]{3,2,1,0} broadcast(%constant.18), dimensions={}, origin={{"broadcast.19"}}
+  ROOT %maximum.20 = f32[1,32,32,16]{3,2,1,0} maximum(%Arg_0.17, %broadcast.19), origin={{"maximum.20"}}
+}
+
+%relu_0.32 (Arg_0.33: f32[1,16,16,32]) -> f32[1,16,16,32] {
+  %Arg_0.33 = f32[1,16,16,32]{3,2,1,0} parameter(0), origin={{"Arg_0.33"}}
+  %constant.34 = f32[] constant(0), origin={{"constant.34"}}
+  %broadcast.35 = f32[1,16,16,32]{3,2,1,0} broadcast(%constant.34), dimensions={}, origin={{"broadcast.35"}}
+  ROOT %maximum.36 = f32[1,16,16,32]{3,2,1,0} maximum(%Arg_0.33, %broadcast.35), origin={{"maximum.36"}}
+}
+
+ENTRY %main.38 (Arg_0.1: f32[16], Arg_1.2: f32[32], Arg_2.3: f32[3,3,3,16], Arg_3.4: f32[3,3,16,32], Arg_4.5: f32[1,32,32,3]) -> f32[1,16,16,32] {
+  %Arg_0.1 = f32[16]{0} parameter(0), origin={{"Arg_0.1"}}
+  %convert.8 = bf16[16]{0} convert(%Arg_0.1), origin={{"convert.8"}}
+  %convert.3 = f32[16]{0} convert(%convert.8)
+  %reshape.0 = f32[1,1,1,16]{3,2,1,0} reshape(%convert.3)
+  %convert.4 = bf16[1,1,1,16]{3,2,1,0} convert(%reshape.0)
+  %convert.5 = f32[1,1,1,16]{3,2,1,0} convert(%convert.4)
+  %reshape.4 = f32[1,1,1,16]{3,2,1,0} reshape(%convert.5)
+  %convert.9 = bf16[1,1,1,16]{3,2,1,0} convert(%reshape.4)
+  %convert.10 = f32[1,1,1,16]{3,2,1,0} convert(%convert.9)
+  %reshape.1 = f32[1,16]{1,0} reshape(%convert.10)
+  %convert.11 = bf16[1,16]{1,0} convert(%reshape.1)
+  %convert.12 = f32[1,16]{1,0} convert(%convert.11)
+  %broadcast.1 = f32[1,32,32,16]{3,2,1,0} broadcast(%convert.12), dimensions={0,3}
+  %convert.13 = bf16[1,32,32,16]{3,2,1,0} convert(%broadcast.1)
+  %Arg_1.2 = f32[32]{0} parameter(1), origin={{"Arg_1.2"}}
+  %convert.24 = bf16[32]{0} convert(%Arg_1.2), origin={{"convert.24"}}
+  %convert.21 = f32[32]{0} convert(%convert.24)
+  %reshape.2 = f32[1,1,1,32]{3,2,1,0} reshape(%convert.21)
+  %convert.25 = bf16[1,1,1,32]{3,2,1,0} convert(%reshape.2)
+  %convert.26 = f32[1,1,1,32]{3,2,1,0} convert(%convert.25)
+  %reshape.5 = f32[1,1,1,32]{3,2,1,0} reshape(%convert.26)
+  %convert.27 = bf16[1,1,1,32]{3,2,1,0} convert(%reshape.5)
+  %convert.28 = f32[1,1,1,32]{3,2,1,0} convert(%convert.27)
+  %reshape.3 = f32[1,32]{1,0} reshape(%convert.28)
+  %convert.29 = bf16[1,32]{1,0} convert(%reshape.3)
+  %convert.30 = f32[1,32]{1,0} convert(%convert.29)
+  %broadcast.3 = f32[1,16,16,32]{3,2,1,0} broadcast(%convert.30), dimensions={0,3}
+  %convert.32 = bf16[1,16,16,32]{3,2,1,0} convert(%broadcast.3)
+  %Arg_4.5 = f32[1,32,32,3]{3,2,1,0} parameter(4), origin={{"Arg_4.5"}}
+  %convert.6 = bf16[1,32,32,3]{3,2,1,0} convert(%Arg_4.5), origin={{"convert.6"}}
+  %convert = f32[1,32,32,3]{3,2,1,0} convert(%convert.6)
+  %Arg_2.3 = f32[3,3,3,16]{3,2,1,0} parameter(2), origin={{"Arg_2.3"}}
+  %convert.7 = bf16[3,3,3,16]{3,2,1,0} convert(%Arg_2.3), origin={{"convert.7"}}
+  %convert.1 = f32[3,3,3,16]{3,2,1,0} convert(%convert.7)
+  %convolution.0 = f32[1,32,32,16]{3,2,1,0} convolution(%convert, %convert.1), window={size=3x3 pad=1_1x1_1}, dim_labels=b01f_01io->b01f
+  %convert.2 = bf16[1,32,32,16]{3,2,1,0} convert(%convolution.0)
+  %convert.14 = f32[1,32,32,16]{3,2,1,0} convert(%convert.2)
+  %convert.36 = bf16[1,16]{1,0} convert(%convert.12)
+  %broadcast.4 = bf16[1,32,32,16]{3,2,1,0} broadcast(%convert.36), dimensions={0,3}
+  %convert.16 = f32[1,32,32,16]{3,2,1,0} convert(%broadcast.4)
+  %add.0 = f32[1,32,32,16]{3,2,1,0} add(%convert.14, %convert.16)
+  %convert.17 = bf16[1,32,32,16]{3,2,1,0} convert(%add.0)
+  %convert.15 = f32[1,32,32,16]{3,2,1,0} convert(%convert.17), origin={{"convert.15"}}
+  %call.21 = f32[1,32,32,16]{3,2,1,0} call(%convert.15), to_apply=%relu.16, origin={{"call.21"}}
+  %convert.22 = bf16[1,32,32,16]{3,2,1,0} convert(%call.21), origin={{"convert.22"}}
+  %convert.18 = f32[1,32,32,16]{3,2,1,0} convert(%convert.22)
+  %Arg_3.4 = f32[3,3,16,32]{3,2,1,0} parameter(3), origin={{"Arg_3.4"}}
+  %convert.23 = bf16[3,3,16,32]{3,2,1,0} convert(%Arg_3.4), origin={{"convert.23"}}
+  %convert.19 = f32[3,3,16,32]{3,2,1,0} convert(%convert.23)
+  %convolution.1 = f32[1,16,16,32]{3,2,1,0} convolution(%convert.18, %convert.19), window={size=3x3 stride=2x2 pad=0_1x0_1}, dim_labels=b01f_01io->b01f
+  %convert.20 = bf16[1,16,16,32]{3,2,1,0} convert(%convolution.1)
+  %convert.33 = f32[1,16,16,32]{3,2,1,0} convert(%convert.20)
+  %convert.37 = bf16[1,32]{1,0} convert(%convert.30)
+  %broadcast.5 = bf16[1,16,16,32]{3,2,1,0} broadcast(%convert.37), dimensions={0,3}
+  %convert.34 = f32[1,16,16,32]{3,2,1,0} convert(%broadcast.5)
+  %add.1 = f32[1,16,16,32]{3,2,1,0} add(%convert.33, %convert.34)
+  %convert.35 = bf16[1,16,16,32]{3,2,1,0} convert(%add.1)
+  %convert.31 = f32[1,16,16,32]{3,2,1,0} convert(%convert.35), origin={{"convert.31"}}
+  ROOT %call.37 = f32[1,16,16,32]{3,2,1,0} call(%convert.31), to_apply=%relu_0.32, origin={{"call.37"}}
+}
+
+
+

@@ -2,6 +2,7 @@ import gymnasium as gym
 import numpy as np
 from gymnasium import spaces
 from typing import Dict, List, Tuple, Optional, Any
+import os
 from XLA_interface import XLAInterface
 
 class XLAOptimizationEnv(gym.Env):
@@ -17,9 +18,20 @@ class XLAOptimizationEnv(gym.Env):
 
         super().__init__() # what does this do?
 
+        # Ensure paths are absolute
+        self.xla_dir = os.path.abspath(xla_dir)
+        self.initial_hlo_file_path = os.path.abspath(initial_hlo_file_path)
+        
+        # Verify paths exist
+        if not os.path.exists(self.xla_dir):
+            raise FileNotFoundError(f"XLA directory not found: {self.xla_dir}")
+        
+        if not os.path.exists(self.initial_hlo_file_path):
+            raise FileNotFoundError(f"Initial HLO file not found: {self.initial_hlo_file_path}")
+
         # Initialize XLA interface
         print("Initializing XLA Interface...")
-        self.xla_interface = XLAInterface(xla_dir=xla_dir, verbose=verbose)
+        self.xla_interface = XLAInterface(xla_dir=self.xla_dir, verbose=verbose)
 
         # store params
         self.max_sequence_length = max_sequence_length
@@ -33,7 +45,7 @@ class XLAOptimizationEnv(gym.Env):
         self.applied_passes = []
 
         # set up base HLO file (note this must come AFTER the other initializations as we call reset() inside here)
-        self.set_base_hlo_file(initial_hlo_file_path)
+        self.set_base_hlo_file(self.initial_hlo_file_path)
 
         if verbose:
             print(f"\nAvailable Passes: \n{self.available_passes}\n")
@@ -89,6 +101,13 @@ class XLAOptimizationEnv(gym.Env):
         Args:
             hlo_file_path: Features of the new HLO file to optimize
         """
+        # Ensure path is absolute
+        hlo_file_path = os.path.abspath(hlo_file_path)
+        
+        # Verify file exists
+        if not os.path.exists(hlo_file_path):
+            raise FileNotFoundError(f"HLO file not found: {hlo_file_path}")
+            
         # Extract features from the HLO file:
         self.base_hlo_file_path = hlo_file_path
         self.base_features = self.xla_interface.extract_features(hlo_file=hlo_file_path)
@@ -140,16 +159,34 @@ class XLAOptimizationEnv(gym.Env):
         Returns:
             graph observation dictionary
         """
-
-        # extract graph components
-        nodes = np.array(features["graph_nodes"], dtype=np.float32)
-
-        # create edge indices from edge_links
-        edge_links = features["graph_edge_links"]
-        edge_indices = np.array(edge_links, dtype=np.int64)
-
-        # create simple edge features (all 1s for connectivity)
-        edge_features = np.ones((len(edge_links), 1), dtype=np.float32)
+        # Extract graph components safely
+        nodes = np.array(features.get("graph_nodes", []), dtype=np.float32)
+        
+        # Create edge indices from edge_links
+        edge_links = features.get("graph_edge_links", [])
+        
+        # Convert edge links to numpy array for consistency
+        # Handle case where edge_links might be empty
+        if edge_links:
+            edge_indices = np.array(edge_links, dtype=np.int64)
+            
+            # Create more informative edge features based on node properties
+            # Each edge gets features based on its source and target nodes
+            edge_features = []
+            
+            for edge in edge_links:
+                if len(edge) >= 2:
+                    src, dst = edge[0], edge[1]
+                    # Create a single feature for each edge (connectedness)
+                    # In a more complex implementation, could encode edge type or weight
+                    edge_features.append([1.0])
+                else:
+                    edge_features.append([0.0])
+                    
+            edge_features = np.array(edge_features, dtype=np.float32)
+        else:
+            edge_indices = np.array([], dtype=np.int64).reshape(0, 2)
+            edge_features = np.array([], dtype=np.float32).reshape(0, 1)
 
         return_dict = {
             "nodes": nodes,
