@@ -1,0 +1,10 @@
+episode,step,action,action_name,reward,cost,cost_reduction_from_initial,percent_reduction
+1,1,50,hlo-memory-scheduler,0.0,506.236,0.0,0.0
+1,2,73,rng-bit-generator-expander,0.0,506.236,0.0,0.0
+1,3,0,AssumeGatherIndicesInBoundRewriteToCopy,0.0,506.236,0.0,0.0
+2,1,0,AssumeGatherIndicesInBoundRewriteToCopy,0.0,506.236,0.0,0.0
+2,2,6,all-gather-cse,0.0,506.236,0.0,0.0
+2,3,57,infeed-token-propagation,0.0,506.236,0.0,0.0
+3,1,0,AssumeGatherIndicesInBoundRewriteToCopy,0.0,506.236,0.0,0.0
+3,2,22,computation-deduplicator,0.0,506.236,0.0,0.0
+3,3,0,AssumeGatherIndicesInBoundRewriteToCopy,0.0,506.236,0.0,0.0

@@ -1,0 +1,4 @@
+episode,step,action,action_name,reward,cost,cost_reduction_from_initial,percent_reduction
+1,1,30,convolution-group-converter,0.0,552.94,0.0,0.0
+1,2,83,test-only-bar2hello,0.0,552.94,0.0,0.0
+1,3,15,bfloat16-propagation,0.0,552.94,0.0,0.0

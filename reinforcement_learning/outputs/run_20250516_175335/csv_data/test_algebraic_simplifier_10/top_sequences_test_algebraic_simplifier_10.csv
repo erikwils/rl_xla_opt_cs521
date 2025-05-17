@@ -1,0 +1,4 @@
+episode,total_reward,percent_reduction,pass_sequence
+1,0.0,0.0,"rng-expander, reshape-decomposer, root-instruction-sinker"
+2,0.0,0.0,"reduce-decomposer, dot_dimension_merger, hlo-memory-scheduler"
+3,0.0,0.0,"computation-deduplicator, AssumeGatherIndicesInBoundRewriteToCopy, collective-quantizer"

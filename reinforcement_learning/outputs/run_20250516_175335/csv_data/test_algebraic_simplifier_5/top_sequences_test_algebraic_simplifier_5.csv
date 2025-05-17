@@ -1,0 +1,4 @@
+episode,total_reward,percent_reduction,pass_sequence
+1,0.0,0.0,"hlo-descheduler, root-instruction-sinker, sub-byte-size-setter"
+2,0.0,0.0,"AssumeGatherIndicesInBoundRewriteToCopy, host-offloading-prepare-elide-move-to-host, ReduceWindowToReduceAndBroadcast"
+3,0.0,0.0,"convert_operand_folding, AssumeGatherIndicesInBoundRewriteToCopy, while-loop-trip-count-annotator"

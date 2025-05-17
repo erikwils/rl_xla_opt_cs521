@@ -1,0 +1,4 @@
+episode,total_reward,percent_reduction,pass_sequence
+3,42.063999999999965,7.681687692206543,"ReduceWindowToReduceAndBroadcast, broadcast_canonicalizer, dce"
+1,0.0,0.0,"simplify-fp-conversions, AssumeGatherIndicesInBoundRewriteToCopy, stable-sort-expander"
+2,0.0,0.0,"slice-sinker, all-gather-combiner, control-dep-remover"

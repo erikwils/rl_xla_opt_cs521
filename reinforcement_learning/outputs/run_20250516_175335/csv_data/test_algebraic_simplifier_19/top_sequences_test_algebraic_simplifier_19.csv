@@ -1,0 +1,4 @@
+episode,total_reward,percent_reduction,pass_sequence
+1,0.0,0.0,"AssumeGatherIndicesInBoundRewriteToCopy, bf16-mixed-precision-removal, bf16-mixed-precision-removal"
+2,0.0,0.0,"collective-quantizer, bf16-mixed-precision-removal, async-collective-creator"
+3,0.0,0.0,"test-only-algebraic-simplifier-with-onednn-enabled, rng-bit-generator-expander, logistic-expander"

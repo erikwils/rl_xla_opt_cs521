@@ -1,0 +1,4 @@
+episode,total_reward,percent_reduction,pass_sequence
+1,0.0,0.0,"simplify-sorts, all-gather-combiner, test-only-foo2bar"
+2,0.0,0.0,"AssumeGatherIndicesInBoundRewriteToCopy, AssumeGatherIndicesInBoundRewriteToCopy, collective-transformation-reorderer"
+3,0.0,0.0,"AssumeGatherIndicesInBoundRewriteToCopy, test-only-foo2bar, AssumeGatherIndicesInBoundRewriteToCopy"

@@ -1,0 +1,4 @@
+episode,total_reward,percent_reduction,pass_sequence
+1,0.0,0.0,"AssumeGatherIndicesInBoundRewriteToCopy, reduce-decomposer, rng-expander"
+2,0.0,0.0,"AssumeGatherIndicesInBoundRewriteToCopy, AssumeGatherIndicesInBoundRewriteToCopy, batch-dot-simplification"
+3,0.0,0.0,"AssumeGatherIndicesInBoundRewriteToCopy, AssumeGatherIndicesInBoundRewriteToCopy, AssumeGatherIndicesInBoundRewriteToCopy"

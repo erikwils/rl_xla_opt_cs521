@@ -1,0 +1,4 @@
+episode,total_reward,percent_reduction,pass_sequence
+1,0.0,0.0,"convert-memory-placement-to-internal-annotations, AssumeGatherIndicesInBoundRewriteToCopy, float-normalization-bf16"
+2,0.0,0.0,"AssumeGatherIndicesInBoundRewriteToCopy, AssumeGatherIndicesInBoundRewriteToCopy, AssumeGatherIndicesInBoundRewriteToCopy"
+3,0.0,0.0,"computation-deduplicator, AssumeGatherIndicesInBoundRewriteToCopy, convolution-group-converter"

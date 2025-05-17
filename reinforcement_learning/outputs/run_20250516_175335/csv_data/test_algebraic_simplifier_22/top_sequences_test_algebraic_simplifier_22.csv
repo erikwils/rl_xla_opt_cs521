@@ -1,0 +1,4 @@
+episode,total_reward,percent_reduction,pass_sequence
+1,0.0,0.0,"AssumeGatherIndicesInBoundRewriteToCopy, host-offload-legalize, host-offloading-prepare-elide-move-to-host"
+2,0.0,0.0,"AssumeGatherIndicesInBoundRewriteToCopy, AssumeGatherIndicesInBoundRewriteToCopy, AssumeGatherIndicesInBoundRewriteToCopy"
+3,0.0,0.0,"optimize_input_output_buffer_alias, AssumeGatherIndicesInBoundRewriteToCopy, bfloat16-propagation"

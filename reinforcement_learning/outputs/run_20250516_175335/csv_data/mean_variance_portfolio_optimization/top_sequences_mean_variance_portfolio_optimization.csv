@@ -1,0 +1,4 @@
+episode,total_reward,percent_reduction,pass_sequence
+1,0.0,0.0,"all-gather-bcast-reorder, while-loop-trip-count-annotator, AssumeGatherIndicesInBoundRewriteToCopy"
+2,0.0,0.0,"while-loop-trip-count-annotator, bfloat16-fold, dynamic-dimension-simplifier"
+3,0.0,0.0,"fusion_constant_sinking, AssumeGatherIndicesInBoundRewriteToCopy, logistic-expander"

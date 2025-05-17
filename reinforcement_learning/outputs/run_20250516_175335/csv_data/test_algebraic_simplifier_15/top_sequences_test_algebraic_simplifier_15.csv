@@ -1,0 +1,4 @@
+episode,total_reward,percent_reduction,pass_sequence
+1,0.0,0.0,"constant_folding, convert-memory-placement-to-internal-annotations, constant_folding"
+2,0.0,0.0,"convert-mover, dot_dimension_merger, flatten-call-graph"
+3,0.0,0.0,"AssumeGatherIndicesInBoundRewriteToCopy, hlo-constant-splitter, batch-dot-simplification"

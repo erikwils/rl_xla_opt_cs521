@@ -1,0 +1,4 @@
+episode,total_reward,percent_reduction,pass_sequence
+1,0.0,0.0,"bfloat16-propagation, async-collective-creator, AssumeGatherIndicesInBoundRewriteToCopy"
+2,0.0,0.0,"constant_folding, AssumeGatherIndicesInBoundRewriteToCopy, AssumeGatherIndicesInBoundRewriteToCopy"
+3,0.0,0.0,"gather_simplifier, AssumeGatherIndicesInBoundRewriteToCopy, conditional-canonicalizer"

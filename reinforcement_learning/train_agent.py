@@ -7,13 +7,47 @@ import os
 import pickle
 import glob
 import pandas as pd
+import datetime
+
+# Create an output directory structure
+def create_output_directories():
+    """Create structured directory hierarchy for all outputs"""
+    # Get script directory
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    
+    # Create a timestamp for unique output directories
+    timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+    
+    # Main output directory
+    output_dir = os.path.join(script_dir, "outputs", f"run_{timestamp}")
+    os.makedirs(output_dir, exist_ok=True)
+    
+    # Create subdirectories
+    csv_dir = os.path.join(output_dir, "csv_data")
+    plots_dir = os.path.join(output_dir, "plots")
+    models_dir = os.path.join(output_dir, "models")
+    analysis_dir = os.path.join(output_dir, "analysis")
+    
+    os.makedirs(csv_dir, exist_ok=True)
+    os.makedirs(plots_dir, exist_ok=True)
+    os.makedirs(models_dir, exist_ok=True)
+    os.makedirs(analysis_dir, exist_ok=True)
+    
+    return {
+        "main": output_dir,
+        "csv": csv_dir,
+        "plots": plots_dir,
+        "models": models_dir,
+        "analysis": analysis_dir
+    }
 
 def train_agent(
         env,
         agent,
         num_episodes=1000,
         max_steps_per_episode=10,
-        print_interval=100
+        print_interval=100,
+        output_dirs=None
 ):
     """
     Args:
@@ -22,9 +56,18 @@ def train_agent(
         num_episodes: number of episodes to train for
         max_steps_per_episode: maximum steps per episode
         print_interval: how often to print our progress
+        output_dirs: dictionary of output directories
     """
     # Track detailed metrics for each episode
     episode_metrics = []
+    
+    # Track step-level data for all episodes
+    step_data = []
+    
+    # Keep track of best episode for detailed cost tracking
+    best_episode_idx = -1
+    best_episode_reward = float('-inf')
+    best_episode_costs = []
 
     for episode in range(num_episodes):
         # Reset the environment
@@ -37,6 +80,7 @@ def train_agent(
         unique_actions = set()
         step_count = 0
         initial_cost = env.cost_history[0]
+        current_costs = [initial_cost]  # Track costs at each step
 
         # Run the episode
         step = 0
@@ -52,8 +96,23 @@ def train_agent(
 
             # Track detailed metrics
             step_rewards.append(reward)
-            step_costs.append(info["cost_history"][-1])
+            current_cost = info["cost_history"][-1]
+            step_costs.append(current_cost)
+            current_costs.append(current_cost)
             step_count += 1
+            
+            # Track step-level data
+            step_entry = {
+                "episode": episode + 1,
+                "step": step + 1,
+                "action": action,
+                "action_name": env.available_passes[action],
+                "reward": reward,
+                "cost": current_cost,
+                "cost_reduction_from_initial": initial_cost - current_cost,
+                "percent_reduction": ((initial_cost - current_cost) / initial_cost) * 100 if initial_cost > 0 else 0
+            }
+            step_data.append(step_entry)
 
             # Update the agent
             agent.update(state, action, reward, next_state, done)
@@ -84,6 +143,12 @@ def train_agent(
             "action_sequence": ",".join(str(a) for a in actions_taken)
         }
         episode_metrics.append(episode_data)
+        
+        # Check if this is the best episode so far
+        if episode_reward > best_episode_reward:
+            best_episode_reward = episode_reward
+            best_episode_idx = episode
+            best_episode_costs = current_costs.copy()
 
         # Print progress
         if (episode + 1) % print_interval == 0:
@@ -91,12 +156,64 @@ def train_agent(
             print(f"Episode {episode + 1}/{num_episodes} | "
                   f"Mean Reward: {mean_reward:.4f} | "
                   f"Exploration Rate: {agent.exploration_rate:.4f}")
+    
+    # If we have output directories, save step-level data
+    if output_dirs and best_episode_idx >= 0:
+        # Create a DataFrame from step data and save it
+        step_df = pd.DataFrame(step_data)
+        if not step_df.empty:
+            step_csv_path = os.path.join(output_dirs["csv"], "all_steps_data.csv")
+            step_df.to_csv(step_csv_path, index=False)
+            
+            # Create a separate DataFrame for the best episode
+            best_episode_steps = step_df[step_df["episode"] == best_episode_idx + 1]
+            if not best_episode_steps.empty:
+                best_steps_csv_path = os.path.join(output_dirs["csv"], "best_episode_steps.csv")
+                best_episode_steps.to_csv(best_steps_csv_path, index=False)
+                
+                # Save best episode cost progression
+                best_costs_df = pd.DataFrame({
+                    "step": list(range(len(best_episode_costs))),
+                    "cost": best_episode_costs,
+                    "cost_reduction": [best_episode_costs[0] - cost for cost in best_episode_costs],
+                    "percent_reduction": [(best_episode_costs[0] - cost) / best_episode_costs[0] * 100 
+                                          if best_episode_costs[0] > 0 else 0 
+                                          for cost in best_episode_costs]
+                })
+                best_costs_csv_path = os.path.join(output_dirs["csv"], "best_episode_costs.csv")
+                best_costs_df.to_csv(best_costs_csv_path, index=False)
+                
+                # Create visualization of best episode cost reduction
+                plt.figure(figsize=(12, 6))
+                plt.plot(best_costs_df["step"], best_costs_df["cost"], marker='o')
+                plt.title(f"Cost Reduction Over Steps (Best Episode {best_episode_idx+1})")
+                plt.xlabel("Step")
+                plt.ylabel("Cost")
+                plt.grid(True)
+                plt.tight_layout()
+                
+                best_cost_plot_path = os.path.join(output_dirs["plots"], "best_episode_cost_reduction.png")
+                plt.savefig(best_cost_plot_path)
+                plt.close()
+                
+                # Create visualization showing percent reduction
+                plt.figure(figsize=(12, 6))
+                plt.plot(best_costs_df["step"], best_costs_df["percent_reduction"], marker='o', color='green')
+                plt.title(f"Percent Cost Reduction Over Steps (Best Episode {best_episode_idx+1})")
+                plt.xlabel("Step")
+                plt.ylabel("Cost Reduction (%)")
+                plt.grid(True)
+                plt.tight_layout()
+                
+                percent_reduction_plot_path = os.path.join(output_dirs["plots"], "best_episode_percent_reduction.png")
+                plt.savefig(percent_reduction_plot_path)
+                plt.close()
 
     # Return the trained agent, its statistics, and detailed metrics
     return agent, agent.get_statistics(), episode_metrics
 
 
-def save_training_data_to_csv(episode_metrics, hlo_file_name, available_passes):
+def save_training_data_to_csv(episode_metrics, hlo_file_name, available_passes, output_dirs):
     """
     Save training metrics to CSV file for analysis.
     
@@ -104,13 +221,14 @@ def save_training_data_to_csv(episode_metrics, hlo_file_name, available_passes):
         episode_metrics: List of dictionaries containing episode data
         hlo_file_name: Name of the HLO file trained on
         available_passes: List of available compiler passes
+        output_dirs: Dictionary of output directories
     """
     # Create a DataFrame from the episode metrics
     df = pd.DataFrame(episode_metrics)
     
     # Prepare filename
     base_name = os.path.basename(hlo_file_name).split('.')[0] if hlo_file_name else "training"
-    csv_file = f"training_metrics_{base_name}.csv"
+    csv_file = os.path.join(output_dirs["csv"], f"training_metrics_{base_name}.csv")
     
     # Save to CSV
     df.to_csv(csv_file, index=False)
@@ -121,7 +239,7 @@ def save_training_data_to_csv(episode_metrics, hlo_file_name, available_passes):
         'pass_index': list(range(len(available_passes))),
         'pass_name': available_passes
     })
-    pass_map_file = f"pass_mapping_{base_name}.csv"
+    pass_map_file = os.path.join(output_dirs["csv"], f"pass_mapping_{base_name}.csv")
     pass_map.to_csv(pass_map_file, index=False)
     print(f"Pass mapping saved to {pass_map_file}")
     
@@ -147,7 +265,7 @@ def save_training_data_to_csv(episode_metrics, hlo_file_name, available_passes):
         
         # Save top sequences to a separate CSV
         top_seq_df = pd.DataFrame(top_sequences)
-        top_seq_file = f"top_sequences_{base_name}.csv"
+        top_seq_file = os.path.join(output_dirs["csv"], f"top_sequences_{base_name}.csv")
         top_seq_df.to_csv(top_seq_file, index=False)
         print(f"Top sequences saved to {top_seq_file}")
     
@@ -160,7 +278,8 @@ def train_on_multiple_files(
         episodes_per_file = 10,
         max_steps_per_episode = 30,
         print_interval = 10,
-        verbose = True
+        verbose = True,
+        output_dirs = None
 ):
     """
     Train the agent on multiple HLO files sequentially
@@ -172,6 +291,7 @@ def train_on_multiple_files(
         max_steps_per_episode: Maximum optimization passes per episode
         print_interval: How often to print progress
         verbose: Whether to print detailed progress
+        output_dirs: Dictionary of output directories
 
     Returns:
         Agent and statistics for each file.
@@ -179,11 +299,17 @@ def train_on_multiple_files(
 
     results = {}
     all_csv_files = []
+    
+    if output_dirs is None:
+        output_dirs = create_output_directories()
+
+    # Make a copy of the original file paths so we don't lose them
+    original_hlo_files = hlo_files.copy()
 
     # Initialize environment instance
     env = XLAOptimizationEnv(
         xla_dir=xla_dir,
-        initial_hlo_file_path=hlo_files[0],
+        initial_hlo_file_path=original_hlo_files[0],
         max_sequence_length=max_steps_per_episode,
         verbose=verbose
     )
@@ -202,15 +328,30 @@ def train_on_multiple_files(
     )
 
     # train on each file
-    for i, hlo_file in enumerate(hlo_files):
+    for i, hlo_file in enumerate(original_hlo_files):
         if verbose:
             print(f"\n\n{'='*50}")
-            print(f"Training on {hlo_file} [{i+1}/{len(hlo_files)}]")
+            print(f"Training on {hlo_file} [{i+1}/{len(original_hlo_files)}]")
             print(f"{'='*50}\n")
     
         # Only set the new HLO file if it's not the first one (already set in initialization):
         if i > 0:
+            # Ensure this is always using the original file, not one that might get deleted
             env.set_base_hlo_file(hlo_file_path=hlo_file)
+        
+        # Create file-specific output directories
+        file_base_name = os.path.basename(hlo_file).split('.')[0]
+        file_output_dirs = {
+            "main": output_dirs["main"],
+            "csv": os.path.join(output_dirs["csv"], file_base_name),
+            "plots": os.path.join(output_dirs["plots"], file_base_name),
+            "models": output_dirs["models"],
+            "analysis": output_dirs["analysis"]
+        }
+        
+        # Create file-specific directories
+        os.makedirs(file_output_dirs["csv"], exist_ok=True)
+        os.makedirs(file_output_dirs["plots"], exist_ok=True)
         
         # train agent on this file
         trained_agent, stats, episode_metrics = train_agent(
@@ -218,7 +359,8 @@ def train_on_multiple_files(
             agent=agent,
             num_episodes=episodes_per_file,
             max_steps_per_episode=max_steps_per_episode,
-            print_interval=print_interval
+            print_interval=print_interval,
+            output_dirs=file_output_dirs
         )
 
         file_basename = os.path.basename(hlo_file)
@@ -227,32 +369,39 @@ def train_on_multiple_files(
         csv_file = save_training_data_to_csv(
             episode_metrics=episode_metrics, 
             hlo_file_name=file_basename,
-            available_passes=available_passes
+            available_passes=available_passes,
+            output_dirs=file_output_dirs
         )
         all_csv_files.append(csv_file)
         
-        if verbose:
-            # plot results for this file:
-            best_sequence = plot_training_results(stats=stats, available_passes=available_passes, hlo_file_name=file_basename)
+        
+        # plot results for this file:
+        best_sequence = plot_training_results(
+            stats=stats, 
+            available_passes=available_passes, 
+            hlo_file_name=file_basename,
+            output_dirs=file_output_dirs
+        )
         
         # store results for this file
         results[file_basename] = {
             'best_sequence': best_sequence,
             'best_reward': stats['best_reward'],
             'episode_rewards': stats['episode_rewards'],
-            'csv_file': csv_file
+            'csv_file': csv_file,
+            'output_dirs': file_output_dirs
         }
         # clear out the optimized directory between transitions to other files
         clear_optimized_directory(env.xla_interface.optimized_dir)
 
     # Create a summary CSV that combines key metrics across all files
     if all_csv_files:
-        create_training_summary(results, available_passes)
+        create_training_summary(results, available_passes, output_dirs["csv"])
 
     return trained_agent, results, available_passes
 
 
-def create_training_summary(results, available_passes):
+def create_training_summary(results, available_passes, csv_output_dir):
     """Create a summary CSV that shows metrics across all files."""
     summary_data = []
     
@@ -291,11 +440,12 @@ def create_training_summary(results, available_passes):
     if summary_data:
         # Create and save summary DataFrame
         summary_df = pd.DataFrame(summary_data)
-        summary_df.to_csv('training_summary_all_files.csv', index=False)
-        print("Training summary saved to training_summary_all_files.csv")
+        summary_csv_path = os.path.join(csv_output_dir, 'training_summary_all_files.csv')
+        summary_df.to_csv(summary_csv_path, index=False)
+        print(f"Training summary saved to {summary_csv_path}")
 
 
-def plot_training_results(stats, available_passes, hlo_file_name=None):
+def plot_training_results(stats, available_passes, hlo_file_name=None, output_dirs=None):
     """
     Plot the training results.
 
@@ -303,17 +453,25 @@ def plot_training_results(stats, available_passes, hlo_file_name=None):
         stats: Statistics from agent training
         available_passes: List of available optimization passes
         hlo_file_name: Name of the HLO file trained on
+        output_dirs: Dictionary of output directories
     """
-    # Create a directory for plots if it doesn't exist
-    plots_dir = "training_plots"
-    os.makedirs(plots_dir, exist_ok=True)
+    # Determine the plots directory
+    if output_dirs and "plots" in output_dirs:
+        plots_dir = output_dirs["plots"]
+    else:
+        # Fallback to a default directory
+        plots_dir = "training_plots"
+        os.makedirs(plots_dir, exist_ok=True)
     
     # Base filename for plots
     base_name = os.path.basename(hlo_file_name).split('.')[0] if hlo_file_name else "training"
     
-    # Load the CSV data for additional plots
-    csv_file = f"training_metrics_{base_name}.csv"
-    if os.path.exists(csv_file):
+    # Load the CSV data for additional plots if available
+    csv_file = None
+    if output_dirs and "csv" in output_dirs:
+        csv_file = os.path.join(output_dirs["csv"], f"training_metrics_{base_name}.csv")
+    
+    if csv_file and os.path.exists(csv_file):
         df = pd.read_csv(csv_file)
         
         # 1. Plot episode rewards
@@ -322,7 +480,7 @@ def plot_training_results(stats, available_passes, hlo_file_name=None):
         
         title = "Episode Rewards During Training"
         if hlo_file_name:
-            title += f" - {hlo_file_name}"
+            title += f" - {base_name}"
         
         plt.title(title)
         plt.xlabel("Episode")
@@ -410,7 +568,7 @@ def plot_training_results(stats, available_passes, hlo_file_name=None):
         
         title = "Episode Rewards During Training"
         if hlo_file_name:
-            title += f" - {hlo_file_name}"
+            title += f" - {base_name}"
         
         plt.title(title)
         plt.xlabel("Episode")
@@ -456,18 +614,24 @@ def verify_hlo_files(hlo_files, xla_interface):
     
     return valid_files
 
-def analyze_state_space(agent, available_passes):
+def analyze_state_space(agent, available_passes, output_dirs=None):
     """
     Analyze the agent's state space and Q-table to extract insights useful for a report.
     
     Args:
         agent: Trained Q-learning agent
         available_passes: List of available optimization passes
+        output_dirs: Dictionary of output directories
     """
     print("\nAnalyzing state space representation...")
     
-    # Create a directory for state space analysis
-    analysis_dir = "state_space_analysis"
+    # Determine the analysis directory
+    if output_dirs and "analysis" in output_dirs:
+        analysis_dir = output_dirs["analysis"]
+    else:
+        # Fallback to a default directory
+        analysis_dir = "state_space_analysis"
+    
     os.makedirs(analysis_dir, exist_ok=True)
     
     # Get Q-table information
@@ -575,7 +739,7 @@ def analyze_state_space(agent, available_passes):
             for i, state in enumerate(state_samples[:5]):
                 f.write(f"State {i+1}: {state}\n")
     
-    print("State space analysis complete. Results saved to the 'state_space_analysis' directory.")
+    print("State space analysis complete. Results saved to the analysis directory.")
 
 def main():
     """
@@ -584,20 +748,42 @@ def main():
     # XLA directory
     xla_dir = "/Users/rayaanfaruqi/Documents/CS521/Final_Project/xla" # OTHER USERS CHANGE HERE
     
+    # Create output directories
+    output_dirs = create_output_directories()
+    print(f"Output will be saved to {output_dirs['main']}")
+    
     # Find all HLO files to train on
     script_dir = os.path.dirname(os.path.abspath(__file__))
     project_dir = os.path.dirname(script_dir)
     
-    # Find both .hlo and .txt files in the data directory
+    # Find both .hlo and .txt files in the data directory and optimized directory
     hlo_data_dir = os.path.join(project_dir, "jax_hlo", "hlo_data")
-    hlo_files = glob.glob(os.path.join(hlo_data_dir, "*.hlo"))
-    hlo_files.extend(glob.glob(os.path.join(hlo_data_dir, "*.txt")))
+    optimized_hlo_dir = os.path.join(script_dir, "optimized_hlo")
+    
+    # First check the optimized directory (these should be properly formatted)
+    hlo_files = glob.glob(os.path.join(optimized_hlo_dir, "*.hlo"))
+    
+    # Get a list of file basenames from the optimized directory
+    optimized_basenames = set(os.path.basename(f) for f in hlo_files)
+    print(f"Found {len(hlo_files)} pre-formatted HLO files in {optimized_hlo_dir}")
+    
+    # Then add files from the original data directory, but only if they don't exist in optimized
+    original_hlo_files = []
+    for file_path in glob.glob(os.path.join(hlo_data_dir, "*.hlo")):
+        if os.path.basename(file_path) not in optimized_basenames:
+            original_hlo_files.append(file_path)
+    hlo_files.extend(original_hlo_files)
+    
+    # Also look for .txt files in the original directory
+    txt_files = glob.glob(os.path.join(hlo_data_dir, "*.txt"))
+    hlo_files.extend(txt_files)
     
     if not hlo_files:
-        print(f"No HLO files found in {hlo_data_dir}")
+        print(f"No HLO files found in {optimized_hlo_dir} or {hlo_data_dir}")
         return
     
-    print(f"Found {len(hlo_files)} HLO files: {[os.path.basename(f) for f in hlo_files]}")
+    print(f"Found {len(hlo_files)} total HLO files to process")
+    print(f"Files to process: {[os.path.basename(f) for f in hlo_files[:5]]} {'...' if len(hlo_files) > 5 else ''}")
     
     # Initialize XLA interface for validation
     xla_interface = XLAInterface(xla_dir=xla_dir, verbose=True)
@@ -611,20 +797,22 @@ def main():
     
     print(f"\nProceeding with {len(valid_hlo_files)} valid HLO files")
     
+    
     # Train on valid HLO files using a single environment
     trained_agent, results, available_passes = train_on_multiple_files(
         hlo_files=valid_hlo_files,
         xla_dir=xla_dir,
-        episodes_per_file=3,
-        max_steps_per_episode=3,
-        print_interval=50,
-        verbose=True
+        episodes_per_file=50,  # Reduce number of episodes for faster results
+        max_steps_per_episode=30,  # Reduce number of steps for faster results
+        print_interval=10,
+        verbose=False,
+        output_dirs=output_dirs
     )
     
-    # Analyze the state space - this is a new addition
-    analyze_state_space(trained_agent, available_passes)
+    # Analyze the state space
+    analyze_state_space(trained_agent, available_passes, output_dirs)
     
-
+    # Save the trained agent
     agent_data = {
         "q_table": dict(trained_agent.q_table),
         "learning_rate": trained_agent.learning_rate,
@@ -633,13 +821,11 @@ def main():
         "available_passes": available_passes
     }
 
-    script_dir = os.path.dirname(os.path.abspath(__file__))  # Gets the reinforcement_learning directory
-    models_dir = os.path.join(script_dir, "models")
-    os.makedirs(models_dir, exist_ok=True)  # Create models directory if it doesn't exist
-    model_path = os.path.join(models_dir, "trained_agent.pkl")
+    model_path = os.path.join(output_dirs["models"], "trained_agent.pkl")
     with open(model_path, "wb") as f:
         pickle.dump(agent_data, f)
-
+    
+    print(f"Trained model saved to {model_path}")
     
     # Print summary of results
     print("\n\nTraining Summary Across All Files:")
@@ -648,6 +834,8 @@ def main():
         print(f"\nFile: {file_name}")
         print(f"Best Pass Sequence: {file_results['best_sequence']}")
         print(f"Best Reward: {file_results['best_reward']:.4f}")
+    
+    print(f"\nAll results have been saved to {output_dirs['main']}")
 
 
 if __name__ == "__main__":

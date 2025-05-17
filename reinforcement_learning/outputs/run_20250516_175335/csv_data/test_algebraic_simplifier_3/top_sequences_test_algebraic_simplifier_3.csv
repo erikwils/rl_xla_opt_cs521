@@ -1,0 +1,4 @@
+episode,total_reward,percent_reduction,pass_sequence
+1,0.0,0.0,"hlo-memory-scheduler, rng-bit-generator-expander, AssumeGatherIndicesInBoundRewriteToCopy"
+2,0.0,0.0,"AssumeGatherIndicesInBoundRewriteToCopy, all-gather-cse, infeed-token-propagation"
+3,0.0,0.0,"AssumeGatherIndicesInBoundRewriteToCopy, computation-deduplicator, AssumeGatherIndicesInBoundRewriteToCopy"

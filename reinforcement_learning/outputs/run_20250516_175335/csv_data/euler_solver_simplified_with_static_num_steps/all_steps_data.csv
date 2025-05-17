@@ -1,0 +1,10 @@
+episode,step,action,action_name,reward,cost,cost_reduction_from_initial,percent_reduction
+1,1,3,algsimp,0.0,308.084,0.0,0.0
+1,2,26,convert-async-collectives-to-sync,0.0,308.084,0.0,0.0
+1,3,60,logistic-expander,0.0,308.084,0.0,0.0
+2,1,44,flatten-call-graph,0.0,308.084,0.0,0.0
+2,2,19,collective-transformation-reorderer,0.0,308.084,0.0,0.0
+2,3,50,hlo-memory-scheduler,0.0,308.084,0.0,0.0
+3,1,68,reorder-convert-reduce-add,0.0,308.084,0.0,0.0
+3,2,80,stochastic_convert_decomposer,0.0,308.084,0.0,0.0
+3,3,28,convert-mover,0.0,308.084,0.0,0.0

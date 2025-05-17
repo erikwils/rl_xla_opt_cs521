@@ -1,0 +1,4 @@
+episode,total_reward,percent_reduction,pass_sequence
+1,0.0,0.0,"broadcast_canonicalizer, convolution-pred-expander, AssumeGatherIndicesInBoundRewriteToCopy"
+2,0.0,0.0,"convolution_4d_expander, memory-space-propagation, AssumeGatherIndicesInBoundRewriteToCopy"
+3,0.0,0.0,"zero_sized_hlo_elimination, AssumeGatherIndicesInBoundRewriteToCopy, AssumeGatherIndicesInBoundRewriteToCopy"

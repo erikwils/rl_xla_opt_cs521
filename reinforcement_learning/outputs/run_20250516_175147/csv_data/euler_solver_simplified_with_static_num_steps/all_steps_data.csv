@@ -1,0 +1,2 @@
+episode,step,action,action_name,reward,cost,cost_reduction_from_initial,percent_reduction
+1,1,40,dynamic-dimension-simplifier,0.0,308.084,0.0,0.0

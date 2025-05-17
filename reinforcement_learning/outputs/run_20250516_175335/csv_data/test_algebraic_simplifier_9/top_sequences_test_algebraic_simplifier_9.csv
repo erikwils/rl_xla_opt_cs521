@@ -1,0 +1,4 @@
+episode,total_reward,percent_reduction,pass_sequence
+1,0.0,0.0,"dynamic-dimension-simplifier, AssumeGatherIndicesInBoundRewriteToCopy, AssumeGatherIndicesInBoundRewriteToCopy"
+2,0.0,0.0,"real_imag_expander, qr_expander, AssumeGatherIndicesInBoundRewriteToCopy"
+3,0.0,0.0,"AssumeGatherIndicesInBoundRewriteToCopy, hlo-descheduler, slice-sinker"

@@ -1,0 +1,4 @@
+episode,total_reward,percent_reduction,pass_sequence
+1,0.0,0.0,"AssumeGatherIndicesInBoundRewriteToCopy, rng-expander, hlo-trivial-scheduler"
+2,0.0,0.0,"AssumeGatherIndicesInBoundRewriteToCopy, cholesky_expander, hlo-descheduler"
+3,0.0,0.0,"sub-byte-size-setter, conditional-canonicalizer, reduce-window-rewriter"

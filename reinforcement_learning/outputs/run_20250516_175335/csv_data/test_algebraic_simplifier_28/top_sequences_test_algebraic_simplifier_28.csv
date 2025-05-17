@@ -1,0 +1,4 @@
+episode,total_reward,percent_reduction,pass_sequence
+1,0.0,0.0,"dot_decomposer, tree_reduction_rewriter, gather_simplifier"
+2,0.0,0.0,"batch-dot-simplification, broadcast_canonicalizer, convert-async-collectives-to-sync"
+3,0.0,0.0,"fusion_constant_sinking, simplify-fp-conversions, reorder-reduce-transpose"

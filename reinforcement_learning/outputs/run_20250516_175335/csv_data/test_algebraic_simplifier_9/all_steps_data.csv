@@ -1,0 +1,10 @@
+episode,step,action,action_name,reward,cost,cost_reduction_from_initial,percent_reduction
+1,1,40,dynamic-dimension-simplifier,0.0,379.216,0.0,0.0
+1,2,0,AssumeGatherIndicesInBoundRewriteToCopy,0.0,379.216,0.0,0.0
+1,3,0,AssumeGatherIndicesInBoundRewriteToCopy,0.0,379.216,0.0,0.0
+2,1,65,real_imag_expander,0.0,379.216,0.0,0.0
+2,2,64,qr_expander,0.0,379.216,0.0,0.0
+2,3,0,AssumeGatherIndicesInBoundRewriteToCopy,0.0,379.216,0.0,0.0
+3,1,0,AssumeGatherIndicesInBoundRewriteToCopy,0.0,379.216,0.0,0.0
+3,2,49,hlo-descheduler,0.0,379.216,0.0,0.0
+3,3,78,slice-sinker,0.0,379.216,0.0,0.0

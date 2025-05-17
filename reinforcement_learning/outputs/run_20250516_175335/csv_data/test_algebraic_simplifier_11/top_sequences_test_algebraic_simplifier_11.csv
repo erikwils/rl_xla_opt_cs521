@@ -1,0 +1,4 @@
+episode,total_reward,percent_reduction,pass_sequence
+1,0.0,0.0,"convolution-group-converter, test-only-bar2hello, bfloat16-propagation"
+2,0.0,0.0,"comparison-expander, zero_sized_hlo_elimination, host-offloader"
+3,0.0,0.0,"root-instruction-sinker, reduce-decomposer, comparison-expander"

@@ -1,0 +1,4 @@
+episode,total_reward,percent_reduction,pass_sequence
+1,0.0,0.0,"ReduceWindowToReduceAndBroadcast, eigh_expander, AssumeGatherIndicesInBoundRewriteToCopy"
+2,0.0,0.0,"reorder-reduce-transpose, ar-crs-combiner, hlo-trivial-scheduler"
+3,0.0,0.0,"constant_folding, reshape-mover, control-dep-remover"

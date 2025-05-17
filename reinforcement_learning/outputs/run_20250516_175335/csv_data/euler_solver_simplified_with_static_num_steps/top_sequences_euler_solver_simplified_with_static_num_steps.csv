@@ -1,0 +1,4 @@
+episode,total_reward,percent_reduction,pass_sequence
+1,0.0,0.0,"algsimp, convert-async-collectives-to-sync, logistic-expander"
+2,0.0,0.0,"flatten-call-graph, collective-transformation-reorderer, hlo-memory-scheduler"
+3,0.0,0.0,"reorder-convert-reduce-add, stochastic_convert_decomposer, convert-mover"

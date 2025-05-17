@@ -1,0 +1,4 @@
+episode,total_reward,percent_reduction,pass_sequence
+1,0.0,0.0,"indexed-array-analysis-printer-pass, eigh_expander, zero_sized_hlo_elimination"
+2,0.0,0.0,"collective-transformation-reorderer, conditional-canonicalizer, tuple-simplifier"
+3,0.0,0.0,"literal-canonicalizer, hlo-trivial-scheduler, collective-quantizer"

@@ -1,0 +1,4 @@
+episode,total_reward,percent_reduction,pass_sequence
+1,0.0,0.0,"AssumeGatherIndicesInBoundRewriteToCopy, all-reduce-combiner, AssumeGatherIndicesInBoundRewriteToCopy"
+2,0.0,0.0,"reduce-window-rewriter, hlo-descheduler, convolution-pred-expander"
+3,0.0,0.0,"reshape-mover, instruction-hoister, qr_expander"

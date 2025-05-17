@@ -1,0 +1,4 @@
+episode,total_reward,initial_cost,final_cost,cost_reduction,percent_reduction,exploration_rate,unique_actions,steps_taken,action_sequence
+1,0.0,308.084,308.084,0.0,0.0,0.995,3,3,"56,42,89"
+2,0.0,308.084,308.084,0.0,0.0,0.990025,3,3,"19,23,87"
+3,0.0,308.084,308.084,0.0,0.0,0.985074875,3,3,"59,51,18"

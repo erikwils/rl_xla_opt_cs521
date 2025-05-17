@@ -1,0 +1,4 @@
+episode,total_reward,percent_reduction,pass_sequence
+1,0.0,0.0,"collective-quantizer, AssumeGatherIndicesInBoundRewriteToCopy, AssumeGatherIndicesInBoundRewriteToCopy"
+2,0.0,0.0,"all-gather-cse, AssumeGatherIndicesInBoundRewriteToCopy, stochastic_convert_decomposer"
+3,0.0,0.0,"indexed-array-analysis-printer-pass, reorder-convert-reduce-add, slice-sinker"

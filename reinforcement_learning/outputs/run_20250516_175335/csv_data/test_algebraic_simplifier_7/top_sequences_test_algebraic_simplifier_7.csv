@@ -1,0 +1,4 @@
+episode,total_reward,percent_reduction,pass_sequence
+1,0.0,0.0,"zero_sized_hlo_elimination, test-only-algebraic-simplifier-with-onednn-enabled, AssumeGatherIndicesInBoundRewriteToCopy"
+2,0.0,0.0,"convolution-pred-expander, collective-transformation-reorderer, batch-dot-simplification"
+3,0.0,0.0,"logistic-expander, rng-bit-generator-expander, convert-async-collectives-to-sync"

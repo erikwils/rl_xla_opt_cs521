@@ -1,0 +1,4 @@
+episode,step,action,action_name,reward,cost,cost_reduction_from_initial,percent_reduction
+1,1,4,all-gather-bcast-reorder,0.0,2398.619,0.0,0.0
+1,2,88,while-loop-trip-count-annotator,0.0,2398.619,0.0,0.0
+1,3,0,AssumeGatherIndicesInBoundRewriteToCopy,0.0,2398.619,0.0,0.0

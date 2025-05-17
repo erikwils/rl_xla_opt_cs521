@@ -1,0 +1,4 @@
+episode,total_reward,percent_reduction,pass_sequence
+1,0.0,0.0,"AssumeGatherIndicesInBoundRewriteToCopy, reduce-decomposer, stable-sort-expander"
+2,0.0,0.0,"bf16-mixed-precision-removal, ar-crs-combiner, tuple-simplifier"
+3,0.0,0.0,"conditional-canonicalizer, reorder-convert-reduce-add, AssumeGatherIndicesInBoundRewriteToCopy"

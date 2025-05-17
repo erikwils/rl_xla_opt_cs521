@@ -1,0 +1,4 @@
+episode,total_reward,percent_reduction,pass_sequence
+1,-714.3759999999999,-135.6509718435024,"broadcast_canonicalizer, reorder-convert-reduce-add, algsimp"
+2,-714.3759999999999,-135.6509718435024,"AssumeGatherIndicesInBoundRewriteToCopy, root-instruction-sinker, reshape-decomposer"
+3,-714.3759999999999,-135.6509718435024,"ReduceWindowToReduceAndBroadcast, reduce-window-rewriter, AssumeGatherIndicesInBoundRewriteToCopy"

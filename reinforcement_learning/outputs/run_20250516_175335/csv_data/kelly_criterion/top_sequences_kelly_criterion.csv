@@ -1,0 +1,4 @@
+episode,total_reward,percent_reduction,pass_sequence
+1,0.0,0.0,"host-offloading-prepare-elide-move-to-host, qr_expander, hlo-memory-scheduler"
+2,0.0,0.0,"AssumeGatherIndicesInBoundRewriteToCopy, AssumeGatherIndicesInBoundRewriteToCopy, AssumeGatherIndicesInBoundRewriteToCopy"
+3,0.0,0.0,"element_type_converter, AssumeGatherIndicesInBoundRewriteToCopy, bf16-mixed-precision-removal"

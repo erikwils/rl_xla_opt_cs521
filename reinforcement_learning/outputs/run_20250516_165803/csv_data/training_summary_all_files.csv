@@ -1,0 +1,3 @@
+file_name,final_exploration_rate,best_reward,best_percent_reduction,most_used_pass,unique_passes_in_best,best_episode_number
+euler_solver_simplified_with_static_num_steps.hlo,0.8822202429488013,21.00400000000002,6.8176211682528205,all-reduce-combiner,10,10
+test_algebraic_simplifier_7.hlo,0.778312557068642,210.64,43.48149187921624,AssumeGatherIndicesInBoundRewriteToCopy,10,25

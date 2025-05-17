@@ -1,0 +1,4 @@
+episode,total_reward,percent_reduction,pass_sequence
+1,0.0,0.0,"fusion_constant_sinking, test-only-xla-builder, stable-sort-expander"
+2,0.0,0.0,"AssumeGatherIndicesInBoundRewriteToCopy, float-normalization-bf16, AssumeGatherIndicesInBoundRewriteToCopy"
+3,0.0,0.0,"all-gather-combiner, simplify-sorts, test-only-xla-builder"

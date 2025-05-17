@@ -1,0 +1,4 @@
+episode,total_reward,percent_reduction,pass_sequence
+1,0.0,0.0,"AssumeGatherIndicesInBoundRewriteToCopy, eigh_expander, AssumeGatherIndicesInBoundRewriteToCopy"
+2,0.0,0.0,"hlo-descheduler, real_imag_expander, AssumeGatherIndicesInBoundRewriteToCopy"
+3,0.0,0.0,"AssumeGatherIndicesInBoundRewriteToCopy, operand_upcaster, all-gather-cse"

@@ -1,0 +1,4 @@
+episode,step,action,action_name,reward,cost,cost_reduction_from_initial,percent_reduction
+3,1,1,ReduceWindowToReduceAndBroadcast,0.0,547.588,0.0,0.0
+3,2,16,broadcast_canonicalizer,0.0,547.588,0.0,0.0
+3,3,34,dce,42.063999999999965,505.524,42.063999999999965,7.681687692206543

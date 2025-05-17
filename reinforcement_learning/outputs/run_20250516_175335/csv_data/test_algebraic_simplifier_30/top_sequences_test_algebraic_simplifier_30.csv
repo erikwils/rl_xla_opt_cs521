@@ -1,0 +1,4 @@
+episode,total_reward,percent_reduction,pass_sequence
+1,0.0,0.0,"cholesky_expander, reduce-window-rewriter, AssumeGatherIndicesInBoundRewriteToCopy"
+2,0.0,0.0,"gather_simplifier, dce, fusion_constant_sinking"
+3,0.0,0.0,"AssumeGatherIndicesInBoundRewriteToCopy, result_caster, AssumeGatherIndicesInBoundRewriteToCopy"
