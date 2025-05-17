@@ -80,7 +80,6 @@ Get up and running with the RL agent for XLA compiler pass optimization in just 
 - Python 3.8+ with pip
 - Bazel/Bazelisk for building XLA
 - Git
-- ~16GB RAM and ~20GB disk space
 
 ### Installation
 
