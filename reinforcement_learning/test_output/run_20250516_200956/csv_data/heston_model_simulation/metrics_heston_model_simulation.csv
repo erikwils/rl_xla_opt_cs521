@@ -1,0 +1,2 @@
+total_reward,initial_cost,final_cost,cost_reduction,percent_reduction,steps_taken,same_state_count,unique_actions,unique_states,state_uniqueness_ratio,file_name,file_path
+80.01599999999962,12046.948,11966.932,80.01599999999962,0.6642014226341777,30,0,8,1,0.03333333333333333,heston_model_simulation.hlo,/Users/rayaanfaruqi/Documents/CS521/Final_Project/rl_xla_opt_cs521/jax_hlo/test_set/heston_model_simulation.hlo

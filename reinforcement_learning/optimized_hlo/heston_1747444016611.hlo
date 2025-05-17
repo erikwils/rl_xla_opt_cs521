@@ -1,0 +1,548 @@
+HloModule jit_heston_model_for_hlo, entry_computation_layout={(f32[], f32[], f32[], f32[], f32[], /*index=5*/f32[], f32[], f32[], u32[2]{0})->(f32[101]{0}, f32[101]{0})}
+
+%None.14 (Arg_0.15: s32[], Arg_1.16: u32[2], Arg_2.17: u32[2], Arg_3.18: u32[], Arg_4.19: u32[], Arg_5.20: u32[], Arg_6.21: u32[4], Arg_7.22: u32[4]) -> (s32[], u32[2], u32[2], u32[], u32[], /*index=5*/u32[], u32[4], u32[4]) {
+  %Arg_0.15 = s32[] parameter(0)
+  %constant.24 = s32[] constant(1)
+  %add.25 = s32[] add(%Arg_0.15, %constant.24)
+  %Arg_1.16 = u32[2]{0} parameter(1)
+  %Arg_2.17 = u32[2]{0} parameter(2)
+  %add.28 = u32[2]{0} add(%Arg_1.16, %Arg_2.17)
+  %Arg_6.21 = u32[4]{0} parameter(6)
+  %slice.26 = u32[1]{0} slice(%Arg_6.21), slice={[0:1]}
+  %reshape.27 = u32[] reshape(%slice.26)
+  %broadcast.29 = u32[2]{0} broadcast(%reshape.27), dimensions={}
+  %shift-left.30 = u32[2]{0} shift-left(%Arg_2.17, %broadcast.29)
+  %constant.23 = u32[] constant(32)
+  %subtract.31 = u32[] subtract(%constant.23, %reshape.27)
+  %broadcast.32 = u32[2]{0} broadcast(%subtract.31), dimensions={}
+  %shift-right-logical.33 = u32[2]{0} shift-right-logical(%Arg_2.17, %broadcast.32)
+  %or.34 = u32[2]{0} or(%shift-left.30, %shift-right-logical.33)
+  %xor.35 = u32[2]{0} xor(%add.28, %or.34)
+  %add.38 = u32[2]{0} add(%add.28, %xor.35)
+  %slice.36 = u32[1]{0} slice(%Arg_6.21), slice={[1:2]}
+  %reshape.37 = u32[] reshape(%slice.36)
+  %broadcast.39 = u32[2]{0} broadcast(%reshape.37), dimensions={}
+  %shift-left.40 = u32[2]{0} shift-left(%xor.35, %broadcast.39)
+  %subtract.41 = u32[] subtract(%constant.23, %reshape.37)
+  %broadcast.42 = u32[2]{0} broadcast(%subtract.41), dimensions={}
+  %shift-right-logical.43 = u32[2]{0} shift-right-logical(%xor.35, %broadcast.42)
+  %or.44 = u32[2]{0} or(%shift-left.40, %shift-right-logical.43)
+  %xor.45 = u32[2]{0} xor(%add.38, %or.44)
+  %add.48 = u32[2]{0} add(%add.38, %xor.45)
+  %slice.46 = u32[1]{0} slice(%Arg_6.21), slice={[2:3]}
+  %reshape.47 = u32[] reshape(%slice.46)
+  %broadcast.49 = u32[2]{0} broadcast(%reshape.47), dimensions={}
+  %shift-left.50 = u32[2]{0} shift-left(%xor.45, %broadcast.49)
+  %subtract.51 = u32[] subtract(%constant.23, %reshape.47)
+  %broadcast.52 = u32[2]{0} broadcast(%subtract.51), dimensions={}
+  %shift-right-logical.53 = u32[2]{0} shift-right-logical(%xor.45, %broadcast.52)
+  %or.54 = u32[2]{0} or(%shift-left.50, %shift-right-logical.53)
+  %xor.55 = u32[2]{0} xor(%add.48, %or.54)
+  %add.58 = u32[2]{0} add(%add.48, %xor.55)
+  %Arg_3.18 = u32[] parameter(3)
+  %broadcast.66 = u32[2]{0} broadcast(%Arg_3.18), dimensions={}
+  %add.67 = u32[2]{0} add(%add.58, %broadcast.66)
+  %slice.56 = u32[1]{0} slice(%Arg_6.21), slice={[3:4]}
+  %reshape.57 = u32[] reshape(%slice.56)
+  %broadcast.59 = u32[2]{0} broadcast(%reshape.57), dimensions={}
+  %shift-left.60 = u32[2]{0} shift-left(%xor.55, %broadcast.59)
+  %subtract.61 = u32[] subtract(%constant.23, %reshape.57)
+  %broadcast.62 = u32[2]{0} broadcast(%subtract.61), dimensions={}
+  %shift-right-logical.63 = u32[2]{0} shift-right-logical(%xor.55, %broadcast.62)
+  %or.64 = u32[2]{0} or(%shift-left.60, %shift-right-logical.63)
+  %xor.65 = u32[2]{0} xor(%add.58, %or.64)
+  %Arg_4.19 = u32[] parameter(4)
+  %broadcast.68 = u32[2]{0} broadcast(%Arg_4.19), dimensions={}
+  %add.69 = u32[2]{0} add(%xor.65, %broadcast.68)
+  %add.70 = s32[] add(%Arg_0.15, %constant.24)
+  %convert.71 = u32[] convert(%add.70)
+  %broadcast.72 = u32[2]{0} broadcast(%convert.71), dimensions={}
+  %add.73 = u32[2]{0} add(%add.69, %broadcast.72)
+  %Arg_5.20 = u32[] parameter(5)
+  %Arg_7.22 = u32[4]{0} parameter(7)
+  ROOT %tuple.74 = (s32[], u32[2]{0}, u32[2]{0}, u32[], u32[], /*index=5*/u32[], u32[4]{0}, u32[4]{0}) tuple(%add.25, %add.67, %add.73, %Arg_4.19, %Arg_5.20, /*index=5*/%Arg_3.18, %Arg_7.22, %Arg_6.21)
+}
+
+%region_0.75 (arg_tuple.76: (s32[], s32[], u32[2], u32[2], u32[], /*index=5*/u32[], u32[], u32[4], u32[4])) -> (s32[], s32[], u32[2], u32[2], u32[], /*index=5*/u32[], u32[], u32[4], u32[4]) {
+  %arg_tuple.76 = (s32[], s32[], u32[2]{0}, u32[2]{0}, u32[], /*index=5*/u32[], u32[], u32[4]{0}, u32[4]{0}) parameter(0)
+  %get-tuple-element.77 = s32[] get-tuple-element(%arg_tuple.76), index=0
+  %constant.86 = s32[] constant(1)
+  %add.96 = s32[] add(%get-tuple-element.77, %constant.86)
+  %get-tuple-element.78 = s32[] get-tuple-element(%arg_tuple.76), index=1
+  %get-tuple-element.79 = u32[2]{0} get-tuple-element(%arg_tuple.76), index=2
+  %get-tuple-element.80 = u32[2]{0} get-tuple-element(%arg_tuple.76), index=3
+  %get-tuple-element.81 = u32[] get-tuple-element(%arg_tuple.76), index=4
+  %get-tuple-element.82 = u32[] get-tuple-element(%arg_tuple.76), index=5
+  %get-tuple-element.83 = u32[] get-tuple-element(%arg_tuple.76), index=6
+  %get-tuple-element.84 = u32[4]{0} get-tuple-element(%arg_tuple.76), index=7
+  %get-tuple-element.85 = u32[4]{0} get-tuple-element(%arg_tuple.76), index=8
+  %call.87 = (s32[], u32[2]{0}, u32[2]{0}, u32[], u32[], /*index=5*/u32[], u32[4]{0}, u32[4]{0}) call(%get-tuple-element.78, %get-tuple-element.79, %get-tuple-element.80, %get-tuple-element.81, %get-tuple-element.82, /*index=5*/%get-tuple-element.83, %get-tuple-element.84, %get-tuple-element.85), to_apply=%None.14
+  %get-tuple-element.88 = s32[] get-tuple-element(%call.87), index=0
+  %get-tuple-element.89 = u32[2]{0} get-tuple-element(%call.87), index=1
+  %get-tuple-element.90 = u32[2]{0} get-tuple-element(%call.87), index=2
+  %get-tuple-element.91 = u32[] get-tuple-element(%call.87), index=3
+  %get-tuple-element.92 = u32[] get-tuple-element(%call.87), index=4
+  %get-tuple-element.93 = u32[] get-tuple-element(%call.87), index=5
+  %get-tuple-element.94 = u32[4]{0} get-tuple-element(%call.87), index=6
+  %get-tuple-element.95 = u32[4]{0} get-tuple-element(%call.87), index=7
+  ROOT %tuple.97 = (s32[], s32[], u32[2]{0}, u32[2]{0}, u32[], /*index=5*/u32[], u32[], u32[4]{0}, u32[4]{0}) tuple(%add.96, %get-tuple-element.88, %get-tuple-element.89, %get-tuple-element.90, %get-tuple-element.91, /*index=5*/%get-tuple-element.92, %get-tuple-element.93, %get-tuple-element.94, %get-tuple-element.95)
+}
+
+%region_1.98 (arg_tuple.99: (s32[], s32[], u32[2], u32[2], u32[], /*index=5*/u32[], u32[], u32[4], u32[4])) -> pred[] {
+  %arg_tuple.99 = (s32[], s32[], u32[2]{0}, u32[2]{0}, u32[], /*index=5*/u32[], u32[], u32[4]{0}, u32[4]{0}) parameter(0)
+  %get-tuple-element.101 = s32[] get-tuple-element(%arg_tuple.99), index=1
+  %get-tuple-element.102 = u32[2]{0} get-tuple-element(%arg_tuple.99), index=2
+  %get-tuple-element.103 = u32[2]{0} get-tuple-element(%arg_tuple.99), index=3
+  %get-tuple-element.104 = u32[] get-tuple-element(%arg_tuple.99), index=4
+  %get-tuple-element.105 = u32[] get-tuple-element(%arg_tuple.99), index=5
+  %get-tuple-element.106 = u32[] get-tuple-element(%arg_tuple.99), index=6
+  %get-tuple-element.107 = u32[4]{0} get-tuple-element(%arg_tuple.99), index=7
+  %get-tuple-element.108 = u32[4]{0} get-tuple-element(%arg_tuple.99), index=8
+  %get-tuple-element.100 = s32[] get-tuple-element(%arg_tuple.99), index=0
+  %constant.109 = s32[] constant(5)
+  ROOT %compare.110 = pred[] compare(%get-tuple-element.100, %constant.109), direction=LT
+}
+
+%_threefry_split.111 (Arg_0.112: u32[2]) -> u32[2,2] {
+  %constant.113 = s32[] constant(0)
+  %iota.117 = u32[4]{0} iota(), iota_dimension=0
+  %slice.122 = u32[2]{0} slice(%iota.117), slice={[0:2]}
+  %Arg_0.112 = u32[2]{0} parameter(0)
+  %slice.118 = u32[1]{0} slice(%Arg_0.112), slice={[0:1]}
+  %reshape.119 = u32[] reshape(%slice.118)
+  %broadcast.126 = u32[2]{0} broadcast(%reshape.119), dimensions={}
+  %add.127 = u32[2]{0} add(%slice.122, %broadcast.126)
+  %slice.123 = u32[2]{0} slice(%iota.117), slice={[2:4]}
+  %slice.120 = u32[1]{0} slice(%Arg_0.112), slice={[1:2]}
+  %reshape.121 = u32[] reshape(%slice.120)
+  %broadcast.128 = u32[2]{0} broadcast(%reshape.121), dimensions={}
+  %add.129 = u32[2]{0} add(%slice.123, %broadcast.128)
+  %xor.124 = u32[] xor(%reshape.119, %reshape.121)
+  %constant.114 = u32[] constant(466688986)
+  %xor.125 = u32[] xor(%xor.124, %constant.114)
+  %constant.116 = u32[4]{0} constant({13, 15, 26, 6})
+  %constant.115 = u32[4]{0} constant({17, 29, 16, 24})
+  %tuple.130 = (s32[], s32[], u32[2]{0}, u32[2]{0}, u32[], /*index=5*/u32[], u32[], u32[4]{0}, u32[4]{0}) tuple(%constant.113, %constant.113, %add.127, %add.129, %reshape.121, /*index=5*/%xor.125, %reshape.119, %constant.116, %constant.115)
+  %while.131 = (s32[], s32[], u32[2]{0}, u32[2]{0}, u32[], /*index=5*/u32[], u32[], u32[4]{0}, u32[4]{0}) while(%tuple.130), condition=%region_1.98, body=%region_0.75, backend_config={"known_trip_count":{"n":"5"},"known_init_step":{"init":"0","step":"1"},"known_induction_variable":{"tuple_index":"0"}}
+  %get-tuple-element.132 = s32[] get-tuple-element(%while.131), index=0
+  %get-tuple-element.133 = s32[] get-tuple-element(%while.131), index=1
+  %get-tuple-element.136 = u32[] get-tuple-element(%while.131), index=4
+  %get-tuple-element.137 = u32[] get-tuple-element(%while.131), index=5
+  %get-tuple-element.138 = u32[] get-tuple-element(%while.131), index=6
+  %get-tuple-element.139 = u32[4]{0} get-tuple-element(%while.131), index=7
+  %get-tuple-element.140 = u32[4]{0} get-tuple-element(%while.131), index=8
+  %get-tuple-element.134 = u32[2]{0} get-tuple-element(%while.131), index=2
+  %get-tuple-element.135 = u32[2]{0} get-tuple-element(%while.131), index=3
+  %concatenate.141 = u32[4]{0} concatenate(%get-tuple-element.134, %get-tuple-element.135), dimensions={0}
+  ROOT %reshape.142 = u32[2,2]{1,0} reshape(%concatenate.141)
+}
+
+%None_0.146 (Arg_0.147: s32[], Arg_1.148: u32[50], Arg_2.149: u32[50], Arg_3.150: u32[], Arg_4.151: u32[], Arg_5.152: u32[], Arg_6.153: u32[4], Arg_7.154: u32[4]) -> (s32[], u32[50], u32[50], u32[], u32[], /*index=5*/u32[], u32[4], u32[4]) {
+  %Arg_0.147 = s32[] parameter(0)
+  %constant.156 = s32[] constant(1)
+  %add.157 = s32[] add(%Arg_0.147, %constant.156)
+  %Arg_1.148 = u32[50]{0} parameter(1)
+  %Arg_2.149 = u32[50]{0} parameter(2)
+  %add.160 = u32[50]{0} add(%Arg_1.148, %Arg_2.149)
+  %Arg_6.153 = u32[4]{0} parameter(6)
+  %slice.158 = u32[1]{0} slice(%Arg_6.153), slice={[0:1]}
+  %reshape.159 = u32[] reshape(%slice.158)
+  %broadcast.161 = u32[50]{0} broadcast(%reshape.159), dimensions={}
+  %shift-left.162 = u32[50]{0} shift-left(%Arg_2.149, %broadcast.161)
+  %constant.155 = u32[] constant(32)
+  %subtract.163 = u32[] subtract(%constant.155, %reshape.159)
+  %broadcast.164 = u32[50]{0} broadcast(%subtract.163), dimensions={}
+  %shift-right-logical.165 = u32[50]{0} shift-right-logical(%Arg_2.149, %broadcast.164)
+  %or.166 = u32[50]{0} or(%shift-left.162, %shift-right-logical.165)
+  %xor.167 = u32[50]{0} xor(%add.160, %or.166)
+  %add.170 = u32[50]{0} add(%add.160, %xor.167)
+  %slice.168 = u32[1]{0} slice(%Arg_6.153), slice={[1:2]}
+  %reshape.169 = u32[] reshape(%slice.168)
+  %broadcast.171 = u32[50]{0} broadcast(%reshape.169), dimensions={}
+  %shift-left.172 = u32[50]{0} shift-left(%xor.167, %broadcast.171)
+  %subtract.173 = u32[] subtract(%constant.155, %reshape.169)
+  %broadcast.174 = u32[50]{0} broadcast(%subtract.173), dimensions={}
+  %shift-right-logical.175 = u32[50]{0} shift-right-logical(%xor.167, %broadcast.174)
+  %or.176 = u32[50]{0} or(%shift-left.172, %shift-right-logical.175)
+  %xor.177 = u32[50]{0} xor(%add.170, %or.176)
+  %add.180 = u32[50]{0} add(%add.170, %xor.177)
+  %slice.178 = u32[1]{0} slice(%Arg_6.153), slice={[2:3]}
+  %reshape.179 = u32[] reshape(%slice.178)
+  %broadcast.181 = u32[50]{0} broadcast(%reshape.179), dimensions={}
+  %shift-left.182 = u32[50]{0} shift-left(%xor.177, %broadcast.181)
+  %subtract.183 = u32[] subtract(%constant.155, %reshape.179)
+  %broadcast.184 = u32[50]{0} broadcast(%subtract.183), dimensions={}
+  %shift-right-logical.185 = u32[50]{0} shift-right-logical(%xor.177, %broadcast.184)
+  %or.186 = u32[50]{0} or(%shift-left.182, %shift-right-logical.185)
+  %xor.187 = u32[50]{0} xor(%add.180, %or.186)
+  %add.190 = u32[50]{0} add(%add.180, %xor.187)
+  %Arg_3.150 = u32[] parameter(3)
+  %broadcast.198 = u32[50]{0} broadcast(%Arg_3.150), dimensions={}
+  %add.199 = u32[50]{0} add(%add.190, %broadcast.198)
+  %slice.188 = u32[1]{0} slice(%Arg_6.153), slice={[3:4]}
+  %reshape.189 = u32[] reshape(%slice.188)
+  %broadcast.191 = u32[50]{0} broadcast(%reshape.189), dimensions={}
+  %shift-left.192 = u32[50]{0} shift-left(%xor.187, %broadcast.191)
+  %subtract.193 = u32[] subtract(%constant.155, %reshape.189)
+  %broadcast.194 = u32[50]{0} broadcast(%subtract.193), dimensions={}
+  %shift-right-logical.195 = u32[50]{0} shift-right-logical(%xor.187, %broadcast.194)
+  %or.196 = u32[50]{0} or(%shift-left.192, %shift-right-logical.195)
+  %xor.197 = u32[50]{0} xor(%add.190, %or.196)
+  %Arg_4.151 = u32[] parameter(4)
+  %broadcast.200 = u32[50]{0} broadcast(%Arg_4.151), dimensions={}
+  %add.201 = u32[50]{0} add(%xor.197, %broadcast.200)
+  %add.202 = s32[] add(%Arg_0.147, %constant.156)
+  %convert.203 = u32[] convert(%add.202)
+  %broadcast.204 = u32[50]{0} broadcast(%convert.203), dimensions={}
+  %add.205 = u32[50]{0} add(%add.201, %broadcast.204)
+  %Arg_5.152 = u32[] parameter(5)
+  %Arg_7.154 = u32[4]{0} parameter(7)
+  ROOT %tuple.206 = (s32[], u32[50]{0}, u32[50]{0}, u32[], u32[], /*index=5*/u32[], u32[4]{0}, u32[4]{0}) tuple(%add.157, %add.199, %add.205, %Arg_4.151, %Arg_5.152, /*index=5*/%Arg_3.150, %Arg_7.154, %Arg_6.153)
+}
+
+%region_2.207 (arg_tuple.208: (s32[], s32[], u32[50], u32[50], u32[], /*index=5*/u32[], u32[], u32[4], u32[4])) -> (s32[], s32[], u32[50], u32[50], u32[], /*index=5*/u32[], u32[], u32[4], u32[4]) {
+  %arg_tuple.208 = (s32[], s32[], u32[50]{0}, u32[50]{0}, u32[], /*index=5*/u32[], u32[], u32[4]{0}, u32[4]{0}) parameter(0)
+  %get-tuple-element.209 = s32[] get-tuple-element(%arg_tuple.208), index=0
+  %constant.218 = s32[] constant(1)
+  %add.228 = s32[] add(%get-tuple-element.209, %constant.218)
+  %get-tuple-element.210 = s32[] get-tuple-element(%arg_tuple.208), index=1
+  %get-tuple-element.211 = u32[50]{0} get-tuple-element(%arg_tuple.208), index=2
+  %get-tuple-element.212 = u32[50]{0} get-tuple-element(%arg_tuple.208), index=3
+  %get-tuple-element.213 = u32[] get-tuple-element(%arg_tuple.208), index=4
+  %get-tuple-element.214 = u32[] get-tuple-element(%arg_tuple.208), index=5
+  %get-tuple-element.215 = u32[] get-tuple-element(%arg_tuple.208), index=6
+  %get-tuple-element.216 = u32[4]{0} get-tuple-element(%arg_tuple.208), index=7
+  %get-tuple-element.217 = u32[4]{0} get-tuple-element(%arg_tuple.208), index=8
+  %call.219 = (s32[], u32[50]{0}, u32[50]{0}, u32[], u32[], /*index=5*/u32[], u32[4]{0}, u32[4]{0}) call(%get-tuple-element.210, %get-tuple-element.211, %get-tuple-element.212, %get-tuple-element.213, %get-tuple-element.214, /*index=5*/%get-tuple-element.215, %get-tuple-element.216, %get-tuple-element.217), to_apply=%None_0.146
+  %get-tuple-element.220 = s32[] get-tuple-element(%call.219), index=0
+  %get-tuple-element.221 = u32[50]{0} get-tuple-element(%call.219), index=1
+  %get-tuple-element.222 = u32[50]{0} get-tuple-element(%call.219), index=2
+  %get-tuple-element.223 = u32[] get-tuple-element(%call.219), index=3
+  %get-tuple-element.224 = u32[] get-tuple-element(%call.219), index=4
+  %get-tuple-element.225 = u32[] get-tuple-element(%call.219), index=5
+  %get-tuple-element.226 = u32[4]{0} get-tuple-element(%call.219), index=6
+  %get-tuple-element.227 = u32[4]{0} get-tuple-element(%call.219), index=7
+  ROOT %tuple.229 = (s32[], s32[], u32[50]{0}, u32[50]{0}, u32[], /*index=5*/u32[], u32[], u32[4]{0}, u32[4]{0}) tuple(%add.228, %get-tuple-element.220, %get-tuple-element.221, %get-tuple-element.222, %get-tuple-element.223, /*index=5*/%get-tuple-element.224, %get-tuple-element.225, %get-tuple-element.226, %get-tuple-element.227)
+}
+
+%region_3.230 (arg_tuple.231: (s32[], s32[], u32[50], u32[50], u32[], /*index=5*/u32[], u32[], u32[4], u32[4])) -> pred[] {
+  %arg_tuple.231 = (s32[], s32[], u32[50]{0}, u32[50]{0}, u32[], /*index=5*/u32[], u32[], u32[4]{0}, u32[4]{0}) parameter(0)
+  %get-tuple-element.233 = s32[] get-tuple-element(%arg_tuple.231), index=1
+  %get-tuple-element.234 = u32[50]{0} get-tuple-element(%arg_tuple.231), index=2
+  %get-tuple-element.235 = u32[50]{0} get-tuple-element(%arg_tuple.231), index=3
+  %get-tuple-element.236 = u32[] get-tuple-element(%arg_tuple.231), index=4
+  %get-tuple-element.237 = u32[] get-tuple-element(%arg_tuple.231), index=5
+  %get-tuple-element.238 = u32[] get-tuple-element(%arg_tuple.231), index=6
+  %get-tuple-element.239 = u32[4]{0} get-tuple-element(%arg_tuple.231), index=7
+  %get-tuple-element.240 = u32[4]{0} get-tuple-element(%arg_tuple.231), index=8
+  %get-tuple-element.232 = s32[] get-tuple-element(%arg_tuple.231), index=0
+  %constant.241 = s32[] constant(5)
+  ROOT %compare.242 = pred[] compare(%get-tuple-element.232, %constant.241), direction=LT
+}
+
+%_uniform.243 (Arg_0.244: u32[2], Arg_1.245: f32[], Arg_2.246: f32[]) -> f32[100] {
+  %constant.253 = s32[] constant(0)
+  %iota.259 = u32[100]{0} iota(), iota_dimension=0
+  %slice.264 = u32[50]{0} slice(%iota.259), slice={[0:50]}
+  %Arg_0.244 = u32[2]{0} parameter(0)
+  %slice.260 = u32[1]{0} slice(%Arg_0.244), slice={[0:1]}
+  %reshape.261 = u32[] reshape(%slice.260)
+  %broadcast.268 = u32[50]{0} broadcast(%reshape.261), dimensions={}
+  %add.269 = u32[50]{0} add(%slice.264, %broadcast.268)
+  %slice.265 = u32[50]{0} slice(%iota.259), slice={[50:100]}
+  %slice.262 = u32[1]{0} slice(%Arg_0.244), slice={[1:2]}
+  %reshape.263 = u32[] reshape(%slice.262)
+  %broadcast.270 = u32[50]{0} broadcast(%reshape.263), dimensions={}
+  %add.271 = u32[50]{0} add(%slice.265, %broadcast.270)
+  %xor.266 = u32[] xor(%reshape.261, %reshape.263)
+  %constant.254 = u32[] constant(466688986)
+  %xor.267 = u32[] xor(%xor.266, %constant.254)
+  %constant.256 = u32[4]{0} constant({13, 15, 26, 6})
+  %constant.255 = u32[4]{0} constant({17, 29, 16, 24})
+  %tuple.272 = (s32[], s32[], u32[50]{0}, u32[50]{0}, u32[], /*index=5*/u32[], u32[], u32[4]{0}, u32[4]{0}) tuple(%constant.253, %constant.253, %add.269, %add.271, %reshape.263, /*index=5*/%xor.267, %reshape.261, %constant.256, %constant.255)
+  %while.273 = (s32[], s32[], u32[50]{0}, u32[50]{0}, u32[], /*index=5*/u32[], u32[], u32[4]{0}, u32[4]{0}) while(%tuple.272), condition=%region_3.230, body=%region_2.207, backend_config={"known_trip_count":{"n":"5"},"known_init_step":{"init":"0","step":"1"},"known_induction_variable":{"tuple_index":"0"}}
+  %get-tuple-element.274 = s32[] get-tuple-element(%while.273), index=0
+  %get-tuple-element.275 = s32[] get-tuple-element(%while.273), index=1
+  %get-tuple-element.278 = u32[] get-tuple-element(%while.273), index=4
+  %get-tuple-element.279 = u32[] get-tuple-element(%while.273), index=5
+  %get-tuple-element.280 = u32[] get-tuple-element(%while.273), index=6
+  %get-tuple-element.281 = u32[4]{0} get-tuple-element(%while.273), index=7
+  %get-tuple-element.282 = u32[4]{0} get-tuple-element(%while.273), index=8
+  %Arg_1.245 = f32[] parameter(1)
+  %broadcast.299 = f32[100]{0} broadcast(%Arg_1.245), dimensions={}
+  %get-tuple-element.276 = u32[50]{0} get-tuple-element(%while.273), index=2
+  %get-tuple-element.277 = u32[50]{0} get-tuple-element(%while.273), index=3
+  %concatenate.283 = u32[100]{0} concatenate(%get-tuple-element.276, %get-tuple-element.277), dimensions={0}
+  %constant.251 = u32[] constant(9)
+  %broadcast.252 = u32[100]{0} broadcast(%constant.251), dimensions={}
+  %shift-right-logical.284 = u32[100]{0} shift-right-logical(%concatenate.283, %broadcast.252)
+  %constant.249 = u32[] constant(1065353216)
+  %broadcast.250 = u32[100]{0} broadcast(%constant.249), dimensions={}
+  %or.285 = u32[100]{0} or(%shift-right-logical.284, %broadcast.250)
+  %bitcast-convert.286 = f32[100]{0} bitcast-convert(%or.285)
+  %constant.247 = f32[] constant(1)
+  %negate = f32[] negate(%constant.247)
+  %broadcast = f32[100]{0} broadcast(%negate), dimensions={}
+  %add = f32[100]{0} add(%bitcast-convert.286, %broadcast)
+  %Arg_2.246 = f32[] parameter(2)
+  %reshape.258 = f32[1]{0} reshape(%Arg_2.246)
+  %reshape.257 = f32[1]{0} reshape(%Arg_1.245)
+  %subtract.288 = f32[1]{0} subtract(%reshape.258, %reshape.257)
+  %reshape.290 = f32[] reshape(%subtract.288)
+  %broadcast.291 = f32[100]{0} broadcast(%reshape.290), dimensions={}
+  %multiply.292 = f32[100]{0} multiply(%add, %broadcast.291)
+  %broadcast.295 = f32[100]{0} broadcast(%Arg_1.245), dimensions={}
+  %add.296 = f32[100]{0} add(%multiply.292, %broadcast.295)
+  ROOT %maximum.300 = f32[100]{0} maximum(%broadcast.299, %add.296)
+}
+
+%_normal_real.301 (Arg_0.302: u32[2]) -> f32[100] {
+  %Arg_0.302 = u32[2]{0} parameter(0)
+  %constant.351 = f32[] constant(-0.99999994)
+  %constant.352 = f32[] constant(1)
+  %call.353 = f32[100]{0} call(%Arg_0.302, %constant.351, %constant.352), to_apply=%_uniform.243
+  %abs.389 = f32[100]{0} abs(%call.353)
+  %constant.307 = f32[] constant(1)
+  %broadcast.308 = f32[100]{0} broadcast(%constant.307), dimensions={}
+  %compare.390 = pred[100]{0} compare(%abs.389, %broadcast.308), direction=EQ
+  %constant.305 = f32[] constant(inf)
+  %broadcast.306 = f32[100]{0} broadcast(%constant.305), dimensions={}
+  %multiply.391 = f32[100]{0} multiply(%call.353, %broadcast.306)
+  %negate.354 = f32[100]{0} negate(%call.353)
+  %multiply.355 = f32[100]{0} multiply(%call.353, %negate.354)
+  %log-plus-one.356 = f32[100]{0} log-plus-one(%multiply.355)
+  %negate.357 = f32[100]{0} negate(%log-plus-one.356)
+  %constant.349 = f32[] constant(5)
+  %broadcast.350 = f32[100]{0} broadcast(%constant.349), dimensions={}
+  %compare.358 = pred[100]{0} compare(%negate.357, %broadcast.350), direction=LT
+  %constant.311 = f32[] constant(1.50140941)
+  %broadcast.312 = f32[100]{0} broadcast(%constant.311), dimensions={}
+  %constant.309 = f32[] constant(2.83297682)
+  %broadcast.310 = f32[100]{0} broadcast(%constant.309), dimensions={}
+  %select.385 = f32[100]{0} select(%compare.358, %broadcast.312, %broadcast.310)
+  %constant.315 = f32[] constant(0.246640727)
+  %broadcast.316 = f32[100]{0} broadcast(%constant.315), dimensions={}
+  %constant.313 = f32[] constant(1.00167406)
+  %broadcast.314 = f32[100]{0} broadcast(%constant.313), dimensions={}
+  %select.382 = f32[100]{0} select(%compare.358, %broadcast.316, %broadcast.314)
+  %constant.319 = f32[] constant(-0.00417768164)
+  %broadcast.320 = f32[100]{0} broadcast(%constant.319), dimensions={}
+  %constant.317 = f32[] constant(0.00943887047)
+  %broadcast.318 = f32[100]{0} broadcast(%constant.317), dimensions={}
+  %select.379 = f32[100]{0} select(%compare.358, %broadcast.320, %broadcast.318)
+  %constant.323 = f32[] constant(-0.00125372503)
+  %broadcast.324 = f32[100]{0} broadcast(%constant.323), dimensions={}
+  %constant.321 = f32[] constant(-0.0076224613)
+  %broadcast.322 = f32[100]{0} broadcast(%constant.321), dimensions={}
+  %select.376 = f32[100]{0} select(%compare.358, %broadcast.324, %broadcast.322)
+  %constant.327 = f32[] constant(0.00021858087)
+  %broadcast.328 = f32[100]{0} broadcast(%constant.327), dimensions={}
+  %constant.325 = f32[] constant(0.00573950773)
+  %broadcast.326 = f32[100]{0} broadcast(%constant.325), dimensions={}
+  %select.373 = f32[100]{0} select(%compare.358, %broadcast.328, %broadcast.326)
+  %constant.331 = f32[] constant(-4.39150654e-06)
+  %broadcast.332 = f32[100]{0} broadcast(%constant.331), dimensions={}
+  %constant.329 = f32[] constant(-0.00367342844)
+  %broadcast.330 = f32[100]{0} broadcast(%constant.329), dimensions={}
+  %select.370 = f32[100]{0} select(%compare.358, %broadcast.332, %broadcast.330)
+  %constant.335 = f32[] constant(-3.5233877e-06)
+  %broadcast.336 = f32[100]{0} broadcast(%constant.335), dimensions={}
+  %constant.333 = f32[] constant(0.00134934322)
+  %broadcast.334 = f32[100]{0} broadcast(%constant.333), dimensions={}
+  %select.367 = f32[100]{0} select(%compare.358, %broadcast.336, %broadcast.334)
+  %constant.339 = f32[] constant(3.43273939e-07)
+  %broadcast.340 = f32[100]{0} broadcast(%constant.339), dimensions={}
+  %constant.337 = f32[] constant(0.000100950558)
+  %broadcast.338 = f32[100]{0} broadcast(%constant.337), dimensions={}
+  %select.364 = f32[100]{0} select(%compare.358, %broadcast.340, %broadcast.338)
+  %constant.343 = f32[] constant(2.81022636e-08)
+  %broadcast.344 = f32[100]{0} broadcast(%constant.343), dimensions={}
+  %constant.341 = f32[] constant(-0.000200214257)
+  %broadcast.342 = f32[100]{0} broadcast(%constant.341), dimensions={}
+  %select.363 = f32[100]{0} select(%compare.358, %broadcast.344, %broadcast.342)
+  %constant.347 = f32[] constant(2.5)
+  %negate.1 = f32[] negate(%constant.347)
+  %broadcast.1 = f32[100]{0} broadcast(%negate.1), dimensions={}
+  %add.1 = f32[100]{0} add(%negate.357, %broadcast.1)
+  %sqrt.360 = f32[100]{0} sqrt(%negate.357)
+  %constant.345 = f32[] constant(3)
+  %negate.2 = f32[] negate(%constant.345)
+  %broadcast.2 = f32[100]{0} broadcast(%negate.2), dimensions={}
+  %add.2 = f32[100]{0} add(%sqrt.360, %broadcast.2)
+  %select.362 = f32[100]{0} select(%compare.358, %add.1, %add.2)
+  %multiply.365 = f32[100]{0} multiply(%select.363, %select.362)
+  %add.366 = f32[100]{0} add(%select.364, %multiply.365)
+  %multiply.368 = f32[100]{0} multiply(%add.366, %select.362)
+  %add.369 = f32[100]{0} add(%select.367, %multiply.368)
+  %multiply.371 = f32[100]{0} multiply(%add.369, %select.362)
+  %add.372 = f32[100]{0} add(%select.370, %multiply.371)
+  %multiply.374 = f32[100]{0} multiply(%add.372, %select.362)
+  %add.375 = f32[100]{0} add(%select.373, %multiply.374)
+  %multiply.377 = f32[100]{0} multiply(%add.375, %select.362)
+  %add.378 = f32[100]{0} add(%select.376, %multiply.377)
+  %multiply.380 = f32[100]{0} multiply(%add.378, %select.362)
+  %add.381 = f32[100]{0} add(%select.379, %multiply.380)
+  %multiply.383 = f32[100]{0} multiply(%add.381, %select.362)
+  %add.384 = f32[100]{0} add(%select.382, %multiply.383)
+  %multiply.386 = f32[100]{0} multiply(%add.384, %select.362)
+  %add.387 = f32[100]{0} add(%select.385, %multiply.386)
+  %multiply.388 = f32[100]{0} multiply(%add.387, %call.353)
+  %select.392 = f32[100]{0} select(%compare.390, %multiply.391, %multiply.388)
+  %constant.303 = f32[] constant(1.41421354)
+  %broadcast.304 = f32[100]{0} broadcast(%constant.303), dimensions={}
+  ROOT %multiply.393 = f32[100]{0} multiply(%select.392, %broadcast.304)
+}
+
+%_normal.394 (Arg_0.395: u32[2]) -> f32[100] {
+  %Arg_0.395 = u32[2]{0} parameter(0)
+  ROOT %call.396 = f32[100]{0} call(%Arg_0.395), to_apply=%_normal_real.301
+}
+
+%None_1.670 (Arg_0.671: f32[], Arg_1.672: f32[], Arg_2.673: f32[], Arg_3.674: f32[], Arg_4.675: f32[], Arg_5.676: f32[], Arg_6.677: f32[], Arg_7.678: f32[2]) -> (f32[], f32[], f32[], f32[]) {
+  %Arg_5.676 = f32[] parameter(5)
+  %Arg_0.671 = f32[] parameter(0)
+  %Arg_6.677 = f32[] parameter(6)
+  %constant.681 = f32[] constant(0)
+  %maximum.686 = f32[] maximum(%Arg_6.677, %constant.681)
+  %constant.680 = f32[] constant(0.5)
+  %multiply.687 = f32[] multiply(%maximum.686, %constant.680)
+  %subtract.688 = f32[] subtract(%Arg_0.671, %multiply.687)
+  %Arg_1.672 = f32[] parameter(1)
+  %multiply.689 = f32[] multiply(%subtract.688, %Arg_1.672)
+  %sqrt.690 = f32[] sqrt(%maximum.686)
+  %Arg_7.678 = f32[2]{0} parameter(7)
+  %slice.682 = f32[1]{0} slice(%Arg_7.678), slice={[0:1]}
+  %reshape.683 = f32[] reshape(%slice.682)
+  %multiply.691 = f32[] multiply(%sqrt.690, %reshape.683)
+  %add.692 = f32[] add(%multiply.689, %multiply.691)
+  %exponential.693 = f32[] exponential(%add.692)
+  %multiply.694 = f32[] multiply(%Arg_5.676, %exponential.693)
+  %Arg_3.674 = f32[] parameter(3)
+  %Arg_2.673 = f32[] parameter(2)
+  %subtract.695 = f32[] subtract(%Arg_2.673, %Arg_6.677)
+  %multiply.696 = f32[] multiply(%Arg_3.674, %subtract.695)
+  %multiply.697 = f32[] multiply(%multiply.696, %Arg_1.672)
+  %add.698 = f32[] add(%Arg_6.677, %multiply.697)
+  %Arg_4.675 = f32[] parameter(4)
+  %sqrt.699 = f32[] sqrt(%maximum.686)
+  %multiply.700 = f32[] multiply(%Arg_4.675, %sqrt.699)
+  %slice.684 = f32[1]{0} slice(%Arg_7.678), slice={[1:2]}
+  %reshape.685 = f32[] reshape(%slice.684)
+  %multiply.701 = f32[] multiply(%multiply.700, %reshape.685)
+  %add.702 = f32[] add(%add.698, %multiply.701)
+  %constant.679 = f32[] constant(1e-08)
+  %maximum.703 = f32[] maximum(%add.702, %constant.679)
+  ROOT %tuple.704 = (f32[], f32[], f32[], f32[]) tuple(%multiply.694, %maximum.703, %multiply.694, %maximum.703)
+}
+
+%region_4.705 (arg_tuple.706: (s32[], f32[], f32[], f32[100], f32[100], /*index=5*/f32[100,2], f32[], f32[], f32[], f32[], /*index=10*/f32[])) -> (s32[], f32[], f32[], f32[100], f32[100], /*index=5*/f32[100,2], f32[], f32[], f32[], f32[], /*index=10*/f32[]) {
+  %arg_tuple.706 = (s32[], f32[], f32[], f32[100]{0}, f32[100]{0}, /*index=5*/f32[100,2]{1,0}, f32[], f32[], f32[], f32[], /*index=10*/f32[]) parameter(0)
+  %get-tuple-element.707 = s32[] get-tuple-element(%arg_tuple.706), index=0
+  %constant.718 = s32[] constant(1)
+  %add.741 = s32[] add(%get-tuple-element.707, %constant.718)
+  %get-tuple-element.713 = f32[] get-tuple-element(%arg_tuple.706), index=6
+  %get-tuple-element.714 = f32[] get-tuple-element(%arg_tuple.706), index=7
+  %get-tuple-element.715 = f32[] get-tuple-element(%arg_tuple.706), index=8
+  %get-tuple-element.716 = f32[] get-tuple-element(%arg_tuple.706), index=9
+  %get-tuple-element.717 = f32[] get-tuple-element(%arg_tuple.706), index=10
+  %get-tuple-element.708 = f32[] get-tuple-element(%arg_tuple.706), index=1
+  %get-tuple-element.709 = f32[] get-tuple-element(%arg_tuple.706), index=2
+  %get-tuple-element.712 = f32[100,2]{1,0} get-tuple-element(%arg_tuple.706), index=5
+  %constant.720 = s32[] constant(0)
+  %compare.721 = pred[] compare(%get-tuple-element.707, %constant.720), direction=LT
+  %constant.719 = s32[] constant(100)
+  %add.722 = s32[] add(%get-tuple-element.707, %constant.719)
+  %select.723 = s32[] select(%compare.721, %add.722, %get-tuple-element.707)
+  %dynamic-slice.724 = f32[1,2]{1,0} dynamic-slice(%get-tuple-element.712, %select.723, %constant.720), dynamic_slice_sizes={1,2}
+  %reshape.725 = f32[2]{0} reshape(%dynamic-slice.724)
+  %call.726 = (f32[], f32[], f32[], f32[]) call(%get-tuple-element.713, %get-tuple-element.714, %get-tuple-element.715, %get-tuple-element.716, %get-tuple-element.717, /*index=5*/%get-tuple-element.708, %get-tuple-element.709, %reshape.725), to_apply=%None_1.670
+  %get-tuple-element.727 = f32[] get-tuple-element(%call.726), index=0
+  %get-tuple-element.728 = f32[] get-tuple-element(%call.726), index=1
+  %get-tuple-element.710 = f32[100]{0} get-tuple-element(%arg_tuple.706), index=3
+  %get-tuple-element.729 = f32[] get-tuple-element(%call.726), index=2
+  %reshape.731 = f32[1]{0} reshape(%get-tuple-element.729)
+  %compare.732 = pred[] compare(%get-tuple-element.707, %constant.720), direction=LT
+  %add.733 = s32[] add(%get-tuple-element.707, %constant.719)
+  %select.734 = s32[] select(%compare.732, %add.733, %get-tuple-element.707)
+  %dynamic-update-slice.735 = f32[100]{0} dynamic-update-slice(%get-tuple-element.710, %reshape.731, %select.734)
+  %get-tuple-element.711 = f32[100]{0} get-tuple-element(%arg_tuple.706), index=4
+  %get-tuple-element.730 = f32[] get-tuple-element(%call.726), index=3
+  %reshape.736 = f32[1]{0} reshape(%get-tuple-element.730)
+  %compare.737 = pred[] compare(%get-tuple-element.707, %constant.720), direction=LT
+  %add.738 = s32[] add(%get-tuple-element.707, %constant.719)
+  %select.739 = s32[] select(%compare.737, %add.738, %get-tuple-element.707)
+  %dynamic-update-slice.740 = f32[100]{0} dynamic-update-slice(%get-tuple-element.711, %reshape.736, %select.739)
+  ROOT %tuple.742 = (s32[], f32[], f32[], f32[100]{0}, f32[100]{0}, /*index=5*/f32[100,2]{1,0}, f32[], f32[], f32[], f32[], /*index=10*/f32[]) tuple(%add.741, %get-tuple-element.727, %get-tuple-element.728, %dynamic-update-slice.735, %dynamic-update-slice.740, /*index=5*/%get-tuple-element.712, %get-tuple-element.713, %get-tuple-element.714, %get-tuple-element.715, %get-tuple-element.716, /*index=10*/%get-tuple-element.717)
+}
+
+%region_5.743 (arg_tuple.744: (s32[], f32[], f32[], f32[100], f32[100], /*index=5*/f32[100,2], f32[], f32[], f32[], f32[], /*index=10*/f32[])) -> pred[] {
+  %arg_tuple.744 = (s32[], f32[], f32[], f32[100]{0}, f32[100]{0}, /*index=5*/f32[100,2]{1,0}, f32[], f32[], f32[], f32[], /*index=10*/f32[]) parameter(0)
+  %get-tuple-element.746 = f32[] get-tuple-element(%arg_tuple.744), index=1
+  %get-tuple-element.747 = f32[] get-tuple-element(%arg_tuple.744), index=2
+  %get-tuple-element.748 = f32[100]{0} get-tuple-element(%arg_tuple.744), index=3
+  %get-tuple-element.749 = f32[100]{0} get-tuple-element(%arg_tuple.744), index=4
+  %get-tuple-element.750 = f32[100,2]{1,0} get-tuple-element(%arg_tuple.744), index=5
+  %get-tuple-element.751 = f32[] get-tuple-element(%arg_tuple.744), index=6
+  %get-tuple-element.752 = f32[] get-tuple-element(%arg_tuple.744), index=7
+  %get-tuple-element.753 = f32[] get-tuple-element(%arg_tuple.744), index=8
+  %get-tuple-element.754 = f32[] get-tuple-element(%arg_tuple.744), index=9
+  %get-tuple-element.755 = f32[] get-tuple-element(%arg_tuple.744), index=10
+  %get-tuple-element.745 = s32[] get-tuple-element(%arg_tuple.744), index=0
+  %constant.756 = s32[] constant(100)
+  ROOT %compare.757 = pred[] compare(%get-tuple-element.745, %constant.756), direction=LT
+}
+
+ENTRY %main.769 (Arg_0.1: f32[], Arg_1.2: f32[], Arg_2.3: f32[], Arg_3.4: f32[], Arg_4.5: f32[], Arg_5.6: f32[], Arg_6.7: f32[], Arg_7.8: f32[], Arg_8.9: u32[2]) -> (f32[101], f32[101]) {
+  %constant.12 = s32[] constant(0)
+  %Arg_0.1 = f32[] parameter(0)
+  %Arg_1.2 = f32[] parameter(1)
+  %constant.10 = f32[] constant(0)
+  %broadcast.11 = f32[100]{0} broadcast(%constant.10), dimensions={}
+  %Arg_8.9 = u32[2]{0} parameter(8)
+  %call.143 = u32[2,2]{1,0} call(%Arg_8.9), to_apply=%_threefry_split.111
+  %slice.144 = u32[1,2]{1,0} slice(%call.143), slice={[0:1], [0:2]}
+  %reshape.145 = u32[2]{0} reshape(%slice.144)
+  %call.397 = f32[100]{0} call(%reshape.145), to_apply=%_normal.394
+  %Arg_7.8 = f32[] parameter(7)
+  %sqrt.652 = f32[] sqrt(%Arg_7.8)
+  %broadcast.653 = f32[100]{0} broadcast(%sqrt.652), dimensions={}
+  %multiply.654 = f32[100]{0} multiply(%call.397, %broadcast.653)
+  %reshape.666 = f32[100,1]{1,0} reshape(%multiply.654)
+  %Arg_6.7 = f32[] parameter(6)
+  %broadcast.655 = f32[100]{0} broadcast(%Arg_6.7), dimensions={}
+  %multiply.656 = f32[100]{0} multiply(%broadcast.655, %call.397)
+  %constant.13 = f32[] constant(1)
+  %multiply.657 = f32[] multiply(%Arg_6.7, %Arg_6.7)
+  %subtract.658 = f32[] subtract(%constant.13, %multiply.657)
+  %sqrt.659 = f32[] sqrt(%subtract.658)
+  %broadcast.660 = f32[100]{0} broadcast(%sqrt.659), dimensions={}
+  %slice.398 = u32[1,2]{1,0} slice(%call.143), slice={[1:2], [0:2]}
+  %reshape.399 = u32[2]{0} reshape(%slice.398)
+  %call.651 = f32[100]{0} call(%reshape.399), to_apply=%_normal.394
+  %multiply.661 = f32[100]{0} multiply(%broadcast.660, %call.651)
+  %add.662 = f32[100]{0} add(%multiply.656, %multiply.661)
+  %sqrt.663 = f32[] sqrt(%Arg_7.8)
+  %broadcast.664 = f32[100]{0} broadcast(%sqrt.663), dimensions={}
+  %multiply.665 = f32[100]{0} multiply(%add.662, %broadcast.664)
+  %reshape.667 = f32[100,1]{1,0} reshape(%multiply.665)
+  %concatenate.668 = f32[100,2]{1,0} concatenate(%reshape.666, %reshape.667), dimensions={1}
+  %Arg_2.3 = f32[] parameter(2)
+  %Arg_4.5 = f32[] parameter(4)
+  %Arg_3.4 = f32[] parameter(3)
+  %Arg_5.6 = f32[] parameter(5)
+  %tuple.669 = (s32[], f32[], f32[], f32[100]{0}, f32[100]{0}, /*index=5*/f32[100,2]{1,0}, f32[], f32[], f32[], f32[], /*index=10*/f32[]) tuple(%constant.12, %Arg_0.1, %Arg_1.2, %broadcast.11, %broadcast.11, /*index=5*/%concatenate.668, %Arg_2.3, %Arg_7.8, %Arg_4.5, %Arg_3.4, /*index=10*/%Arg_5.6)
+  %while.758 = (s32[], f32[], f32[], f32[100]{0}, f32[100]{0}, /*index=5*/f32[100,2]{1,0}, f32[], f32[], f32[], f32[], /*index=10*/f32[]) while(%tuple.669), condition=%region_5.743, body=%region_4.705, backend_config={"known_trip_count":{"n":"100"},"known_init_step":{"init":"0","step":"1"},"known_induction_variable":{"tuple_index":"0"}}
+  %get-tuple-element.759 = s32[] get-tuple-element(%while.758), index=0
+  %get-tuple-element.760 = f32[] get-tuple-element(%while.758), index=1
+  %get-tuple-element.761 = f32[] get-tuple-element(%while.758), index=2
+  %reshape.764 = f32[1]{0} reshape(%Arg_0.1)
+  %get-tuple-element.762 = f32[100]{0} get-tuple-element(%while.758), index=3
+  %concatenate.765 = f32[101]{0} concatenate(%reshape.764, %get-tuple-element.762), dimensions={0}
+  %reshape.766 = f32[1]{0} reshape(%Arg_1.2)
+  %get-tuple-element.763 = f32[100]{0} get-tuple-element(%while.758), index=4
+  %concatenate.767 = f32[101]{0} concatenate(%reshape.766, %get-tuple-element.763), dimensions={0}
+  ROOT %tuple.768 = (f32[101]{0}, f32[101]{0}) tuple(%concatenate.765, %concatenate.767)
+}
+
+
+

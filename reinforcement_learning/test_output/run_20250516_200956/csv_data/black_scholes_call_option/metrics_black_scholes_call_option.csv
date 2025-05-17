@@ -1,0 +1,2 @@
+total_reward,initial_cost,final_cost,cost_reduction,percent_reduction,steps_taken,same_state_count,unique_actions,unique_states,state_uniqueness_ratio,file_name,file_path
+168.02000000000044,6932.264,6764.244,168.02000000000044,2.423739199776587,30,0,6,3,0.1,black_scholes_call_option.hlo,/Users/rayaanfaruqi/Documents/CS521/Final_Project/rl_xla_opt_cs521/jax_hlo/test_set/black_scholes_call_option.hlo

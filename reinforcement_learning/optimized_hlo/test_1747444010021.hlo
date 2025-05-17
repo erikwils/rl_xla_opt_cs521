@@ -1,0 +1,63 @@
+HloModule test_algebraic_simplifier_13, entry_computation_layout={()->(f32[2,3,4]{2,1,0}, f32[2,3,4]{2,1,0}, f32[2,3,4]{2,1,0}, f32[2,3,4]{2,1,0}, f32[2,3,4]{2,1,0}, /*index=5*/f32[2,3,4]{2,1,0}, f32[2,3,4]{2,1,0})}
+
+ENTRY %main () -> (f32[2,3,4], f32[2,3,4], f32[2,3,4], f32[2,3,4], f32[2,3,4], /*index=5*/f32[2,3,4], f32[2,3,4]) {
+  %constant_pi = f32[] constant(3.14159)
+  %pi_array = f32[2,3,4]{2,1,0} broadcast(%constant_pi), dimensions={}
+  %constant_e = f32[] constant(2.71828)
+  %e_array = f32[2,3,4]{2,1,0} broadcast(%constant_e), dimensions={}
+  %sqrt.anon = f32[2,3,4]{2,1,0} sqrt(%e_array)
+  %constant_two = f32[] constant(2)
+  %two_array = f32[2,3,4]{2,1,0} broadcast(%constant_two), dimensions={}
+  %constant_one = f32[] constant(1)
+  %one_array = f32[2,3,4]{2,1,0} broadcast(%constant_one), dimensions={}
+  %multiply.anon.1 = f32[2,3,4]{2,1,0} multiply(%two_array, %one_array)
+  %broadcast = f32[] broadcast(%constant_e), dimensions={}
+  %constant_zero = f32[] constant(0)
+  %broadcast.1 = f32[] broadcast(%constant_zero), dimensions={}
+  %add_zero_13_0.1 = f32[] add(%broadcast, %broadcast.1)
+  %broadcast.2 = f32[2,3,4]{2,1,0} broadcast(%add_zero_13_0.1), dimensions={}
+  %broadcast.11 = f32[] broadcast(%constant_one), dimensions={}
+  %broadcast.12 = f32[] broadcast(%constant_one), dimensions={}
+  %multiply.anon.2 = f32[] multiply(%broadcast.11, %broadcast.12)
+  %broadcast.14 = f32[] broadcast(%multiply.anon.2), dimensions={}
+  %broadcast.15 = f32[] broadcast(%constant_one), dimensions={}
+  %complex_pow_mul_13_1.1 = f32[] power(%broadcast.14, %broadcast.15)
+  %broadcast.16 = f32[2,3,4]{2,1,0} broadcast(%complex_pow_mul_13_1.1), dimensions={}
+  %constant_half = f32[] constant(0.5)
+  %broadcast.8 = f32[] broadcast(%constant_half), dimensions={}
+  %broadcast.9 = f32[] broadcast(%constant_zero), dimensions={}
+  %power_zero_13_2.1 = f32[] power(%broadcast.8, %broadcast.9)
+  %broadcast.10 = f32[2,3,4]{2,1,0} broadcast(%power_zero_13_2.1), dimensions={}
+  %reshape = f32[] reshape(%constant_e)
+  %sqrt.anon.1 = f32[] sqrt(%reshape)
+  %broadcast.24 = f32[] broadcast(%sqrt.anon.1), dimensions={}
+  %broadcast.25 = f32[] broadcast(%constant_two), dimensions={}
+  %square_sqrt_13_3.1 = f32[] power(%broadcast.24, %broadcast.25)
+  %broadcast.26 = f32[2,3,4]{2,1,0} broadcast(%square_sqrt_13_3.1), dimensions={}
+  %broadcast.17 = f32[] broadcast(%constant_two), dimensions={}
+  %broadcast.18 = f32[] broadcast(%constant_one), dimensions={}
+  %div_one_13_4.1 = f32[] divide(%broadcast.17, %broadcast.18)
+  %broadcast.19 = f32[2,3,4]{2,1,0} broadcast(%div_one_13_4.1), dimensions={}
+  %broadcast.5 = f32[] broadcast(%constant_e), dimensions={}
+  %broadcast.6 = f32[] broadcast(%constant_e), dimensions={}
+  %sub_self_13_5.1 = f32[] subtract(%broadcast.5, %broadcast.6)
+  %broadcast.7 = f32[2,3,4]{2,1,0} broadcast(%sub_self_13_5.1), dimensions={}
+  %reshape.1 = f32[] reshape(%constant_two)
+  %reshape.2 = f32[] reshape(%constant_one)
+  %multiply.anon.3 = f32[] multiply(%reshape.1, %reshape.2)
+  %broadcast.28 = f32[] broadcast(%multiply.anon.3), dimensions={}
+  %broadcast.29 = f32[] broadcast(%constant_zero), dimensions={}
+  %complex_add_mul_13_6.1 = f32[] add(%broadcast.28, %broadcast.29)
+  %broadcast.30 = f32[2,3,4]{2,1,0} broadcast(%complex_add_mul_13_6.1), dimensions={}
+  ROOT %result = (f32[2,3,4]{2,1,0}, f32[2,3,4]{2,1,0}, f32[2,3,4]{2,1,0}, f32[2,3,4]{2,1,0}, f32[2,3,4]{2,1,0}, /*index=5*/f32[2,3,4]{2,1,0}, f32[2,3,4]{2,1,0}) tuple(%broadcast.2, %broadcast.16, %broadcast.10, %broadcast.26, %broadcast.19, /*index=5*/%broadcast.7, %broadcast.30)
+  %constant = f32[] constant(1)
+  %broadcast.23 = f32[2,3,4]{2,1,0} broadcast(%constant), dimensions={}
+  %broadcast.4 = f32[2,3,4]{2,1,0} broadcast(%sqrt.anon.1), dimensions={}
+  %multiply = f32[2,3,4]{2,1,0} multiply(%broadcast.4, %broadcast.4)
+  %negate = f32[] negate(%constant_e)
+  %broadcast.27 = f32[2,3,4]{2,1,0} broadcast(%negate), dimensions={}
+  %add = f32[2,3,4]{2,1,0} add(%e_array, %broadcast.27)
+}
+
+
+

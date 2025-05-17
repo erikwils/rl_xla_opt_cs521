@@ -1,0 +1,7 @@
+total_reward,initial_cost,final_cost,cost_reduction,percent_reduction,steps_taken,same_state_count,unique_actions,unique_states,state_uniqueness_ratio,file_name,file_path
+168.02000000000044,6932.264,6764.244,168.02000000000044,2.423739199776587,30,0,6,3,0.1,black_scholes_call_option.hlo,/Users/rayaanfaruqi/Documents/CS521/Final_Project/rl_xla_opt_cs521/jax_hlo/test_set/black_scholes_call_option.hlo
+210.868,485.232,274.364,210.86800000000005,43.45715039403832,30,0,11,7,0.23333333333333334,test_algebraic_simplifier_13.hlo,/Users/rayaanfaruqi/Documents/CS521/Final_Project/rl_xla_opt_cs521/jax_hlo/test_set/test_algebraic_simplifier_13.hlo
+84.43599999999998,442.616,358.18,84.43599999999998,19.076581054458035,30,0,7,6,0.2,test_algebraic_simplifier_27.hlo,/Users/rayaanfaruqi/Documents/CS521/Final_Project/rl_xla_opt_cs521/jax_hlo/test_set/test_algebraic_simplifier_27.hlo
+80.01599999999962,12046.948,11966.932,80.01599999999962,0.6642014226341777,30,0,8,1,0.03333333333333333,heston_model_simulation.hlo,/Users/rayaanfaruqi/Documents/CS521/Final_Project/rl_xla_opt_cs521/jax_hlo/test_set/heston_model_simulation.hlo
+20.00400000000002,1016.362,996.358,20.00400000000002,1.9681963709780588,30,0,6,2,0.06666666666666667,sharpe_ratio.hlo,/Users/rayaanfaruqi/Documents/CS521/Final_Project/rl_xla_opt_cs521/jax_hlo/test_set/sharpe_ratio.hlo
+-123.096,126.112,249.208,-123.096,-97.60847500634358,30,0,8,2,0.06666666666666667,linear_regression_predict.hlo,/Users/rayaanfaruqi/Documents/CS521/Final_Project/rl_xla_opt_cs521/jax_hlo/test_set/linear_regression_predict.hlo

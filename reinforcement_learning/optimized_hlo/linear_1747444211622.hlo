@@ -1,0 +1,22 @@
+HloModule jit_linear_regression_predict, entry_computation_layout={(f32[2]{0}, f32[], f32[5,2]{1,0})->f32[5]{0}}
+
+%scalar_add_computation (scalar_lhs: f32[], scalar_rhs: f32[]) -> f32[] {
+  %scalar_lhs = f32[] parameter(0), origin={{"scalar_lhs"}}
+  %scalar_rhs = f32[] parameter(1), origin={{"scalar_rhs"}}
+  ROOT %add = f32[] add(%scalar_lhs, %scalar_rhs), origin={{"add"}}
+}
+
+ENTRY %main.7 (Arg_0.1: f32[2], Arg_1.2: f32[], Arg_2.3: f32[5,2]) -> f32[5] {
+  %Arg_2.3 = f32[5,2]{1,0} parameter(2), origin={{"Arg_2.3"}}
+  %Arg_0.1 = f32[2]{0} parameter(0), origin={{"Arg_0.1"}}
+  %broadcast = f32[5,2]{1,0} broadcast(%Arg_0.1), dimensions={1}, origin={{"broadcast"}}
+  %multiply = f32[5,2]{1,0} multiply(%Arg_2.3, %broadcast), origin={{"multiply"}}
+  %constant = f32[] constant(0), origin={{"constant"}}
+  %reduce = f32[5]{0} reduce(%multiply, %constant), dimensions={1}, to_apply=%scalar_add_computation, origin={{"reduce"}}
+  %Arg_1.2 = f32[] parameter(1), origin={{"Arg_1.2"}}
+  %broadcast.5 = f32[5]{0} broadcast(%Arg_1.2), dimensions={}, origin={{"broadcast.5"}}
+  ROOT %add.6 = f32[5]{0} add(%reduce, %broadcast.5), origin={{"add.6"}}
+}
+
+
+

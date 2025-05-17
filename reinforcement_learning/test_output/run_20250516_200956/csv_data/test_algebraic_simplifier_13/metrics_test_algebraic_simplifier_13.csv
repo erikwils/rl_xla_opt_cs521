@@ -1,0 +1,2 @@
+total_reward,initial_cost,final_cost,cost_reduction,percent_reduction,steps_taken,same_state_count,unique_actions,unique_states,state_uniqueness_ratio,file_name,file_path
+210.868,485.232,274.364,210.86800000000005,43.45715039403832,30,0,11,7,0.23333333333333334,test_algebraic_simplifier_13.hlo,/Users/rayaanfaruqi/Documents/CS521/Final_Project/rl_xla_opt_cs521/jax_hlo/test_set/test_algebraic_simplifier_13.hlo

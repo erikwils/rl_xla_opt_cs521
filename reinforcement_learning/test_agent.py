@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 import glob
 import pandas as pd
 from typing import List, Dict, Tuple, Any
+import datetime
 
 def test_agent(agent : SimpleQLearningAgent, env : XLAOptimizationEnv, max_steps=30, verbose=True, use_manual=False):
     """Test our trained agent on a single HLO file."""
@@ -433,7 +434,7 @@ def print_test_results(total_reward, applied_passes, env, state_tracker):
 
 def test_on_multiple_files(agent: SimpleQLearningAgent, hlo_files: List[str], xla_dir: str, 
                            max_steps: int = 30, verbose: bool = False, use_manual: bool = False,
-                           plot_results: bool = True) -> Dict:
+                           plot_results: bool = True, output_dir: str = None) -> Dict:
     """
     Test the agent on multiple HLO files and aggregate results.
     
@@ -445,10 +446,35 @@ def test_on_multiple_files(agent: SimpleQLearningAgent, hlo_files: List[str], xl
         verbose: Whether to print detailed progress
         use_manual: Whether to use the manual pass sequence
         plot_results: Whether to generate summary plots
+        output_dir: Base output directory (default: creates test_output directory)
         
     Returns:
         Dictionary of summary results and metrics for each file
     """
+    # Create structured output directories
+    if output_dir is None:
+        # Get script directory
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        
+        # Create a timestamp for unique output directories
+        timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+        
+        # Main output directory
+        output_dir = os.path.join(script_dir, "test_output", f"run_{timestamp}")
+    
+    os.makedirs(output_dir, exist_ok=True)
+    
+    # Create subdirectories
+    csv_dir = os.path.join(output_dir, "csv_data")
+    plots_dir = os.path.join(output_dir, "plots")
+    analysis_dir = os.path.join(output_dir, "analysis")
+    
+    os.makedirs(csv_dir, exist_ok=True)
+    os.makedirs(plots_dir, exist_ok=True)
+    os.makedirs(analysis_dir, exist_ok=True)
+    
+    print(f"Test results will be saved to: {output_dir}")
+    
     all_results = {}
     summary_metrics = {
         "total_files": len(hlo_files),
@@ -474,6 +500,13 @@ def test_on_multiple_files(agent: SimpleQLearningAgent, hlo_files: List[str], xl
         # Ensure HLO file path is absolute
         hlo_file = os.path.abspath(hlo_file)
         file_name = os.path.basename(hlo_file)
+        file_base_name = os.path.splitext(file_name)[0]
+        
+        # Create file-specific directories
+        file_csv_dir = os.path.join(csv_dir, file_base_name)
+        file_plots_dir = os.path.join(plots_dir, file_base_name)
+        os.makedirs(file_csv_dir, exist_ok=True)
+        os.makedirs(file_plots_dir, exist_ok=True)
         
         print(f"[{i+1}/{len(hlo_files)}] Testing on: {file_name}")
         
@@ -505,6 +538,30 @@ def test_on_multiple_files(agent: SimpleQLearningAgent, hlo_files: List[str], xl
             file_metrics.append(metrics)
             summary_metrics["all_file_metrics"][file_name] = metrics
             
+            # Save detailed metrics to CSV
+            file_metrics_path = os.path.join(file_csv_dir, f"metrics_{file_base_name}.csv")
+            metrics_df = pd.DataFrame([metrics])
+            metrics_df.to_csv(file_metrics_path, index=False)
+            
+            # Save pass sequence to CSV
+            passes_df = pd.DataFrame({
+                'step': range(len(applied_passes)),
+                'pass_name': applied_passes
+            })
+            passes_path = os.path.join(file_csv_dir, f"passes_{file_base_name}.csv")
+            passes_df.to_csv(passes_path, index=False)
+            
+            # Save cost history to CSV
+            cost_df = pd.DataFrame({
+                'step': range(len(cost_history)),
+                'cost': cost_history,
+                'reduction': [cost_history[0] - c for c in cost_history],
+                'percent_reduction': [(cost_history[0] - c) / cost_history[0] * 100 if cost_history[0] > 0 else 0 
+                                      for c in cost_history]
+            })
+            cost_path = os.path.join(file_csv_dir, f"cost_history_{file_base_name}.csv")
+            cost_df.to_csv(cost_path, index=False)
+            
             # Update summary metrics
             cost_reduction = metrics["cost_reduction"]
             percent_reduction = metrics["percent_reduction"]
@@ -524,8 +581,18 @@ def test_on_multiple_files(agent: SimpleQLearningAgent, hlo_files: List[str], xl
             if plot_results:
                 plot_cost_history(
                     cost_history, 
-                    filename=f"test_cost_{file_name.replace('.hlo', '')}.png"
+                    os.path.join(file_plots_dir, f"cost_reduction_{file_base_name}.png")
                 )
+                
+                # Additional plot for percent reduction
+                plt.figure(figsize=(10, 5))
+                plt.plot(cost_df['step'], cost_df['percent_reduction'], 'g-')
+                plt.title(f"Percent Cost Reduction During Testing - {file_base_name}")
+                plt.xlabel("Step")
+                plt.ylabel("Cost Reduction (%)")
+                plt.grid(True)
+                plt.savefig(os.path.join(file_plots_dir, f"percent_reduction_{file_base_name}.png"))
+                plt.close()
             
             print(f"  Initial cost: {metrics['initial_cost']:.4f}")
             print(f"  Final cost: {metrics['final_cost']:.4f}")
@@ -555,6 +622,10 @@ def test_on_multiple_files(agent: SimpleQLearningAgent, hlo_files: List[str], xl
     metrics_df = pd.DataFrame(file_metrics)
     summary_metrics["metrics_df"] = metrics_df
     
+    # Save summary metrics to CSV
+    summary_csv_path = os.path.join(csv_dir, 'test_results_summary.csv')
+    metrics_df.to_csv(summary_csv_path, index=False)
+    
     # Print summary
     print("\n===== Summary Results =====")
     print(f"Total files tested: {summary_metrics['total_files']}")
@@ -565,15 +636,19 @@ def test_on_multiple_files(agent: SimpleQLearningAgent, hlo_files: List[str], xl
     print(f"Average percent reduction: {summary_metrics['avg_percent_reduction']:.2f}%")
     print(f"Maximum cost reduction: {summary_metrics['max_cost_reduction']:.4f} ({summary_metrics['max_percent_reduction']:.2f}%)")
     print(f"Best performing file: {summary_metrics['best_file']}")
+    print(f"Results saved to: {output_dir}")
     
     # Generate summary plots
     if plot_results and len(file_metrics) > 1:
-        plot_summary_results(metrics_df)
+        plot_summary_results(metrics_df, plots_dir)
     
     return summary_metrics
 
-def plot_summary_results(metrics_df: pd.DataFrame) -> None:
+def plot_summary_results(metrics_df: pd.DataFrame, plots_dir: str) -> None:
     """Generate summary plots for multiple file test results."""
+    # Ensure plots_dir is a string
+    plots_dir = str(plots_dir) if plots_dir is not None else "plots"
+    
     # Sort by cost reduction for better visualization
     metrics_df_sorted = metrics_df.sort_values('cost_reduction', ascending=False)
     
@@ -585,7 +660,7 @@ def plot_summary_results(metrics_df: pd.DataFrame) -> None:
     plt.ylabel('Cost Reduction')
     plt.xticks(rotation=90)
     plt.tight_layout()
-    plt.savefig('summary_cost_reduction.png')
+    plt.savefig(os.path.join(plots_dir, 'summary_cost_reduction.png'))
     plt.close()
     
     # Plot 2: Percent reduction by file
@@ -596,7 +671,7 @@ def plot_summary_results(metrics_df: pd.DataFrame) -> None:
     plt.ylabel('Percent Reduction')
     plt.xticks(rotation=90)
     plt.tight_layout()
-    plt.savefig('summary_percent_reduction.png')
+    plt.savefig(os.path.join(plots_dir, 'summary_percent_reduction.png'))
     plt.close()
     
     # Plot 3: Unique actions vs. cost reduction scatter plot
@@ -607,12 +682,12 @@ def plot_summary_results(metrics_df: pd.DataFrame) -> None:
     plt.ylabel('Cost Reduction')
     plt.grid(True, alpha=0.3)
     plt.tight_layout()
-    plt.savefig('unique_actions_vs_reduction.png')
+    plt.savefig(os.path.join(plots_dir, 'unique_actions_vs_reduction.png'))
     plt.close()
     
     print("Summary plots saved: summary_cost_reduction.png, summary_percent_reduction.png, unique_actions_vs_reduction.png")
 
-def plot_cost_history(cost_history, filename="test_cost_history.png"):
+def plot_cost_history(cost_history, output_path):
     """Plot the cost history during testing."""
     plt.figure(figsize=(10, 5))
     plt.plot(cost_history)
@@ -620,9 +695,9 @@ def plot_cost_history(cost_history, filename="test_cost_history.png"):
     plt.xlabel("Step")
     plt.ylabel("Cost")
     plt.grid(True)
-    plt.savefig(filename)
+    plt.savefig(output_path)
     plt.close()
-    print(f"Cost history plot saved to {filename}")
+    print(f"Cost history plot saved to {output_path}")
 
 def try_all_passes(env, verbose=True):
     """Try each optimization pass and report which ones reduce cost."""
@@ -665,6 +740,7 @@ def main():
     parser.add_argument("--try_all", action="store_true", help="Try all passes and report effectiveness")
     parser.add_argument("--manual", action="store_true", help="Try a manually curated sequence of passes")
     parser.add_argument("--no_plots", action="store_true", help="Disable plotting")
+    parser.add_argument("--output_dir", help="Custom output directory path")
     
     args = parser.parse_args()
     
@@ -685,6 +761,8 @@ def main():
         args.hlo_dir = os.path.abspath(args.hlo_dir)
     if args.xla_dir:
         args.xla_dir = os.path.abspath(args.xla_dir)
+    if args.output_dir:
+        args.output_dir = os.path.abspath(args.output_dir)
     
     # Load the trained agent data
     with open(args.model, "rb") as f:
@@ -706,6 +784,23 @@ def main():
     print(f"Loaded agent model from {args.model}")
     print(f"Q-table entries: {len(agent.q_table)}")
     
+    # Create output directories
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+    output_dir = args.output_dir if args.output_dir else os.path.join(script_dir, "test_output", f"run_{timestamp}")
+    os.makedirs(output_dir, exist_ok=True)
+    
+    # Create subdirectories
+    csv_dir = os.path.join(output_dir, "csv_data")
+    plots_dir = os.path.join(output_dir, "plots")
+    analysis_dir = os.path.join(output_dir, "analysis")
+    
+    os.makedirs(csv_dir, exist_ok=True)
+    os.makedirs(plots_dir, exist_ok=True)
+    os.makedirs(analysis_dir, exist_ok=True)
+    
+    print(f"Test results will be saved to: {output_dir}")
+    
     # Testing on multiple HLO files
     if args.hlo_dir:
         # Get all HLO files in the directory
@@ -725,12 +820,13 @@ def main():
             max_steps=args.max_steps,
             verbose=args.verbose,
             use_manual=args.manual,
-            plot_results=not args.no_plots
+            plot_results=not args.no_plots,
+            output_dir=output_dir
         )
         
         # Save summary results to CSV
         metrics_df = summary_metrics['metrics_df']
-        metrics_df.to_csv('test_results_summary.csv', index=False)
+        metrics_df.to_csv(os.path.join(csv_dir, 'test_results_summary.csv'), index=False)
         print("Summary metrics saved to test_results_summary.csv")
         
         return summary_metrics
@@ -768,6 +864,13 @@ def main():
             if mismatches > 0:
                 print(f"Found {mismatches} mismatched passes between model and environment")
         
+        # Create file-specific output directory
+        file_base_name = os.path.splitext(os.path.basename(args.hlo))[0]
+        file_plots_dir = os.path.join(plots_dir, file_base_name)
+        file_csv_dir = os.path.join(csv_dir, file_base_name)
+        os.makedirs(file_plots_dir, exist_ok=True)
+        os.makedirs(file_csv_dir, exist_ok=True)
+        
         # Test the agent
         reward, passes, cost_history, metrics = test_agent(
             agent=agent,
@@ -777,10 +880,48 @@ def main():
             use_manual=args.manual
         )
         
+        # Save metrics to CSV
+        metrics["file_name"] = os.path.basename(args.hlo)
+        metrics["file_path"] = args.hlo
+        metrics_df = pd.DataFrame([metrics])
+        metrics_df.to_csv(os.path.join(file_csv_dir, f"metrics_{file_base_name}.csv"), index=False)
+        
+        # Save pass sequence to CSV
+        passes_df = pd.DataFrame({
+            'step': range(len(passes)),
+            'pass_name': passes
+        })
+        passes_df.to_csv(os.path.join(file_csv_dir, f"passes_{file_base_name}.csv"), index=False)
+        
+        # Save cost history to CSV
+        cost_df = pd.DataFrame({
+            'step': range(len(cost_history)),
+            'cost': cost_history,
+            'reduction': [cost_history[0] - c for c in cost_history],
+            'percent_reduction': [(cost_history[0] - c) / cost_history[0] * 100 if cost_history[0] > 0 else 0 
+                                  for c in cost_history]
+        })
+        cost_df.to_csv(os.path.join(file_csv_dir, f"cost_history_{file_base_name}.csv"), index=False)
+        
         # Plot the cost history
         if not args.no_plots:
-            plot_cost_history(cost_history)
+            # Cost reduction plot
+            plot_cost_history(
+                cost_history=cost_history,
+                output_path=os.path.join(file_plots_dir, f"cost_reduction_{file_base_name}.png")
+            )
+            
+            # Percent reduction plot
+            plt.figure(figsize=(10, 5))
+            plt.plot(cost_df['step'], cost_df['percent_reduction'], 'g-')
+            plt.title(f"Percent Cost Reduction During Testing - {file_base_name}")
+            plt.xlabel("Step")
+            plt.ylabel("Cost Reduction (%)")
+            plt.grid(True)
+            plt.savefig(os.path.join(file_plots_dir, f"percent_reduction_{file_base_name}.png"))
+            plt.close()
         
+        print(f"Results saved to: {output_dir}")
         return reward, passes, metrics
 
 if __name__ == "__main__":

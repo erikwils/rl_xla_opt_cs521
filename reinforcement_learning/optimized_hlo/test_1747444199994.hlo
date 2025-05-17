@@ -1,0 +1,33 @@
+HloModule test_algebraic_simplifier_13, entry_computation_layout={()->(f32[2,3,4]{2,1,0}, f32[2,3,4]{2,1,0}, f32[2,3,4]{2,1,0}, f32[2,3,4]{2,1,0}, f32[2,3,4]{2,1,0}, /*index=5*/f32[2,3,4]{2,1,0}, f32[2,3,4]{2,1,0})}
+
+ENTRY %main () -> (f32[2,3,4], f32[2,3,4], f32[2,3,4], f32[2,3,4], f32[2,3,4], /*index=5*/f32[2,3,4], f32[2,3,4]) {
+  %constant_pi = f32[] constant(3.14159)
+  %pi_array = f32[2,3,4]{2,1,0} broadcast(%constant_pi), dimensions={}
+  %constant_e = f32[] constant(2.71828)
+  %e_array = f32[2,3,4]{2,1,0} broadcast(%constant_e), dimensions={}
+  %sqrt.anon = f32[2,3,4]{2,1,0} sqrt(%e_array)
+  %broadcast.2 = f32[2,3,4]{2,1,0} broadcast(%constant_e), dimensions={}
+  %constant_one = f32[] constant(1)
+  %broadcast.16 = f32[2,3,4]{2,1,0} broadcast(%constant_one), dimensions={}
+  %constant.1 = f32[] constant(1)
+  %broadcast.10 = f32[2,3,4]{2,1,0} broadcast(%constant.1), dimensions={}
+  %sqrt.anon.1 = f32[] sqrt(%constant_e)
+  %multiply.1 = f32[] multiply(%sqrt.anon.1, %sqrt.anon.1)
+  %broadcast.26 = f32[2,3,4]{2,1,0} broadcast(%multiply.1), dimensions={}
+  %constant_two = f32[] constant(2)
+  %broadcast.19 = f32[2,3,4]{2,1,0} broadcast(%constant_two), dimensions={}
+  %sub_self_13_5.1 = f32[] subtract(%constant_e, %constant_e)
+  %broadcast.7 = f32[2,3,4]{2,1,0} broadcast(%sub_self_13_5.1), dimensions={}
+  %broadcast.30 = f32[2,3,4]{2,1,0} broadcast(%constant_two), dimensions={}
+  ROOT %result = (f32[2,3,4]{2,1,0}, f32[2,3,4]{2,1,0}, f32[2,3,4]{2,1,0}, f32[2,3,4]{2,1,0}, f32[2,3,4]{2,1,0}, /*index=5*/f32[2,3,4]{2,1,0}, f32[2,3,4]{2,1,0}) tuple(%broadcast.2, %broadcast.16, %broadcast.10, %broadcast.26, %broadcast.19, /*index=5*/%broadcast.7, %broadcast.30)
+  %constant = f32[] constant(1)
+  %broadcast.23 = f32[2,3,4]{2,1,0} broadcast(%constant), dimensions={}
+  %broadcast.4 = f32[2,3,4]{2,1,0} broadcast(%sqrt.anon.1), dimensions={}
+  %multiply = f32[2,3,4]{2,1,0} multiply(%broadcast.4, %broadcast.4)
+  %negate = f32[] negate(%constant_e)
+  %broadcast.27 = f32[2,3,4]{2,1,0} broadcast(%negate), dimensions={}
+  %add = f32[2,3,4]{2,1,0} add(%e_array, %broadcast.27)
+}
+
+
+

@@ -1,0 +1,2 @@
+total_reward,initial_cost,final_cost,cost_reduction,percent_reduction,steps_taken,same_state_count,unique_actions,unique_states,state_uniqueness_ratio,file_name,file_path
+-123.096,126.112,249.208,-123.096,-97.60847500634358,30,0,8,2,0.06666666666666667,linear_regression_predict.hlo,/Users/rayaanfaruqi/Documents/CS521/Final_Project/rl_xla_opt_cs521/jax_hlo/test_set/linear_regression_predict.hlo

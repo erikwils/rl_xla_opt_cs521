@@ -1,0 +1,2 @@
+total_reward,initial_cost,final_cost,cost_reduction,percent_reduction,steps_taken,same_state_count,unique_actions,unique_states,state_uniqueness_ratio,file_name,file_path
+20.00400000000002,1016.362,996.358,20.00400000000002,1.9681963709780588,30,0,6,2,0.06666666666666667,sharpe_ratio.hlo,/Users/rayaanfaruqi/Documents/CS521/Final_Project/rl_xla_opt_cs521/jax_hlo/test_set/sharpe_ratio.hlo

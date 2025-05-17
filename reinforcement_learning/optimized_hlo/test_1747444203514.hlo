@@ -1,0 +1,24 @@
+HloModule test_algebraic_simplifier_27, entry_computation_layout={()->(f32[16]{0}, f32[16]{0}, f32[16]{0}, f32[16]{0}, f32[16]{0}, /*index=5*/f32[16]{0}, f32[16]{0}, f32[16]{0}, f32[16]{0})}
+
+ENTRY %main () -> (f32[16], f32[16], f32[16], f32[16], f32[16], /*index=5*/f32[16], f32[16], f32[16], f32[16]) {
+  %constant_zero = f32[] constant(0)
+  %broadcast.2 = f32[16]{0} broadcast(%constant_zero), dimensions={}
+  %broadcast.19 = f32[16]{0} broadcast(%constant_zero), dimensions={}
+  %constant_two = f32[] constant(2)
+  %mul_two_27_2.1 = f32[] multiply(%constant_two, %constant_two)
+  %broadcast.22 = f32[16]{0} broadcast(%mul_two_27_2.1), dimensions={}
+  %constant_e = f32[] constant(2.71828)
+  %broadcast.25 = f32[16]{0} broadcast(%constant_e), dimensions={}
+  %constant.1 = f32[] constant(1)
+  %broadcast.10 = f32[16]{0} broadcast(%constant.1), dimensions={}
+  %broadcast.13 = f32[16]{0} broadcast(%constant_zero), dimensions={}
+  %constant_one = f32[] constant(1)
+  %broadcast.16 = f32[16]{0} broadcast(%constant_one), dimensions={}
+  %broadcast.32 = f32[16]{0} broadcast(%constant_one), dimensions={}
+  %complex_combo_27_combo_0.1 = f32[] subtract(%constant_one, %constant_e)
+  %broadcast.35 = f32[16]{0} broadcast(%complex_combo_27_combo_0.1), dimensions={}
+  ROOT %result = (f32[16]{0}, f32[16]{0}, f32[16]{0}, f32[16]{0}, f32[16]{0}, /*index=5*/f32[16]{0}, f32[16]{0}, f32[16]{0}, f32[16]{0}) tuple(%broadcast.2, %broadcast.19, %broadcast.22, %broadcast.25, %broadcast.10, /*index=5*/%broadcast.13, %broadcast.16, %broadcast.32, %broadcast.35)
+}
+
+
+
