@@ -1,0 +1,74 @@
+HloModule jit_sharpe_ratio, entry_computation_layout={(f32[100]{0}, f32[])->f32[]}
+
+%region_0.9 (Arg_0.10: f32[], Arg_1.11: f32[]) -> f32[] {
+  %Arg_0.10 = f32[] parameter(0)
+  %Arg_1.11 = f32[] parameter(1)
+  ROOT %add.12 = f32[] add(%Arg_0.10, %Arg_1.11)
+}
+
+%region_1.15 (Arg_0.16: f32[], Arg_1.17: f32[]) -> f32[] {
+  %Arg_0.16 = f32[] parameter(0)
+  %Arg_1.17 = f32[] parameter(1)
+  ROOT %add.18 = f32[] add(%Arg_0.16, %Arg_1.17)
+}
+
+%region_2.19 (Arg_0.20: f32[], Arg_1.21: f32[]) -> f32[] {
+  %Arg_0.20 = f32[] parameter(0)
+  %Arg_1.21 = f32[] parameter(1)
+  ROOT %add.22 = f32[] add(%Arg_0.20, %Arg_1.21)
+}
+
+%_where.23 (Arg_0.24: pred[], Arg_1.25: f32[], Arg_2.26: f32[]) -> f32[] {
+  %Arg_0.24 = pred[] parameter(0)
+  %Arg_1.25 = f32[] parameter(1)
+  %Arg_2.26 = f32[] parameter(2)
+  ROOT %select.27 = f32[] select(%Arg_0.24, %Arg_1.25, %Arg_2.26)
+}
+
+%_var.28 (Arg_0.29: f32[100], Arg_1.30: s32[]) -> f32[] {
+  %constant.33 = f32[] constant(100)
+  %Arg_1.30 = s32[] parameter(1)
+  %convert.43 = f32[] convert(%Arg_1.30)
+  %subtract.44 = f32[] subtract(%constant.33, %convert.43)
+  %constant.34 = f32[] constant(0)
+  %compare.47 = pred[] compare(%subtract.44, %constant.34), direction=GT
+  %Arg_0.29 = f32[100]{0} parameter(0)
+  %reduce.35 = f32[] reduce(%Arg_0.29, %constant.34), dimensions={0}, to_apply=%region_1.15
+  %reshape.36 = f32[1]{0} reshape(%reduce.35)
+  %constant = f32[1]{0} constant({0.01})
+  %multiply = f32[1]{0} multiply(%reshape.36, %constant)
+  %reshape.39 = f32[] reshape(%multiply)
+  %broadcast.40 = f32[100]{0} broadcast(%reshape.39), dimensions={}
+  %subtract.41 = f32[100]{0} subtract(%Arg_0.29, %broadcast.40)
+  %multiply.42 = f32[100]{0} multiply(%subtract.41, %subtract.41)
+  %reduce.45 = f32[] reduce(%multiply.42, %constant.34), dimensions={0}, to_apply=%region_2.19
+  %divide.46 = f32[] divide(%reduce.45, %subtract.44)
+  %constant.32 = f32[] constant(nan)
+  ROOT %call.48 = f32[] call(%compare.47, %divide.46, %constant.32), to_apply=%_where.23
+}
+
+%_std.49 (Arg_0.50: f32[100], Arg_1.51: s32[]) -> f32[] {
+  %Arg_0.50 = f32[100]{0} parameter(0)
+  %Arg_1.51 = s32[] parameter(1)
+  %call.52 = f32[] call(%Arg_0.50, %Arg_1.51), to_apply=%_var.28
+  ROOT %sqrt.53 = f32[] sqrt(%call.52)
+}
+
+ENTRY %main.57 (Arg_0.1: f32[100], Arg_1.2: f32[]) -> f32[] {
+  %Arg_0.1 = f32[100]{0} parameter(0)
+  %Arg_1.2 = f32[] parameter(1)
+  %broadcast.7 = f32[100]{0} broadcast(%Arg_1.2), dimensions={}
+  %subtract.8 = f32[100]{0} subtract(%Arg_0.1, %broadcast.7)
+  %constant.6 = f32[] constant(0)
+  %reduce.13 = f32[] reduce(%subtract.8, %constant.6), dimensions={0}, to_apply=%region_0.9
+  %constant.1 = f32[] constant(0.01)
+  %multiply.1 = f32[] multiply(%reduce.13, %constant.1)
+  %constant.4 = s32[] constant(0)
+  %call.54 = f32[] call(%subtract.8, %constant.4), to_apply=%_std.49
+  %constant.3 = f32[] constant(1e-09)
+  %add.55 = f32[] add(%call.54, %constant.3)
+  ROOT %divide.56 = f32[] divide(%multiply.1, %add.55)
+}
+
+
+

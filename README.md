@@ -114,6 +114,7 @@ Get up and running with the RL agent for XLA compiler pass optimization in just 
    python train_agent.py
    # Trained model will be saved to outputs/run_TIMESTAMP/models/trained_agent.pkl
    ```
+   Ensure that you have pointed to the appropriate XLA directory in main(). Several options for training expanded upon in [Training the RL Agent](#training-the-rl-agent).
 
 2. **Test the agent**:
    ```bash
